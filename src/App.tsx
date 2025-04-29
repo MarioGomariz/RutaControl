@@ -3,10 +3,15 @@ import Layout from './components/Layout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import { isLoggedIn } from './utils/auth';
-import Tractors from './pages/Tractores';
-import Choferes from './pages/Choferes';
-import Servicios from './pages/Servicios';
-import Cargas from './pages/Cargas';
+import Tractors from './pages/Tractores/Tractores';
+import Choferes from './pages/Choferes/Choferes';
+import Servicios from './pages/Servicios/Servicios';
+import Cargas from './pages/Cargas/Cargas';
+import Chofer from './pages/Choferes/Chofer';
+import Tractor from './pages/Tractores/Tractor';
+import Servicio from './pages/Servicios/Servicio';
+import Carga from './pages/Cargas/Carga';
+
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -35,6 +40,13 @@ function App() {
           <Route path="choferes" element={<Choferes />} />
           <Route path="servicios" element={<Servicios />} />
           <Route path="cargas" element={<Cargas />} />
+
+
+          <Route path="chofer/:id" element={<Chofer />} />
+          <Route path="tractor/:id" element={<Tractor />} />
+          <Route path="servicio/:id" element={<Servicio />} />
+          <Route path="carga/:id" element={<Carga />} />
+
         </Route>
         <Route path="/login" element={<Login />} />
       </Routes>
