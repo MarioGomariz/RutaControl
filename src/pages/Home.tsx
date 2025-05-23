@@ -1,4 +1,5 @@
 import Card from "@/components/ui/Card";
+import { Combine, MapPin, Truck, User } from "lucide-react";
 
 
 export default function Home() {
@@ -7,22 +8,26 @@ export default function Home() {
     {
       title: "Tractores",
       description: "Gestionar tractors",
-      link: "/tractores"
+      link: "/tractores",
+      icon: <Truck size={24} />
     },
     {
       title: "Choferes",
       description: "Gestionar choferes",
-      link: "/choferes"
+      link: "/choferes",
+      icon: <User size={24} />
     },
     {
       title: "Servicios",
       description: "Gestionar servicios",
-      link: "/servicios"
+      link: "/servicios",
+      icon: <Combine size={24}  />
     },
     {
-      title: "Cargas",
-      description: "Gestionar cargas",
-      link: "/cargas"
+      title: "Viajes",
+      description: "Gestionar viajes",
+      link: "/viajes",
+      icon: <MapPin size={24} />
     }
   ]
 
@@ -33,7 +38,7 @@ export default function Home() {
 
         <div className="mt-10 grid md:grid-cols-4 sm:grid-cols-3 gap-20">
             {cards.map((card, index) => (
-                <Card key={index} title={card.title} description={card.description} link={card.link} />
+                <Card key={index} card={card} />
             ))}
         </div>
     </div>

@@ -6,11 +6,11 @@ import { isLoggedIn } from './utils/auth';
 import Tractors from './pages/Tractores/Tractores';
 import Choferes from './pages/Choferes/Choferes';
 import Servicios from './pages/Servicios/Servicios';
-import Cargas from './pages/Cargas/Cargas';
+import Viajes from './pages/Viajes/Viajes';
 import Chofer from './pages/Choferes/Chofer';
 import Tractor from './pages/Tractores/Tractor';
 import Servicio from './pages/Servicios/Servicio';
-import Carga from './pages/Cargas/Carga';
+import Viaje from './pages/Viajes/Viaje';
 
 
 // Protected route component
@@ -39,13 +39,13 @@ function App() {
           <Route path="tractores" element={<Tractors />} />
           <Route path="choferes" element={<Choferes />} />
           <Route path="servicios" element={<Servicios />} />
-          <Route path="cargas" element={<Cargas />} />
+          <Route path="viajes" element={<Viajes />} />
 
 
           <Route path="chofer/:id" element={<Chofer />} />
           <Route path="tractor/:id" element={<Tractor />} />
           <Route path="servicio/:id" element={<Servicio />} />
-          <Route path="carga/:id" element={<Carga />} />
+          <Route path="viaje/:id" element={<Viaje />} />
 
         </Route>
         <Route path="/login" element={<Login />} />

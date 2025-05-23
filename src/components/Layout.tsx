@@ -9,7 +9,7 @@ export default function Layout() {
       <main className="flex-grow bg-background-0">
         <Outlet />
       </main>
-      <footer className="bg-background-2 text-white p-4 text-center">
+      <footer className="bg-navbar text-white p-4 text-center">
         <div className="container mx-auto">
           <p>© {new Date().getFullYear()} Ruta Control.</p>
         </div>

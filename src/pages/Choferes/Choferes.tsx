@@ -18,10 +18,10 @@ export default function Choferes() {
             <p className="">Gestionar choferes</p>
 
             <div className="mt-10 grid md:grid-cols-4 sm:grid-cols-3 gap-20">
-                <Card nuevo title="Agregar chofer" link="/chofer/new" />
+                <Card card={{ nuevo: true, title: "Agregar chofer", link: "/chofer/new" }} />
 
                 {choferes.map((chofer, index) => (
-                    <Card key={index} title={chofer.nombre} description={chofer.apellido} link={`/chofer/${chofer.id}`} />
+                    <Card key={index} card={{ title: chofer.nombre, description: chofer.apellido, link: `/chofer/${chofer.id}` }} />
                 ))}
             </div>
         </div>
