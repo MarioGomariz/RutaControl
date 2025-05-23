@@ -29,7 +29,9 @@ export default function Navbar() {
   return (
     <nav className="bg-navbar text-white p-4">
       <div className="container mx-auto flex justify-between items-center">
-        <div className="font-bold text-xl">Ruta Control</div>
+        <div className="font-bold text-xl">
+          <img src="../../public/logo1.png" alt="Logo" className="w-20" />
+        </div>
         
         {/* Mobile menu button */}
         <div className="md:hidden">
@@ -42,7 +44,7 @@ export default function Navbar() {
         </div>
         
         {/* Desktop menu */}
-        <ul className="hidden md:flex space-x-4 items-center">
+        <ul className="hidden md:flex space-x-8 items-center">
           <li>
             <Link 
               to="/" 
@@ -88,7 +90,7 @@ export default function Navbar() {
               onClick={handleLogout}
               className="cursor-pointer flex items-center bg-red-600 hover:bg-red-700 text-white p-2 rounded"
             >
-              <LogOut size={18} />
+              <LogOut size={24} />
             </button>
           </li>
         </ul>

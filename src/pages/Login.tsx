@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../utils/auth';
+import bg from "../../public/bg.png"
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -34,8 +35,12 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background-0  py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"       style={{ backgroundImage: `url('${bg}')` }}>
       <div className="max-w-md w-full space-y-8 bg-background-2 p-6 rounded-lg">
+
+        <img src="../../public/logo1.png" alt="Logo" className="mx-auto rounded-2xl mb-4" />
+
+
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
             Iniciar sesión
@@ -77,7 +82,10 @@ const Login: React.FC = () => {
               <button
                 type="button"
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowPassword(!showPassword)
+                }}
                 tabIndex={-1}
               >
                 {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
