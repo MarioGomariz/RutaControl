@@ -9,30 +9,30 @@ export default function Home() {
       title: "Tractores",
       description: "Gestionar tractors",
       link: "/tractores",
-      icon: <Truck size={24} />
+      icon: <Truck size={48} className="text-primary" />
     },
     {
       title: "Choferes",
       description: "Gestionar choferes",
       link: "/choferes",
-      icon: <User size={24} />
+      icon: <User size={48} className="text-primary" />
     },
     {
       title: "Servicios",
       description: "Gestionar servicios",
       link: "/servicios",
-      icon: <Combine size={24}  />
+      icon: <Combine size={48} className="text-primary" />
     },
     {
       title: "Viajes",
       description: "Gestionar viajes",
       link: "/viajes",
-      icon: <MapPin size={24} />
+      icon: <MapPin size={48} className="text-primary" />
     }
   ]
 
   return (
-    <div className=" mx-auto p-4 flex flex-col items-center justify-center text-white">
+    <div className=" mx-auto p-4 flex flex-col mt-16 items-center justify-center text-dark">
         <h1 className="text-2xl font-bold mb-4 ">Página de Inicio</h1>
         <p className="">Bienvenido a la aplicación de Ruta Control</p>
 
