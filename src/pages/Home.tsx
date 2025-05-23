@@ -9,25 +9,25 @@ export default function Home() {
       title: "Tractores",
       description: "Gestionar tractors",
       link: "/tractores",
-      icon: <Truck size={48} className="text-primary" />
+      icon: <Truck size={56} className="text-primary" />
     },
     {
       title: "Choferes",
       description: "Gestionar choferes",
       link: "/choferes",
-      icon: <User size={48} className="text-primary" />
+      icon: <User size={56} className="text-primary" />
     },
     {
       title: "Servicios",
       description: "Gestionar servicios",
       link: "/servicios",
-      icon: <Combine size={48} className="text-primary" />
+      icon: <Combine size={56} className="text-primary" />
     },
     {
       title: "Viajes",
       description: "Gestionar viajes",
       link: "/viajes",
-      icon: <MapPin size={48} className="text-primary" />
+      icon: <MapPin size={56} className="text-primary" />
     }
   ]
 
