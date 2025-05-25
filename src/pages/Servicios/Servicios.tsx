@@ -25,7 +25,6 @@ export default function Servicios() {
                         key={index} 
                         card={{ 
                             title: servicio.nombre, 
-                            description: servicio.descripcion || 'Sin descripción', 
                             link: `/servicio/${servicio.id}` 
                         }} 
                     />

@@ -27,10 +27,12 @@ export default function Navbar() {
     setIsMenuOpen(false);
   };
   return (
-    <nav className="bg-navbar text-white p-4">
+    <nav className="bg-navbar text-white p-3 sm:p-4">
       <div className="container mx-auto flex justify-between items-center">
         <div className="font-bold text-xl">
-          <img src="/logo1.png" alt="Logo" className="w-20" />
+          <Link to="/">
+            <img src="/logo1.png" alt="Logo" className="w-16 sm:w-20" />
+          </Link>
         </div>
         
         {/* Mobile menu button */}
@@ -98,8 +100,8 @@ export default function Navbar() {
       
       {/* Mobile menu dropdown */}
       {isMenuOpen && (
-        <div className="md:hidden mt-4 bg-background-2 rounded-lg shadow-lg">
-          <ul className="flex flex-col space-y-3 p-4">
+        <div className="md:hidden mt-4 bg-navbar rounded-lg shadow-lg z-50 absolute left-0 right-0 mx-4">
+          <ul className="flex flex-col space-y-3 p-4 divide-y divide-gray-700">
             <li>
               <Link 
                 to="/" 
@@ -138,11 +140,20 @@ export default function Navbar() {
             </li>
             <li>
               <Link 
-                to="/cargas" 
-                className={`block hover:text-gray-300 ${isActive('/cargas') ? 'text-primary font-bold' : ''}`}
+                to="/semirremolques" 
+                className={`block hover:text-gray-300 ${isActive('/semirremolques') ? 'text-primary font-bold' : ''}`}
                 onClick={closeMenu}
               >
-                Cargas
+                Semirremolques
+              </Link>
+            </li>
+            <li>
+              <Link 
+                to="/viajes" 
+                className={`block hover:text-gray-300 ${isActive('/viajes') ? 'text-primary font-bold' : ''}`}
+                onClick={closeMenu}
+              >
+                Viajes
               </Link>
             </li>
             <li>

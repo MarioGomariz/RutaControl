@@ -13,11 +13,11 @@ export default function Semirremolques() {
     }, []);
 
     return (
-        <div className="mx-auto p-4 flex flex-col items-center justify-center text-gray-800">
-            <h1 className="text-2xl font-bold mb-4 text-gray-800">Semirremolques</h1>
-            <p className="text-gray-700">Gestionar flota de semirremolques</p>
+        <div className="container mx-auto px-4 py-6 flex flex-col items-center justify-center text-gray-800">
+            <h1 className="text-3xl font-bold mb-4 text-center text-gray-800">Semirremolques</h1>
+            <p className="text-lg text-gray-700 mb-8 text-center">Gestionar flota de semirremolques</p>
 
-            <div className="mt-10 grid md:grid-cols-4 sm:grid-cols-3 gap-20">
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 md:gap-10 justify-items-center">
                 <Card card={{ nuevo: true, title: "Agregar semirremolque", link: "/semirremolque/new" }} />
 
                 {semirremolques.map((semirremolque, index) => (

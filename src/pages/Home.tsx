@@ -38,11 +38,11 @@ export default function Home() {
   ]
 
   return (
-    <div className=" mx-auto p-4 flex flex-col mt-16 items-center justify-center text-dark">
-        <h1 className="text-2xl font-bold mb-4 ">Página de Inicio</h1>
-        <p className="">Bienvenido a la aplicación de Ruta Control</p>
+    <div className="container mx-auto px-4 py-8 flex flex-col items-center justify-center text-gray-800">
+        <h1 className="text-3xl font-bold mb-4 text-center">Página de Inicio</h1>
+        <p className="text-lg text-gray-700 mb-8 text-center">Bienvenido a la aplicación de Ruta Control</p>
 
-        <div className="mt-10 grid md:grid-cols-4 sm:grid-cols-3 gap-20">
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 md:gap-10 justify-items-center">
             {cards.map((card, index) => (
                 <Card key={index} card={card} />
             ))}
