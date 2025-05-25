@@ -30,7 +30,7 @@ export default function Navbar() {
     <nav className="bg-navbar text-white p-4">
       <div className="container mx-auto flex justify-between items-center">
         <div className="font-bold text-xl">
-          <img src="../../public/logo1.png" alt="Logo" className="w-20" />
+          <img src="/logo1.png" alt="Logo" className="w-20" />
         </div>
         
         {/* Mobile menu button */}
@@ -79,10 +79,10 @@ export default function Navbar() {
           </li>
           <li>
             <Link 
-              to="/cargas" 
-              className={`hover:text-gray-300 ${isActive('/cargas') ? 'text-primary font-bold' : ''}`}
+              to="/semirremolques" 
+              className={`hover:text-gray-300 ${isActive('/semirremolques') ? 'text-primary font-bold' : ''}`}
             >
-              Cargas
+              Semirremolques
             </Link>
           </li>
           <li>

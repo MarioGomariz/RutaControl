@@ -22,7 +22,7 @@ export default function Card({ card }: { card: CardProps }) {
 
   return (
     <button
-      className="flex flex-col items-center justify-center cursor-pointer bg-white text-black p-8 h-56 rounded-lg shadow-md transition ease-in-out hover:scale-110 hover:text-background-0 relative"
+      className="flex flex-col items-center justify-center cursor-pointer bg-white text-black p-8 h-56 w-56 rounded-lg shadow-md transition ease-in-out hover:scale-110 hover:text-background-0 relative"
       onClick={() => (window.location.href = card.link)}
     >
       <div className="mb-3">{card.icon}</div>

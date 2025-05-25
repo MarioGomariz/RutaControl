@@ -37,8 +37,8 @@ export default function Chofer() {
   };
 
   return (
-    <div className="mx-auto p-4 flex flex-col items-center justify-center text-white">
-      <h1 className="text-2xl font-bold mb-10 ">
+    <div className="mx-auto p-4 flex flex-col items-center justify-center text-gray-800">
+      <h1 className="text-2xl font-bold mb-10 text-gray-800">
         {chofer ? "Editar chofer" : "Agregar chofer"}
       </h1>
 

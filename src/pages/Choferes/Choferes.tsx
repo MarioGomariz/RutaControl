@@ -13,9 +13,9 @@ export default function Choferes() {
     }, []);
 
     return (
-        <div className="mx-auto p-4 flex flex-col items-center justify-center text-white">
-            <h1 className="text-2xl font-bold mb-4">Choferes</h1>
-            <p className="">Gestionar choferes</p>
+        <div className="mx-auto p-4 flex flex-col items-center justify-center text-gray-800">
+            <h1 className="text-2xl font-bold mb-4 text-gray-800">Choferes</h1>
+            <p className="text-gray-700">Gestionar choferes</p>
 
             <div className="mt-10 grid md:grid-cols-4 sm:grid-cols-3 gap-20">
                 <Card card={{ nuevo: true, title: "Agregar chofer", link: "/chofer/new" }} />

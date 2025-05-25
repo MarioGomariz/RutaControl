@@ -1,5 +1,5 @@
 import Card from "@/components/ui/Card";
-import { Combine, MapPin, Truck, User } from "lucide-react";
+import { Combine, MapPin, Truck, User, Box } from "lucide-react";
 
 
 export default function Home() {
@@ -22,6 +22,12 @@ export default function Home() {
       description: "Gestionar servicios",
       link: "/servicios",
       icon: <Combine size={56} className="text-primary" />
+    },
+    {
+      title: "Semirremolques",
+      description: "Gestionar semirremolques",
+      link: "/semirremolques",
+      icon: <Box size={56} className="text-primary" />
     },
     {
       title: "Viajes",

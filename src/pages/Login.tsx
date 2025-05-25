@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../utils/auth';
-import bg from "../../public/bg.png"
+import bg from "/bg.png"
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -38,7 +38,7 @@ const Login: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"       style={{ backgroundImage: `url('${bg}')` }}>
       <div className="max-w-md w-full space-y-8 bg-background-2 p-6 rounded-lg">
 
-        <img src="../../public/logo1.png" alt="Logo" className="mx-auto rounded-2xl mb-4" />
+        <img src="/logo1.png" alt="Logo" className="mx-auto rounded-2xl mb-4" />
 
 
         <div>

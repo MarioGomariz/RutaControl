@@ -7,10 +7,12 @@ import Tractors from './pages/Tractores/Tractores';
 import Choferes from './pages/Choferes/Choferes';
 import Servicios from './pages/Servicios/Servicios';
 import Viajes from './pages/Viajes/Viajes';
+import Semirremolques from './pages/Semirremolques/Semirremolques';
 import Chofer from './pages/Choferes/Chofer';
 import Tractor from './pages/Tractores/Tractor';
 import Servicio from './pages/Servicios/Servicio';
 import Viaje from './pages/Viajes/Viaje';
+import Semirremolque from './pages/Semirremolques/Semirremolque';
 
 
 // Protected route component
@@ -40,12 +42,14 @@ function App() {
           <Route path="choferes" element={<Choferes />} />
           <Route path="servicios" element={<Servicios />} />
           <Route path="viajes" element={<Viajes />} />
+          <Route path="semirremolques" element={<Semirremolques />} />
 
 
           <Route path="chofer/:id" element={<Chofer />} />
           <Route path="tractor/:id" element={<Tractor />} />
           <Route path="servicio/:id" element={<Servicio />} />
           <Route path="viaje/:id" element={<Viaje />} />
+          <Route path="semirremolque/:id" element={<Semirremolque />} />
 
         </Route>
         <Route path="/login" element={<Login />} />
