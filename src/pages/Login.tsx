@@ -35,7 +35,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"       style={{ backgroundImage: `url('${bg}')` }}>
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center bg-fixed"       style={{ backgroundImage: `url('${bg}')` }}>
       <div className="max-w-md w-full space-y-8 bg-background-2 p-6 rounded-lg">
 
         <img src="/logo1.png" alt="Logo" className="mx-auto rounded-2xl mb-4" />
