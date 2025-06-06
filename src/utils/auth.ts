@@ -1,9 +1,12 @@
+import { authenticateUsuario } from './usuarios';
+
 // Define a User type for better type safety
 export interface User {
   id: string;
   email: string;
   name?: string;
   role?: string;
+  username?: string;
 }
 
 // Test credentials from environment variables
@@ -53,34 +56,50 @@ export function isLoggedIn(): boolean {
 }
 
 /**
- * Login user with email and password
- * @param email User email
+ * Login user with email/username and password
+ * @param emailOrUsername User email or username
  * @param password User password
  * @returns Promise resolving to User object
  */
-export async function loginUser(email: string, password: string): Promise<User> {
-  // This is a mock implementation
-  // In a real app, you would make an API call to your backend
-  
+export async function loginUser(emailOrUsername: string, password: string): Promise<User> {
   // Simulate API call delay
   await new Promise(resolve => setTimeout(resolve, 500));
   
   // Validate inputs
-  if (!email || !password) {
-    throw new Error('Email y contraseña son requeridos');
+  if (!emailOrUsername || !password) {
+    throw new Error('Usuario/Email y contraseña son requeridos');
   }
   
-  // Check against environment variables
-  if (email !== TEST_EMAIL || password !== TEST_PASSWORD) {
+  // For backward compatibility with test credentials
+  if (emailOrUsername === TEST_EMAIL && password === TEST_PASSWORD) {
+    // Create a user object for the test user
+    const user: User = {
+      id: '1',
+      email: TEST_EMAIL,
+      name: 'Usuario de Prueba',
+      role: 'admin'
+    };
+    
+    // Save to localStorage
+    setUserSession(user);
+    
+    return user;
+  }
+  
+  // Try to authenticate with the new system
+  const usuario = authenticateUsuario(emailOrUsername, password);
+  
+  if (!usuario) {
     throw new Error('Credenciales inválidas');
   }
   
-  // Create a user object for the authenticated user
+  // Create a user object from the authenticated usuario
   const user: User = {
-    id: '1',
-    email,
-    name: 'Usuario de Prueba',
-    role: 'admin'
+    id: usuario.id,
+    email: usuario.email,
+    name: `${usuario.nombre} ${usuario.apellido}`,
+    role: usuario.rol,
+    username: usuario.usuario
   };
   
   // Save to localStorage

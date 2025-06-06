@@ -5,7 +5,7 @@ import { loginUser } from '../utils/auth';
 import bg from "/bg.png"
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -17,14 +17,14 @@ const Login: React.FC = () => {
     
     try {
       // Simple validation
-      if (!email || !password) {
+      if (!emailOrUsername || !password) {
         setError('Por favor complete todos los campos');
         return;
       }
       
       // Use the loginUser function from auth utils
-      await loginUser(email, password);
-      console.log('Login successful for:', email);
+      await loginUser(emailOrUsername, password);
+      console.log('Login successful for:', emailOrUsername);
       
       // Navigate to inicio after successful login
       navigate('/');
@@ -53,17 +53,17 @@ const Login: React.FC = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div className='mb-4'>
-              <label htmlFor="email-address" className="sr-only">Email</label>
+              <label htmlFor="email-or-username" className="sr-only">Email o Usuario</label>
               <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
+                id="email-or-username"
+                name="emailOrUsername"
+                type="text"
+                autoComplete="username"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border text-white border-gray-300 placeholder-gray-500  rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Correo electrónico"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Correo electrónico o nombre de usuario"
+                value={emailOrUsername}
+                onChange={(e) => setEmailOrUsername(e.target.value)}
               />
             </div>
             <div className="relative">

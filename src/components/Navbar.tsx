@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { clearUserSession } from "../utils/auth";
+import { clearUserSession, getUserSession } from "../utils/auth";
 import { LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
 
@@ -8,6 +8,8 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const user = getUserSession();
+  const isAdmin = user?.role === 'admin' || user?.role === 'administrador';
   
   // Function to determine if a link is active
   const isActive = (path: string) => {
@@ -87,6 +89,16 @@ export default function Navbar() {
               Semirremolques
             </Link>
           </li>
+          {isAdmin && (
+            <li>
+              <Link 
+                to="/usuarios" 
+                className={`hover:text-gray-300 ${isActive('/usuarios') ? 'text-primary font-bold' : ''}`}
+              >
+                Usuarios
+              </Link>
+            </li>
+          )}
           <li>
             <button
               onClick={handleLogout}
@@ -156,6 +168,17 @@ export default function Navbar() {
                 Viajes
               </Link>
             </li>
+            {isAdmin && (
+              <li>
+                <Link 
+                  to="/usuarios" 
+                  className={`block hover:text-gray-300 ${isActive('/usuarios') ? 'text-primary font-bold' : ''}`}
+                  onClick={closeMenu}
+                >
+                  Usuarios
+                </Link>
+              </li>
+            )}
             <li>
               <button
                 onClick={() => {

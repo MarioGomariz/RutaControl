@@ -38,67 +38,71 @@ export default function Tractor() {
   };
 
   return (
-    <div className="mx-auto p-4 flex flex-col items-center justify-center text-gray-800">
-      <h1 className="text-2xl font-bold mb-10 text-gray-800">
-        {tractor ? "Editar tractor" : "Agregar tractor"}
-      </h1>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">
+            {tractor ? "Editar tractor" : "Agregar tractor"}
+          </h1>
+        </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="grid grid-cols-2 gap-20 w-full max-w-4xl"
-      >
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Marca */}
-        <div className="flex flex-col">
-          <label htmlFor="marca">Marca:</label>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="marca">Marca:</label>
           <input
             type="text"
             id="marca"
             name="marca"
             value={formData.marca}
             onChange={handleChange}
-            className="border border-gray-500 rounded-lg p-2 text-black"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
             required
           />
         </div>
 
         {/* Modelo */}
-        <div className="flex flex-col">
-          <label htmlFor="modelo">Modelo:</label>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="modelo">Modelo:</label>
           <input
             type="text"
             id="modelo"
             name="modelo"
             value={formData.modelo}
             onChange={handleChange}
-            className="border border-gray-500 rounded-lg p-2 text-black"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
             required
           />
         </div>
 
         {/* Dominio (Patente) */}
-        <div className="flex flex-col">
-          <label htmlFor="dominio">Dominio (Patente):</label>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="dominio">Dominio (Patente):</label>
           <input
             type="text"
             id="dominio"
             name="dominio"
             value={formData.dominio}
             onChange={handleChange}
-            className="border border-gray-500 rounded-lg p-2 text-black"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
             required
           />
         </div>
 
         {/* Año */}
-        <div className="flex flex-col">
-          <label htmlFor="año">Año:</label>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="año">Año:</label>
           <input
             type="number"
             id="año"
             name="año"
             value={formData.año}
             onChange={handleChange}
-            className="border border-gray-500 rounded-lg p-2 text-black"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
             min="1990"
             max={new Date().getFullYear() + 1}
             required
@@ -106,28 +110,28 @@ export default function Tractor() {
         </div>
 
         {/* Vencimiento RTO */}
-        <div className="flex flex-col">
-          <label htmlFor="vencimientoRTO">Vencimiento RTO:</label>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimientoRTO">Vencimiento RTO:</label>
           <input
             type="date"
             id="vencimientoRTO"
             name="vencimientoRTO"
             value={formData.vencimientoRTO}
             onChange={handleChange}
-            className="border border-gray-500 rounded-lg p-2 text-black"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
             required
           />
         </div>
 
         {/* Estado */}
-        <div className="flex flex-col">
-          <label htmlFor="estado">Estado:</label>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="estado">Estado:</label>
           <select
             id="estado"
             name="estado"
             value={formData.estado}
             onChange={handleChange}
-            className="border border-gray-500 rounded-lg p-2 text-black"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
             required
           >
             <option value="Disponible">Disponible</option>
@@ -138,29 +142,29 @@ export default function Tractor() {
         </div>
 
         {/* Tipo de Servicio */}
-        <div className="flex flex-col">
-          <label htmlFor="tipoServicio">Tipo de Servicio:</label>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="tipoServicio">Tipo de Servicio:</label>
           <input
             type="text"
             id="tipoServicio"
             name="tipoServicio"
             value={formData.tipoServicio}
             onChange={handleChange}
-            className="border border-gray-500 rounded-lg p-2 text-black"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
             placeholder="Ej: Transporte de combustibles líquidos, GLP, metanol"
             required
           />
         </div>
 
         {/* Alcance del Servicio */}
-        <div className="flex flex-col">
-          <label htmlFor="alcanceServicio">Alcance del Servicio:</label>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="alcanceServicio">Alcance del Servicio:</label>
           <select
             id="alcanceServicio"
             name="alcanceServicio"
             value={formData.alcanceServicio}
             onChange={handleChange}
-            className="border border-gray-500 rounded-lg p-2 text-black"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
             required
           >
             <option value="Nacional">Nacional</option>
@@ -168,34 +172,38 @@ export default function Tractor() {
           </select>
         </div>
 
-        {/* Observaciones */}
-        <div className="flex flex-col col-span-2">
-          <label htmlFor="observaciones">Observaciones:</label>
-          <textarea
-            id="observaciones"
-            name="observaciones"
-            value={formData.observaciones}
-            onChange={handleChange}
-            className="border border-gray-500 rounded-lg p-2 text-black"
-            rows={3}
-          />
+          </div>
+          
+          {/* Observaciones */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="observaciones">Observaciones:</label>
+            <textarea
+              id="observaciones"
+              name="observaciones"
+              value={formData.observaciones}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+              rows={3}
+            />
         </div>
 
-        {/* Botones */}
-        <button
-          type="button"
-          className="bg-red-500 text-background-0 p-2 rounded-lg cursor-pointer"
-          onClick={() => navigate("/tractores")}
-        >
-          Cancelar
-        </button>
-        <button
-          type="submit"
-          className="bg-primary text-background-0 p-2 rounded-lg cursor-pointer"
-        >
-          {tractor ? "Editar" : "Agregar"}
-        </button>
-      </form>
+          <div className="flex justify-end gap-4 pt-4">
+            <button
+              type="button"
+              onClick={() => navigate("/tractores")}
+              className="px-5 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-3 bg-primary text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              {tractor ? "Editar" : "Agregar"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
