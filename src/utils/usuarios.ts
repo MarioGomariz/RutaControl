@@ -20,8 +20,8 @@ const initialUsuarios: Usuario[] = [
     id: '1',
     nombre: 'Test',
     apellido: 'Admin',
-    email: 'testAdmin@gmail.com',
-    usuario: 'testAdmin',
+    email: 'test@gmail.com',
+    usuario: 'test',
     contraseña: '123456', // En una aplicación real, esto debería estar hasheado
     rol: 'administrador',
     estado: 'Activo',
