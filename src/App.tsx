@@ -1,10 +1,12 @@
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import Setup from './pages/Setup';
 import Usuarios from './pages/Usuarios/Usuarios';
 import Usuario from './pages/Usuarios/Usuario';
-import { isLoggedIn, getUserSession } from './utils/auth';
+import { isLoggedInSync, getUserSession } from './utils/auth';
 import Tractors from './pages/Tractores/Tractores';
 import Choferes from './pages/Choferes/Choferes';
 import Servicios from './pages/Servicios/Servicios';
@@ -19,7 +21,7 @@ import Semirremolque from './pages/Semirremolques/Semirremolque';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = isLoggedIn();
+  const isAuthenticated = isLoggedInSync();
   const location = useLocation();
 
   if (!isAuthenticated) {
@@ -32,13 +34,35 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 // Admin route component - only accessible by administrators
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = isLoggedIn();
-  const user = getUserSession();
+  const isAuthenticated = isLoggedInSync();
   const location = useLocation();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        if (isAuthenticated) {
+          const userData = await getUserSession();
+          setUser(userData);
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchUser();
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     // Redirect to login if not authenticated
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (loading) {
+    // Show loading while checking user role
+    return <div className="flex justify-center items-center h-screen">Cargando...</div>;
   }
 
   if (user?.role !== 'admin' && user?.role !== 'administrador') {
@@ -53,6 +77,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/setup" element={<Setup />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/" element={
           <ProtectedRoute>
             <Layout />

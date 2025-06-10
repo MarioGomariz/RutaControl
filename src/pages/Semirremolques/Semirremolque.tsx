@@ -1,58 +1,104 @@
-import { createSemirremolque, getSemirremolqueById, updateSemirremolque } from "@/utils/semirremolques";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useSemirremolquesStore } from "@/stores";
+import { Semirremolque as SemirremolqueType } from "@/utils/supabase";
 
 export default function Semirremolque() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const semirremolque = getSemirremolqueById(id || "");
+  
+  const { 
+    selectedSemirremolque: semirremolque, 
+    fetchSemirremolqueById, 
+    addSemirremolque, 
+    editSemirremolque,
+    isLoading,
+    error,
+    clearError
+  } = useSemirremolquesStore();
+  
+  useEffect(() => {
+    if (id) {
+      fetchSemirremolqueById(id);
+    }
+  }, [id, fetchSemirremolqueById]);
 
   const [formData, setFormData] = useState({
     nombre: semirremolque?.nombre || "",
     dominio: semirremolque?.dominio || "",
     año: semirremolque?.año || new Date().getFullYear(),
     estado: semirremolque?.estado || "Disponible",
-    tipoServicio: semirremolque?.tipoServicio || "",
-    alcanceServicio: semirremolque?.alcanceServicio || "Nacional",
-    vencimientoRTO: semirremolque?.vencimientoRTO || "",
-    vencimientoVisualExterna: semirremolque?.vencimientoVisualExterna || "",
-    vencimientoVisualInterna: semirremolque?.vencimientoVisualInterna || "",
-    vencimientoEspesores: semirremolque?.vencimientoEspesores || "",
-    vencimientoPruebaHidraulica: semirremolque?.vencimientoPruebaHidraulica || "",
-    vencimientoMangueras: semirremolque?.vencimientoMangueras || "",
-    vencimientoValvulaFlujo: semirremolque?.vencimientoValvulaFlujo || "",
-    observaciones: semirremolque?.observaciones || "",
+    tipo_servicio: semirremolque?.tipo_servicio || "",
+    alcance_servicio: semirremolque?.alcance_servicio || false,
+    vencimiento_rto: semirremolque?.vencimiento_rto || "",
+    vencimiento_visual_ext: semirremolque?.vencimiento_visual_ext || "",
+    vencimiento_visual_int: semirremolque?.vencimiento_visual_int || "",
+    vencimiento_espesores: semirremolque?.vencimiento_espesores || "",
+    vencimiento_prueba_hidraulica: semirremolque?.vencimiento_prueba_hidraulica || "",
+    vencimiento_mangueras: semirremolque?.vencimiento_mangueras || "",
+    vencimiento_valvula_five: semirremolque?.vencimiento_valvula_five || "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "number" ? parseFloat(value) || 0 : value,
-    }));
+    
+    if (name === "alcance_servicio") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value === "true",
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === "number" ? parseFloat(value) || 0 : value,
+      }));
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (semirremolque) {
-      updateSemirremolque(id || "", formData);
-    } else {
-      createSemirremolque(formData);
+    try {
+      if (semirremolque && id) {
+        await editSemirremolque(id, formData);
+      } else {
+        await addSemirremolque(formData as unknown as Omit<SemirremolqueType, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>);
+      }
+      navigate("/semirremolques");
+    } catch (err) {
+      console.error("Error al guardar el semirremolque:", err);
     }
-    navigate("/semirremolques");
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">
-            {semirremolque ? "Editar semirremolque" : "Agregar semirremolque"}
-          </h1>
-        </div>
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 relative">
+            <strong className="font-bold">Error:</strong>
+            <span className="block sm:inline"> {error}</span>
+            <button 
+              className="absolute top-0 right-0 px-4 py-3" 
+              onClick={clearError}
+            >
+              <span className="text-red-500">&times;</span>
+            </button>
+          </div>
+        )}
+        
+        {isLoading ? (
+          <div className="flex justify-center items-center h-32">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : (
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-800">
+              {semirremolque ? "Editar semirremolque" : "Agregar semirremolque"}
+            </h1>
+          </div>
+        )}
 
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(e) => handleSubmit(e)}
           className="space-y-6"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -121,12 +167,12 @@ export default function Semirremolque() {
 
             {/* Tipo de Servicio */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="tipoServicio">Tipo de Servicio:</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="tipo_servicio">Tipo de Servicio:</label>
               <input
                 type="text"
-                id="tipoServicio"
-                name="tipoServicio"
-                value={formData.tipoServicio}
+                id="tipo_servicio"
+                name="tipo_servicio"
+                value={formData.tipo_servicio}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                 placeholder="Ej: Transporte de combustibles líquidos, GLP, metanol"
@@ -136,11 +182,11 @@ export default function Semirremolque() {
 
             {/* Alcance del Servicio */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="alcanceServicio">Alcance del Servicio:</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="alcance_servicio">Alcance del Servicio:</label>
               <select
-                id="alcanceServicio"
-                name="alcanceServicio"
-                value={formData.alcanceServicio}
+                id="alcance_servicio"
+                name="alcance_servicio"
+                value={formData.alcance_servicio.toString()}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                 required
@@ -152,12 +198,12 @@ export default function Semirremolque() {
 
             {/* Vencimiento RTO */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimientoRTO">Vencimiento RTO:</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimiento_rto">Vencimiento RTO:</label>
               <input
                 type="date"
-                id="vencimientoRTO"
-                name="vencimientoRTO"
-                value={formData.vencimientoRTO}
+                id="vencimiento_rto"
+                name="vencimiento_rto"
+                value={formData.vencimiento_rto}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                 required
@@ -166,12 +212,12 @@ export default function Semirremolque() {
 
             {/* Vencimiento Visual Externa */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimientoVisualExterna">Vencimiento Visual Externa:</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimiento_visual_ext">Vencimiento Visual Externa:</label>
               <input
                 type="date"
-                id="vencimientoVisualExterna"
-                name="vencimientoVisualExterna"
-                value={formData.vencimientoVisualExterna}
+                id="vencimiento_visual_ext"
+                name="vencimiento_visual_ext"
+                value={formData.vencimiento_visual_ext}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
               />
@@ -179,12 +225,12 @@ export default function Semirremolque() {
 
             {/* Vencimiento Visual Interna */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimientoVisualInterna">Vencimiento Visual Interna:</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimiento_visual_int">Vencimiento Visual Interna:</label>
               <input
                 type="date"
-                id="vencimientoVisualInterna"
-                name="vencimientoVisualInterna"
-                value={formData.vencimientoVisualInterna}
+                id="vencimiento_visual_int"
+                name="vencimiento_visual_int"
+                value={formData.vencimiento_visual_int}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
               />
@@ -192,12 +238,12 @@ export default function Semirremolque() {
 
             {/* Vencimiento Espesores */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimientoEspesores">Vencimiento Espesores:</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimiento_espesores">Vencimiento Espesores:</label>
               <input
                 type="date"
-                id="vencimientoEspesores"
-                name="vencimientoEspesores"
-                value={formData.vencimientoEspesores}
+                id="vencimiento_espesores"
+                name="vencimiento_espesores"
+                value={formData.vencimiento_espesores}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
               />
@@ -205,12 +251,12 @@ export default function Semirremolque() {
 
             {/* Vencimiento Prueba Hidráulica */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimientoPruebaHidraulica">Vencimiento Prueba Hidráulica:</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimiento_prueba_hidraulica">Vencimiento Prueba Hidráulica:</label>
               <input
                 type="date"
-                id="vencimientoPruebaHidraulica"
-                name="vencimientoPruebaHidraulica"
-                value={formData.vencimientoPruebaHidraulica}
+                id="vencimiento_prueba_hidraulica"
+                name="vencimiento_prueba_hidraulica"
+                value={formData.vencimiento_prueba_hidraulica}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
               />
@@ -218,12 +264,12 @@ export default function Semirremolque() {
 
             {/* Vencimiento Mangueras */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimientoMangueras">Vencimiento Mangueras:</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimiento_mangueras">Vencimiento Mangueras:</label>
               <input
                 type="date"
-                id="vencimientoMangueras"
-                name="vencimientoMangueras"
-                value={formData.vencimientoMangueras}
+                id="vencimiento_mangueras"
+                name="vencimiento_mangueras"
+                value={formData.vencimiento_mangueras}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
               />
@@ -231,31 +277,19 @@ export default function Semirremolque() {
 
             {/* Vencimiento Válvula Flujo */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimientoValvulaFlujo">Vencimiento Válvula Flujo:</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimiento_valvula_five">Vencimiento Válvula Five:</label>
               <input
                 type="date"
-                id="vencimientoValvulaFlujo"
-                name="vencimientoValvulaFlujo"
-                value={formData.vencimientoValvulaFlujo}
+                id="vencimiento_valvula_five"
+                name="vencimiento_valvula_five"
+                value={formData.vencimiento_valvula_five}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
               />
             </div>
           </div>
 
-          {/* Observaciones */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="observaciones">Observaciones:</label>
-            <textarea
-              id="observaciones"
-              name="observaciones"
-              value={formData.observaciones}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-              placeholder="Notas técnicas o condiciones especiales"
-              rows={3}
-            />
-          </div>
+          {/* No incluimos observaciones ya que no existe en el tipo Semirremolque de Supabase */}
 
           <div className="flex justify-end gap-4 pt-4">
             <button

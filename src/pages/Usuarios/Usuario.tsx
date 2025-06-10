@@ -1,44 +1,61 @@
 import React, { useState, useEffect } from 'react';
-import { Usuario as UsuarioType, createUsuario, updateUsuario, getUsuarioById } from '@/utils/usuarios';
 import { FaSave, FaTimes } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useUsuariosStore } from '@/stores/usuariosStore';
+import { User } from '@/utils/supabase';
+
+// Extender el tipo User para incluir el campo contraseña para el formulario
+interface FormUser extends Omit<User, 'id' | 'fecha_creacion' | 'fecha_actualizacion'> {
+  contraseña?: string;
+}
 
 const Usuario: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const usuario = id !== 'new' ? getUsuarioById(id || '') : null;
-  const isEditing = !!usuario;
+  const { selectedUsuario, isLoading, error: storeError, fetchUsuarioById, addUsuario, editUsuario, clearSelectedUsuario } = useUsuariosStore();
+  const isEditing = id !== 'new';
 
-  const [formData, setFormData] = useState<Omit<UsuarioType, 'id' | 'fechaCreacion' | 'fechaActualizacion'>>({
+  const [formData, setFormData] = useState<FormUser>({
     nombre: '',
     apellido: '',
     email: '',
     usuario: '',
-    contraseña: '',
-    rol: 'chofer',
+    contraseña: '', // Campo temporal para el formulario, no se almacena en Supabase
+    rol_id: 2, // 1=admin, 2=chofer
     estado: 'Activo',
     observaciones: '',
-    ultimaConexion: ''
+    ultima_conexion: ''
   });
   
   const [error, setError] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
-
+  
+  // Cargar usuario si estamos editando
   useEffect(() => {
-    if (usuario) {
+    if (isEditing && id) {
+      fetchUsuarioById(id);
+    }
+    
+    // Limpiar el usuario seleccionado al desmontar el componente
+    return () => clearSelectedUsuario();
+  }, [id, isEditing, fetchUsuarioById, clearSelectedUsuario]);
+
+  // Actualizar formulario cuando se carga el usuario
+  useEffect(() => {
+    if (selectedUsuario) {
       setFormData({
-        nombre: usuario.nombre,
-        apellido: usuario.apellido,
-        email: usuario.email,
-        usuario: usuario.usuario,
+        nombre: selectedUsuario.nombre,
+        apellido: selectedUsuario.apellido,
+        email: selectedUsuario.email,
+        usuario: selectedUsuario.usuario,
         contraseña: '', // No mostrar la contraseña por seguridad
-        rol: usuario.rol,
-        estado: usuario.estado,
-        observaciones: usuario.observaciones || '',
-        ultimaConexion: usuario.ultimaConexion
+        rol_id: selectedUsuario.rol_id,
+        estado: selectedUsuario.estado,
+        observaciones: selectedUsuario.observaciones || '',
+        ultima_conexion: selectedUsuario.ultima_conexion
       });
     }
-  }, [usuario]);
+  }, [selectedUsuario]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -69,7 +86,7 @@ const Usuario: React.FC = () => {
         return false;
       }
 
-      if (formData.contraseña.length < 6) {
+      if (formData.contraseña && formData.contraseña.length < 6) {
         setError('La contraseña debe tener al menos 6 caracteres');
         return false;
       }
@@ -90,17 +107,18 @@ const Usuario: React.FC = () => {
     if (!validateForm()) return;
 
     try {
-      if (isEditing && usuario) {
+      if (isEditing && id && selectedUsuario) {
         // Si estamos editando y no se proporciona contraseña, no la actualizamos
-        const dataToUpdate: Partial<Omit<UsuarioType, 'id' | 'fechaCreacion' | 'fechaActualizacion'>> = { ...formData };
+        const dataToUpdate: FormUser = { ...formData };
         if (!dataToUpdate.contraseña) {
           const { contraseña, ...rest } = dataToUpdate;
-          updateUsuario(usuario.id, rest);
+          await editUsuario(id, rest);
         } else {
-          updateUsuario(usuario.id, dataToUpdate);
+          // Si hay contraseña, la incluimos en la actualización
+          await editUsuario(id, dataToUpdate);
         }
       } else {
-        createUsuario(formData);
+        await addUsuario(formData);
       }
       navigate('/usuarios');
     } catch (err: any) {
@@ -124,11 +142,17 @@ const Usuario: React.FC = () => {
           </button>
         </div>
 
-        {error && (
+        {(error || storeError) && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-            {error}
+            {error || storeError}
           </div>
         )}
+        
+        {isLoading ? (
+          <div className="flex justify-center items-center py-10">
+            <p className="text-gray-500">Cargando...</p>
+          </div>
+        ) : (
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -220,14 +244,14 @@ const Usuario: React.FC = () => {
                 Rol *
               </label>
               <select
-                name="rol"
-                value={formData.rol}
+                name="rol_id"
+                value={formData.rol_id}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               >
-                <option value="administrador">Administrador</option>
-                <option value="chofer">Chofer</option>
+                <option value={1}>Administrador</option>
+                <option value={2}>Chofer</option>
               </select>
             </div>
 
@@ -262,22 +286,24 @@ const Usuario: React.FC = () => {
             />
           </div>
 
-          <div className="flex justify-end gap-4 pt-4">
+          <div className="flex justify-end space-x-4 mt-8">
             <button
               type="button"
               onClick={() => navigate('/usuarios')}
-              className="px-5 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="flex items-center justify-center gap-2 px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-700 transition-colors"
+              disabled={isLoading}
             >
               <FaSave /> {isEditing ? 'Actualizar' : 'Guardar'}
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );
