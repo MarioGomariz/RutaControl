@@ -1,15 +1,29 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { clearUserSession, getUserSession } from "../utils/auth";
+import { clearUserSession } from "../utils/auth";
 import { LogOut, Menu, X } from "lucide-react";
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
+import { getUserSession, User as AuthUser } from "@/utils/auth";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const user = getUserSession();
-  const isAdmin = user?.role === 'admin' || user?.role === 'administrador';
+  const [user, setUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const userData = await getUserSession();
+        setUser(userData);
+      } catch (error) {
+        console.error("Error loading user:", error);
+      }
+    }
+    
+    loadUser();
+  }, []);
+
+  const isAdmin = user?.role === "admin" || user?.role === "administrador";
   
   // Function to determine if a link is active
   const isActive = (path: string) => {
