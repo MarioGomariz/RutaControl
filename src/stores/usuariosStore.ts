@@ -7,7 +7,7 @@ import {
   deleteUsuario, 
   searchUsuarios
 } from '../services/usuariosService';
-import { User } from '../utils/supabase';
+import { User, UserWithPassword } from '../utils/supabase';
 
 interface UsuariosState {
   // Estado
@@ -19,7 +19,7 @@ interface UsuariosState {
   // Acciones
   fetchUsuarios: () => Promise<void>;
   fetchUsuarioById: (id: string) => Promise<void>;
-  addUsuario: (usuario: Omit<User, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>) => Promise<void>;
+  addUsuario: (usuario: UserWithPassword) => Promise<void>;
   editUsuario: (id: string, usuario: Partial<Omit<User, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>>) => Promise<void>;
   removeUsuario: (id: string) => Promise<void>;
   searchUsuario: (query: string) => Promise<void>;

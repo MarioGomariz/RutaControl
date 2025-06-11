@@ -1,4 +1,4 @@
-import { supabase, User } from '../utils/supabase';
+import { supabase, User, UserWithPassword } from '../utils/supabase';
 
 /**
  * Obtener todos los usuarios
@@ -80,10 +80,10 @@ export const getUsuarioByUsername = async (username: string): Promise<User | nul
 
 /**
  * Crear un nuevo usuario
- * @param usuario Datos del usuario (sin ID)
+ * @param usuario Datos del usuario (sin ID) con contraseña
  * @returns Promise con el usuario creado
  */
-export const createUsuario = async (usuario: Omit<User, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>): Promise<User> => {
+export const createUsuario = async (usuario: UserWithPassword): Promise<User> => {
   // Verificar si el email ya existe
   const existingEmail = await getUsuarioByEmail(usuario.email);
   if (existingEmail) {
@@ -363,7 +363,8 @@ export const createUsuarioFromChofer = async (
       contraseña: password,
       rol_id: 2, // Rol de chofer
       estado: 'Activo',
-      ultima_conexion: new Date().toISOString()
+      ultima_conexion: new Date().toISOString(),
+      observaciones: `Usuario creado automáticamente para el chofer ID: ${chofer.id}`
     });
     
     // Actualizar el chofer con el ID del usuario

@@ -29,13 +29,17 @@ export interface User {
   apellido: string;
   email: string;
   usuario: string;
-  // La contraseña no se almacena aquí, se maneja con la autenticación de Supabase
   rol_id: number; // Foreign key a la tabla roles
   estado: 'Activo' | 'Inactivo' | 'Suspendido';
   ultima_conexion: string;
   observaciones?: string;
   fecha_creacion: string;
   fecha_actualizacion: string;
+}
+
+// Interfaz extendida para incluir la contraseña en la creación de usuarios
+export interface UserWithPassword extends Omit<User, 'id' | 'fecha_creacion' | 'fecha_actualizacion'> {
+  contraseña: string;
 }
 
 export interface Role {

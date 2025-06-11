@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaSave, FaTimes } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUsuariosStore } from '@/stores/usuariosStore';
-import { User } from '@/utils/supabase';
+import { User, UserWithPassword } from '@/utils/supabase';
 
 // Extender el tipo User para incluir el campo contraseña para el formulario
 interface FormUser extends Omit<User, 'id' | 'fecha_creacion' | 'fecha_actualizacion'> {
@@ -118,7 +118,26 @@ const Usuario: React.FC = () => {
           await editUsuario(id, dataToUpdate);
         }
       } else {
-        await addUsuario(formData);
+        // Para crear un nuevo usuario, la contraseña es obligatoria
+        if (!formData.contraseña) {
+          setError('La contraseña es obligatoria para crear un usuario');
+          return;
+        }
+        
+        // Crear un objeto UserWithPassword con la contraseña obligatoria
+        const nuevoUsuario: UserWithPassword = {
+          nombre: formData.nombre,
+          apellido: formData.apellido,
+          email: formData.email,
+          usuario: formData.usuario,
+          contraseña: formData.contraseña,
+          rol_id: formData.rol_id,
+          estado: formData.estado as 'Activo' | 'Inactivo' | 'Suspendido',
+          ultima_conexion: formData.ultima_conexion || new Date().toISOString(),
+          observaciones: formData.observaciones
+        };
+        
+        await addUsuario(nuevoUsuario);
       }
       navigate('/usuarios');
     } catch (err: any) {

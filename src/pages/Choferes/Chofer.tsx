@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useChoferesStore } from "@/stores/choferesStore";
 import { useUsuariosStore } from "@/stores/usuariosStore";
-import { Chofer } from "@/utils/supabase";
+import { Chofer, UserWithPassword } from "@/utils/supabase";
 
 export default function ChoferForm() {
   const { id } = useParams();
@@ -115,7 +115,7 @@ export default function ChoferForm() {
 
     try {
       if (newChoferId) {
-        await addUsuario({
+        const nuevoUsuario: UserWithPassword = {
           nombre: formData.nombre,
           apellido: formData.apellido,
           email: formData.email,
@@ -125,7 +125,8 @@ export default function ChoferForm() {
           estado: 'Activo',
           ultima_conexion: new Date().toISOString(),
           observaciones: `Usuario creado automáticamente para el chofer ID: ${newChoferId}`
-        } as any);
+        };
+        await addUsuario(nuevoUsuario);
       }
 
       setShowPasswordModal(false);
