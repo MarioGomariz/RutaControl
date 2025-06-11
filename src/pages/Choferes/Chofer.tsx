@@ -88,11 +88,7 @@ export default function ChoferForm() {
           if (nuevoChofer) {
             setNewChoferId(nuevoChofer.id);
             setShowPasswordModal(true);
-          } else {
-            navigate("/choferes");
-          }
-        } else {
-          navigate("/choferes");
+          } 
         }
       }
     } catch (err: any) {
