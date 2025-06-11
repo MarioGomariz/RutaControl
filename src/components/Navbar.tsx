@@ -24,6 +24,7 @@ export default function Navbar() {
   }, []);
 
   const isAdmin = user?.role === "admin" || user?.role === "administrador";
+  // We only need to check for admin role since non-admins (including choferes) only see Viajes
   
   // Function to determine if a link is active
   const isActive = (path: string) => {
@@ -71,48 +72,62 @@ export default function Navbar() {
               Inicio
             </Link>
           </li>
-          <li>
-            <Link 
-              to="/tractores" 
-              className={`hover:text-gray-300 ${isActive('/tractores') ? 'text-primary font-bold' : ''}`}
-            >
-              Tractores
-            </Link>
-          </li>
-          <li>
-            <Link 
-              to="/choferes" 
-              className={`hover:text-gray-300 ${isActive('/choferes') ? 'text-primary font-bold' : ''}`}
-            >
-              Choferes
-            </Link>
-          </li>
-          <li>
-            <Link 
-              to="/servicios" 
-              className={`hover:text-gray-300 ${isActive('/servicios') ? 'text-primary font-bold' : ''}`}
-            >
-              Servicios
-            </Link>
-          </li>
-          <li>
-            <Link 
-              to="/semirremolques" 
-              className={`hover:text-gray-300 ${isActive('/semirremolques') ? 'text-primary font-bold' : ''}`}
-            >
-              Semirremolques
-            </Link>
-          </li>
+          
+          {/* Admin-only navigation links */}
           {isAdmin && (
-            <li>
-              <Link 
-                to="/usuarios" 
-                className={`hover:text-gray-300 ${isActive('/usuarios') ? 'text-primary font-bold' : ''}`}
-              >
-                Usuarios
-              </Link>
-            </li>
+            <>
+              <li>
+                <Link 
+                  to="/tractores" 
+                  className={`hover:text-gray-300 ${isActive('/tractores') ? 'text-primary font-bold' : ''}`}
+                >
+                  Tractores
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/choferes" 
+                  className={`hover:text-gray-300 ${isActive('/choferes') ? 'text-primary font-bold' : ''}`}
+                >
+                  Choferes
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/servicios" 
+                  className={`hover:text-gray-300 ${isActive('/servicios') ? 'text-primary font-bold' : ''}`}
+                >
+                  Servicios
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/semirremolques" 
+                  className={`hover:text-gray-300 ${isActive('/semirremolques') ? 'text-primary font-bold' : ''}`}
+                >
+                  Semirremolques
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/usuarios" 
+                  className={`hover:text-gray-300 ${isActive('/usuarios') ? 'text-primary font-bold' : ''}`}
+                >
+                  Usuarios
+                </Link>
+              </li>
+            </>
           )}
+          
+          {/* Link visible to all users */}
+          <li>
+            <Link 
+              to="/viajes" 
+              className={`hover:text-gray-300 ${isActive('/viajes') ? 'text-primary font-bold' : ''}`}
+            >
+              Viajes
+            </Link>
+          </li>
           <li>
             <button
               onClick={handleLogout}
@@ -137,42 +152,59 @@ export default function Navbar() {
                 Inicio
               </Link>
             </li>
-            <li>
-              <Link 
-                to="/tractores" 
-                className={`block hover:text-gray-300 ${isActive('/tractores') ? 'text-primary font-bold' : ''}`}
-                onClick={closeMenu}
-              >
-                Tractores
-              </Link>
-            </li>
-            <li>
-              <Link 
-                to="/choferes" 
-                className={`block hover:text-gray-300 ${isActive('/choferes') ? 'text-primary font-bold' : ''}`}
-                onClick={closeMenu}
-              >
-                Choferes
-              </Link>
-            </li>
-            <li>
-              <Link 
-                to="/servicios" 
-                className={`block hover:text-gray-300 ${isActive('/servicios') ? 'text-primary font-bold' : ''}`}
-                onClick={closeMenu}
-              >
-                Servicios
-              </Link>
-            </li>
-            <li>
-              <Link 
-                to="/semirremolques" 
-                className={`block hover:text-gray-300 ${isActive('/semirremolques') ? 'text-primary font-bold' : ''}`}
-                onClick={closeMenu}
-              >
-                Semirremolques
-              </Link>
-            </li>
+            
+            {/* Admin-only mobile navigation links */}
+            {isAdmin && (
+              <>
+                <li>
+                  <Link 
+                    to="/tractores" 
+                    className={`block hover:text-gray-300 ${isActive('/tractores') ? 'text-primary font-bold' : ''}`}
+                    onClick={closeMenu}
+                  >
+                    Tractores
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    to="/choferes" 
+                    className={`block hover:text-gray-300 ${isActive('/choferes') ? 'text-primary font-bold' : ''}`}
+                    onClick={closeMenu}
+                  >
+                    Choferes
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    to="/servicios" 
+                    className={`block hover:text-gray-300 ${isActive('/servicios') ? 'text-primary font-bold' : ''}`}
+                    onClick={closeMenu}
+                  >
+                    Servicios
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    to="/semirremolques" 
+                    className={`block hover:text-gray-300 ${isActive('/semirremolques') ? 'text-primary font-bold' : ''}`}
+                    onClick={closeMenu}
+                  >
+                    Semirremolques
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    to="/usuarios" 
+                    className={`block hover:text-gray-300 ${isActive('/usuarios') ? 'text-primary font-bold' : ''}`}
+                    onClick={closeMenu}
+                  >
+                    Usuarios
+                  </Link>
+                </li>
+              </>
+            )}
+            
+            {/* Link visible to all users */}
             <li>
               <Link 
                 to="/viajes" 
@@ -182,17 +214,6 @@ export default function Navbar() {
                 Viajes
               </Link>
             </li>
-            {isAdmin && (
-              <li>
-                <Link 
-                  to="/usuarios" 
-                  className={`block hover:text-gray-300 ${isActive('/usuarios') ? 'text-primary font-bold' : ''}`}
-                  onClick={closeMenu}
-                >
-                  Usuarios
-                </Link>
-              </li>
-            )}
             <li>
               <button
                 onClick={() => {

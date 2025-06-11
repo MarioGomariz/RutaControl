@@ -20,26 +20,22 @@ export default function Home() {
   }, []);
 
   const isAdmin = user?.role === "admin" || user?.role === "administrador";
+  const isChofer = user?.role === "chofer";
 
-  const cards = [
-    // Card de usuarios solo visible para administradores
-    ...(isAdmin
-      ? [
-          {
-            title: "Usuarios",
-            description: "Gestionar usuarios",
-            link: "/usuarios",
-            icon: <Users size={56} className="text-primary" />,
-          },
-        ]
-      : []),
+  // Define cards based on user role
+  const adminCards = [
+    {
+      title: "Usuarios",
+      description: "Gestionar usuarios",
+      link: "/usuarios",
+      icon: <Users size={56} className="text-primary" />,
+    },
     {
       title: "Choferes",
       description: "Gestionar choferes",
       link: "/choferes",
       icon: <User size={56} className="text-primary" />,
     },
-
     {
       title: "Servicios",
       description: "Gestionar servicios",
@@ -48,11 +44,10 @@ export default function Home() {
     },
     {
       title: "Tractores",
-      description: "Gestionar tractors",
+      description: "Gestionar tractores",
       link: "/tractores",
       icon: <Truck size={56} className="text-primary" />,
     },
-
     {
       title: "Semirremolques",
       description: "Gestionar semirremolques",
@@ -66,6 +61,18 @@ export default function Home() {
       icon: <MapPin size={56} className="text-primary" />,
     },
   ];
+
+  const choferCards = [
+    {
+      title: "Viajes",
+      description: "Ver y gestionar viajes",
+      link: "/viajes",
+      icon: <MapPin size={56} className="text-primary" />,
+    },
+  ];
+
+  // Select cards based on user role
+  const cards = isAdmin ? adminCards : isChofer ? choferCards : [];
 
   return (
     <div className="container mx-auto px-4 py-8 flex flex-col items-center justify-center text-gray-800">
