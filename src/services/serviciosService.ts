@@ -8,10 +8,7 @@ export const getAllServicios = async (): Promise<Servicio[]> => {
   const { data, error } = await supabase
     .from('servicios')
     .select(`
-      *,
-      chofer:chofer_id(*),
-      tractor:tractor_id(*),
-      semirremolque:semirremolque_id(*)
+      *
     `)
     .order('fecha_inicio', { ascending: false });
   
@@ -32,10 +29,7 @@ export const getServicioById = async (id: string): Promise<Servicio | null> => {
   const { data, error } = await supabase
     .from('servicios')
     .select(`
-      *,
-      chofer:chofer_id(*),
-      tractor:tractor_id(*),
-      semirremolque:semirremolque_id(*)
+      *
     `)
     .eq('id', id)
     .single();
@@ -71,10 +65,7 @@ export const createServicio = async (servicio: Omit<Servicio, 'id' | 'fecha_crea
     .from('servicios')
     .insert(createData)
     .select(`
-      *,
-      chofer:chofer_id(*),
-      tractor:tractor_id(*),
-      semirremolque:semirremolque_id(*)
+      *
     `)
     .single();
   
@@ -125,10 +116,7 @@ export const updateServicio = async (
     .update(updateData)
     .eq('id', id)
     .select(`
-      *,
-      chofer:chofer_id(*),
-      tractor:tractor_id(*),
-      semirremolque:semirremolque_id(*)
+      *
     `)
     .single();
   
@@ -182,10 +170,7 @@ export const searchServicios = async (query: string): Promise<Servicio[]> => {
   const { data, error } = await supabase
     .from('servicios')
     .select(`
-      *,
-      chofer:chofer_id(*),
-      tractor:tractor_id(*),
-      semirremolque:semirremolque_id(*)
+      *
     `)
     .or(`origen.ilike.${searchTerm},destino.ilike.${searchTerm},numero_remito.ilike.${searchTerm}`);
   
@@ -207,10 +192,7 @@ export const getServiciosPorRangoFechas = async (fechaInicio: Date, fechaFin: Da
   const { data, error } = await supabase
     .from('servicios')
     .select(`
-      *,
-      chofer:chofer_id(*),
-      tractor:tractor_id(*),
-      semirremolque:semirremolque_id(*)
+      *
     `)
     .gte('fecha_inicio', fechaInicio.toISOString())
     .lte('fecha_inicio', fechaFin.toISOString())
@@ -233,10 +215,7 @@ export const getServiciosPorEstado = async (estado: 'pendiente' | 'en_curso' | '
   const { data, error } = await supabase
     .from('servicios')
     .select(`
-      *,
-      chofer:chofer_id(*),
-      tractor:tractor_id(*),
-      semirremolque:semirremolque_id(*)
+      *
     `)
     .eq('estado', estado)
     .order('fecha_inicio', { ascending: false });
@@ -258,10 +237,7 @@ export const getServiciosPorChofer = async (choferId: string): Promise<Servicio[
   const { data, error } = await supabase
     .from('servicios')
     .select(`
-      *,
-      chofer:chofer_id(*),
-      tractor:tractor_id(*),
-      semirremolque:semirremolque_id(*)
+      *
     `)
     .eq('chofer_id', choferId)
     .order('fecha_inicio', { ascending: false });
@@ -283,10 +259,7 @@ export const getServiciosPorTractor = async (tractorId: string): Promise<Servici
   const { data, error } = await supabase
     .from('servicios')
     .select(`
-      *,
-      chofer:chofer_id(*),
-      tractor:tractor_id(*),
-      semirremolque:semirremolque_id(*)
+      *
     `)
     .eq('tractor_id', tractorId)
     .order('fecha_inicio', { ascending: false });
@@ -308,10 +281,7 @@ export const getServiciosPorSemirremolque = async (semirremolqueId: string): Pro
   const { data, error } = await supabase
     .from('servicios')
     .select(`
-      *,
-      chofer:chofer_id(*),
-      tractor:tractor_id(*),
-      semirremolque:semirremolque_id(*)
+      *
     `)
     .eq('semirremolque_id', semirremolqueId)
     .order('fecha_inicio', { ascending: false });
