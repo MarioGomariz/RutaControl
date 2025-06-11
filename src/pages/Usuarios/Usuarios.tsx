@@ -1,72 +1,72 @@
 import React, { useState, useEffect } from 'react';
-import { getAllUsuarios, Usuario, searchUsuarios, deleteUsuario, updateUsuarioEstado } from '@/utils/usuarios';
 import { FaUserPlus, FaSearch, FaEdit, FaTrash, FaUserSlash, FaUserCheck } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { useUsuariosStore } from '@/stores/usuariosStore';
+import { User } from '@/utils/supabase';
 
 const Usuarios: React.FC = () => {
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const { 
+    usuarios, 
+    isLoading, 
+    error, 
+    fetchUsuarios, 
+    searchUsuario, 
+    removeUsuario, 
+    cambiarEstado 
+  } = useUsuariosStore();
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   // Cargar usuarios al iniciar
   useEffect(() => {
-    loadUsuarios();
-  }, []);
+    fetchUsuarios();
+  }, [fetchUsuarios]);
 
-  // Cargar todos los usuarios o filtrados por búsqueda
-  const loadUsuarios = () => {
+  // Buscar usuarios cuando cambia la consulta
+  useEffect(() => {
     if (searchQuery.trim()) {
-      setUsuarios(searchChoferes(searchQuery));
+      searchUsuario(searchQuery);
     } else {
-      setUsuarios(getAllUsuarios());
+      fetchUsuarios();
     }
-  };
-
-  // Buscar usuarios
-  const searchChoferes = (query: string) => {
-    return searchUsuarios(query);
-  };
+  }, [searchQuery, searchUsuario, fetchUsuarios]);
 
   // Manejar cambio en el campo de búsqueda
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    if (e.target.value.trim()) {
-      setUsuarios(searchUsuarios(e.target.value));
-    } else {
-      setUsuarios(getAllUsuarios());
-    }
+    const value = e.target.value;
+    setSearchQuery(value);
+    // La búsqueda se maneja en el useEffect
   };
 
   // Abrir formulario para editar
-  const handleEdit = (usuario: Usuario) => {
+  const handleEdit = (usuario: User) => {
     navigate(`/usuario/${usuario.id}`);
   };
 
-  // Eliminar usuario
-  const handleDelete = (id: string) => {
-    if (window.confirm('¿Está seguro que desea eliminar este usuario?')) {
-      deleteUsuario(id);
-      loadUsuarios();
+  // Manejar eliminación de usuario
+  const handleDelete = async (id: string) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+      await removeUsuario(id);
     }
   };
 
-  // Cambiar estado del usuario
-  const handleToggleStatus = (usuario: Usuario) => {
-    const newStatus = usuario.estado === 'Activo' ? 'Inactivo' : 'Activo';
-    updateUsuarioEstado(usuario.id, newStatus);
-    loadUsuarios();
+  // Manejar cambio de estado de usuario
+  const handleToggleStatus = async (usuario: User) => {
+    const nuevoEstado = usuario.estado === 'Activo' ? 'Inactivo' : 'Activo';
+    await cambiarEstado(usuario.id, nuevoEstado as 'Activo' | 'Inactivo' | 'Suspendido');
   };
 
   // Formatear fecha
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
-    
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleString('es-AR');
-    } catch (error) {
-      return dateString;
-    }
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   return (
@@ -94,8 +94,18 @@ const Usuarios: React.FC = () => {
       </div>
 
       {/* Lista de usuarios */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {usuarios.map((usuario) => (
+      {isLoading ? (
+        <div className="flex justify-center items-center h-32">
+          <p className="text-gray-500">Cargando usuarios...</p>
+        </div>
+      ) : error ? (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4" role="alert">
+          <strong className="font-bold">Error:</strong>
+          <span className="block sm:inline"> {error}</span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+          {usuarios.map((usuario) => (
           <div 
             key={usuario.id}
             className={`border rounded-lg shadow-md p-5 bg-white ${
@@ -122,10 +132,10 @@ const Usuarios: React.FC = () => {
             </div>
             
             <div className="text-sm text-gray-700 mb-4 space-y-1">
-              <p><span className="font-semibold">Usuario:</span> {usuario.usuario}</p>
-              <p><span className="font-semibold">Email:</span> {usuario.email}</p>
-              <p><span className="font-semibold">Rol:</span> <span className="capitalize">{usuario.rol}</span></p>
-              <p><span className="font-semibold">Última conexión:</span> {formatDate(usuario.ultimaConexion)}</p>
+              <p className="text-sm text-gray-600">Usuario: {usuario.usuario}</p>
+              <p className="text-sm text-gray-600">Email: {usuario.email}</p>
+              <p className="text-sm text-gray-600">Rol: {usuario.rol_id === 1 ? 'Administrador' : 'Chofer'}</p>
+              <p className="text-sm text-gray-600">Última conexión: {formatDate(usuario.ultima_conexion)}</p>
               {usuario.observaciones && (
                 <p><span className="font-semibold">Observaciones:</span> {usuario.observaciones}</p>
               )}
@@ -155,14 +165,14 @@ const Usuarios: React.FC = () => {
               </button>
             </div>
           </div>
-        ))}
-
-        {usuarios.length === 0 && (
-          <div className="col-span-full text-center py-8 text-gray-500 bg-white rounded-lg shadow-md p-6">
-            No se encontraron usuarios. {searchQuery ? 'Intente con otra búsqueda.' : ''}
-          </div>
-        )}
-      </div>
+          ))}
+          {usuarios.length === 0 && (
+            <div className="col-span-full text-center py-8 text-gray-500 bg-white rounded-lg shadow-md p-6">
+              No se encontraron usuarios. {searchQuery ? 'Intente con otra búsqueda.' : ''}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -1,40 +1,79 @@
-import { createTractor, getTractorById, updateTractor } from "@/utils/tractores";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTractoresStore } from "@/stores/tractoresStore";
 
 export default function Tractor() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const tractor = getTractorById(id || "");
+  const { 
+    selectedTractor, 
+    isLoading, 
+    error, 
+    fetchTractorById, 
+    addTractor, 
+    editTractor, 
+    clearSelectedTractor 
+  } = useTractoresStore();
+  
+  const isEditing = id !== 'new';
+
+  useEffect(() => {
+    if (isEditing && id) {
+      fetchTractorById(id);
+    }
+    
+    return () => clearSelectedTractor();
+  }, [id, isEditing, fetchTractorById, clearSelectedTractor]);
 
   const [formData, setFormData] = useState({
-    marca: tractor?.marca || "",
-    modelo: tractor?.modelo || "",
-    dominio: tractor?.dominio || "",
-    año: tractor?.año || new Date().getFullYear(),
-    vencimientoRTO: tractor?.vencimientoRTO || "",
-    estado: tractor?.estado || "Disponible",
-    tipoServicio: tractor?.tipoServicio || "",
-    alcanceServicio: tractor?.alcanceServicio || "Nacional",
-    observaciones: tractor?.observaciones || "",
+    marca: "",
+    modelo: "",
+    dominio: "",
+    año: new Date().getFullYear(),
+    vencimiento_rto: "",
+    estado: "Disponible",
+    tipo_servicio: "",
+    alcance_servicio: false,
   });
+  
+  useEffect(() => {
+    if (selectedTractor) {
+      setFormData({
+        marca: selectedTractor.marca,
+        modelo: selectedTractor.modelo,
+        dominio: selectedTractor.dominio,
+        año: selectedTractor.año,
+        vencimiento_rto: selectedTractor.vencimiento_rto,
+        estado: selectedTractor.estado,
+        tipo_servicio: selectedTractor.tipo_servicio,
+        alcance_servicio: selectedTractor.alcance_servicio,
+      });
+    }
+  }, [selectedTractor]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target as HTMLInputElement;
+    const { name, value, type, checked } = e.target as HTMLInputElement;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "number" ? parseFloat(value) || 0 : value,
+      [name]: type === "checkbox" ? checked : 
+              type === "number" ? parseInt(value) || 0 : value,
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (tractor) {
-      updateTractor(id || "", formData);
-    } else {
-      createTractor(formData);
+    
+    try {
+      if (isEditing && id) {
+        await editTractor(id, formData);
+      } else {
+        await addTractor(formData);
+      }
+      navigate("/tractores");
+    } catch (err: any) {
+      // El error ya se maneja en el store
+      console.error(err);
     }
-    navigate("/tractores");
   };
 
   return (
@@ -42,14 +81,25 @@ export default function Tractor() {
       <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">
-            {tractor ? "Editar tractor" : "Agregar tractor"}
+            {isEditing ? "Editar tractor" : "Agregar tractor"}
           </h1>
         </div>
+        
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            {error}
+          </div>
+        )}
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6"
-        >
+        {isLoading && !selectedTractor && isEditing ? (
+          <div className="flex justify-center items-center py-10">
+            <p className="text-gray-500">Cargando...</p>
+          </div>
+        ) : (
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-6"
+          >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Marca */}
         <div>
@@ -111,12 +161,12 @@ export default function Tractor() {
 
         {/* Vencimiento RTO */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimientoRTO">Vencimiento RTO:</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimiento_rto">Vencimiento RTO:</label>
           <input
             type="date"
-            id="vencimientoRTO"
-            name="vencimientoRTO"
-            value={formData.vencimientoRTO}
+            id="vencimiento_rto"
+            name="vencimiento_rto"
+            value={formData.vencimiento_rto}
             onChange={handleChange}
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
             required
@@ -143,12 +193,12 @@ export default function Tractor() {
 
         {/* Tipo de Servicio */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="tipoServicio">Tipo de Servicio:</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="tipo_servicio">Tipo de Servicio:</label>
           <input
             type="text"
-            id="tipoServicio"
-            name="tipoServicio"
-            value={formData.tipoServicio}
+            id="tipo_servicio"
+            name="tipo_servicio"
+            value={formData.tipo_servicio}
             onChange={handleChange}
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
             placeholder="Ej: Transporte de combustibles líquidos, GLP, metanol"
@@ -157,35 +207,21 @@ export default function Tractor() {
         </div>
 
         {/* Alcance del Servicio */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="alcanceServicio">Alcance del Servicio:</label>
-          <select
-            id="alcanceServicio"
-            name="alcanceServicio"
-            value={formData.alcanceServicio}
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="alcance_servicio"
+            name="alcance_servicio"
+            checked={formData.alcance_servicio}
             onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-            required
-          >
-            <option value="Nacional">Nacional</option>
-            <option value="Internacional">Internacional</option>
-          </select>
+            className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <label className="ml-2 block text-sm text-gray-700" htmlFor="alcance_servicio">
+            Alcance Internacional
+          </label>
         </div>
 
           </div>
-          
-          {/* Observaciones */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="observaciones">Observaciones:</label>
-            <textarea
-              id="observaciones"
-              name="observaciones"
-              value={formData.observaciones}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-              rows={3}
-            />
-        </div>
 
           <div className="flex justify-end gap-4 pt-4">
             <button
@@ -198,11 +234,13 @@ export default function Tractor() {
             <button
               type="submit"
               className="px-5 py-3 bg-primary text-white rounded-md hover:bg-blue-700 transition-colors"
+              disabled={isLoading}
             >
-              {tractor ? "Editar" : "Agregar"}
+              {isEditing ? "Actualizar" : "Guardar"}
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

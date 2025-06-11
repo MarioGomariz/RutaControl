@@ -1,9 +1,24 @@
+import { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
 import { Combine, MapPin, Truck, User, Box, Users } from "lucide-react";
-import { getUserSession } from "@/utils/auth";
+import { getUserSession, User as AuthUser } from "@/utils/auth";
 
 export default function Home() {
-  const user = getUserSession();
+  const [user, setUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const userData = await getUserSession();
+        setUser(userData);
+      } catch (error) {
+        console.error("Error loading user:", error);
+      }
+    }
+    
+    loadUser();
+  }, []);
+
   const isAdmin = user?.role === "admin" || user?.role === "administrador";
 
   const cards = [
