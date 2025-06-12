@@ -163,8 +163,8 @@ export default function Servicio() {
                 <div className="flex items-center">
                   <input
                     type="checkbox"
-                    id="requierePruebaHidraulica"
-                    name="requierePruebaHidraulica"
+                    id="requiere_prueba_hidraulica"
+                    name="requiere_prueba_hidraulica"
                     checked={formData.requiere_prueba_hidraulica}
                     onChange={handleChange}
                     className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
@@ -178,8 +178,8 @@ export default function Servicio() {
                 <div className="flex items-center">
                   <input
                     type="checkbox"
-                    id="requiereVisuales"
-                    name="requiereVisuales"
+                    id="requiere_visuales"
+                    name="requiere_visuales"
                     checked={formData.requiere_visuales}
                     onChange={handleChange}
                     className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
@@ -193,8 +193,8 @@ export default function Servicio() {
                 <div className="flex items-center">
                   <input
                     type="checkbox"
-                    id="requiereValvulaYMangueras"
-                    name="requiereValvulaYMangueras"
+                    id="requiere_valvula_y_mangueras"
+                    name="requiere_valvula_y_mangueras"
                     checked={formData.requiere_valvula_y_mangueras}
                     onChange={handleChange}
                     className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
