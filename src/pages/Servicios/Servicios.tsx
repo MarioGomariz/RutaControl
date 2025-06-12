@@ -66,13 +66,13 @@ export default function Servicios() {
                                             </p>
                                         </div>
                                         <div className="flex flex-col gap-1">
-                                            {servicio.requierePruebaHidraulica && (
+                                            {servicio.requiere_prueba_hidraulica && (
                                                 <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Prueba Hidráulica</span>
                                             )}
-                                            {servicio.requiereVisuales && (
+                                            {servicio.requiere_visuales && (
                                                 <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Visuales</span>
                                             )}
-                                            {servicio.requiereValvulaYMangueras && (
+                                            {servicio.requiere_valvula_y_mangueras && (
                                                 <span className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">Válvulas y Mangueras</span>
                                             )}
                                         </div>

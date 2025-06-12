@@ -98,9 +98,9 @@ export interface Servicio {
   id: string; // UUID en Supabase
   nombre: string;
   descripcion: string;
-  requierePruebaHidraulica: boolean;
-  requiereVisuales: boolean;
-  requiereValvulaYMangueras: boolean;
+  requiere_prueba_hidraulica: boolean;
+  requiere_visuales: boolean;
+  requiere_valvula_y_mangueras: boolean;
   observaciones?: string;
   fecha_creacion: string;
   fecha_actualizacion: string;

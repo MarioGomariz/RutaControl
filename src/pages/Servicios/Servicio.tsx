@@ -22,9 +22,9 @@ export default function Servicio() {
   const [formData, setFormData] = useState({
     nombre: "",
     descripcion: "",
-    requierePruebaHidraulica: false,
-    requiereVisuales: false,
-    requiereValvulaYMangueras: false,
+    requiere_prueba_hidraulica: false,
+    requiere_visuales: false,
+    requiere_valvula_y_mangueras: false,
     observaciones: "",
   });
   
@@ -41,9 +41,9 @@ export default function Servicio() {
       setFormData({
         nombre: selectedServicio.nombre,
         descripcion: selectedServicio.descripcion,
-        requierePruebaHidraulica: selectedServicio.requierePruebaHidraulica,
-        requiereVisuales: selectedServicio.requiereVisuales,
-        requiereValvulaYMangueras: selectedServicio.requiereValvulaYMangueras,
+        requiere_prueba_hidraulica: selectedServicio.requiere_prueba_hidraulica,
+        requiere_visuales: selectedServicio.requiere_visuales,
+        requiere_valvula_y_mangueras: selectedServicio.requiere_valvula_y_mangueras,
         observaciones: selectedServicio.observaciones || "",
       });
     }
@@ -165,7 +165,7 @@ export default function Servicio() {
                     type="checkbox"
                     id="requierePruebaHidraulica"
                     name="requierePruebaHidraulica"
-                    checked={formData.requierePruebaHidraulica}
+                    checked={formData.requiere_prueba_hidraulica}
                     onChange={handleChange}
                     className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
@@ -180,7 +180,7 @@ export default function Servicio() {
                     type="checkbox"
                     id="requiereVisuales"
                     name="requiereVisuales"
-                    checked={formData.requiereVisuales}
+                    checked={formData.requiere_visuales}
                     onChange={handleChange}
                     className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
@@ -195,7 +195,7 @@ export default function Servicio() {
                     type="checkbox"
                     id="requiereValvulaYMangueras"
                     name="requiereValvulaYMangueras"
-                    checked={formData.requiereValvulaYMangueras}
+                    checked={formData.requiere_valvula_y_mangueras}
                     onChange={handleChange}
                     className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
