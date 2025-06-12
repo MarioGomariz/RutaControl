@@ -31,20 +31,41 @@ export default function Semirremolque() {
     fetchServicios();
   }, [id, fetchSemirremolqueById, fetchServicios]);
 
+  // Actualizar el formulario cuando se carga un semirremolque existente
+  useEffect(() => {
+    if (semirremolque) {
+      setFormData({
+        nombre: semirremolque.nombre || "",
+        dominio: semirremolque.dominio || "",
+        año: semirremolque.año || new Date().getFullYear(),
+        estado: semirremolque.estado || "Disponible",
+        tipo_servicio: semirremolque.tipo_servicio || "",
+        alcance_servicio: semirremolque.alcance_servicio || false,
+        vencimiento_rto: semirremolque.vencimiento_rto || "",
+        vencimiento_visual_ext: semirremolque.vencimiento_visual_ext || "",
+        vencimiento_visual_int: semirremolque.vencimiento_visual_int || "",
+        vencimiento_espesores: semirremolque.vencimiento_espesores || "",
+        vencimiento_prueba_hidraulica: semirremolque.vencimiento_prueba_hidraulica || "",
+        vencimiento_mangueras: semirremolque.vencimiento_mangueras || "",
+        vencimiento_valvula_five: semirremolque.vencimiento_valvula_five || "",
+      });
+    }
+  }, [semirremolque]);
+
   const [formData, setFormData] = useState({
-    nombre: semirremolque?.nombre || "",
-    dominio: semirremolque?.dominio || "",
-    año: semirremolque?.año || new Date().getFullYear(),
-    estado: semirremolque?.estado || "Disponible",
-    tipo_servicio: semirremolque?.tipo_servicio || "",
-    alcance_servicio: semirremolque?.alcance_servicio || false,
-    vencimiento_rto: semirremolque?.vencimiento_rto || "",
-    vencimiento_visual_ext: semirremolque?.vencimiento_visual_ext || "",
-    vencimiento_visual_int: semirremolque?.vencimiento_visual_int || "",
-    vencimiento_espesores: semirremolque?.vencimiento_espesores || "",
-    vencimiento_prueba_hidraulica: semirremolque?.vencimiento_prueba_hidraulica || "",
-    vencimiento_mangueras: semirremolque?.vencimiento_mangueras || "",
-    vencimiento_valvula_five: semirremolque?.vencimiento_valvula_five || "",
+    nombre: "",
+    dominio: "",
+    año: new Date().getFullYear(),
+    estado: "Disponible",
+    tipo_servicio: "",
+    alcance_servicio: false,
+    vencimiento_rto: "",
+    vencimiento_visual_ext: "",
+    vencimiento_visual_int: "",
+    vencimiento_espesores: "",
+    vencimiento_prueba_hidraulica: "",
+    vencimiento_mangueras: "",
+    vencimiento_valvula_five: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
