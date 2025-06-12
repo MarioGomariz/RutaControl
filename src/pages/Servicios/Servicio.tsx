@@ -169,7 +169,7 @@ export default function Servicio() {
                     onChange={handleChange}
                     className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <label className="ml-2 block text-sm text-gray-700" htmlFor="requierePruebaHidraulica">
+                  <label className="ml-2 block text-sm text-gray-700" htmlFor="requiere_prueba_hidraulica">
                     Requiere prueba hidráulica
                   </label>
                 </div>
@@ -184,7 +184,7 @@ export default function Servicio() {
                     onChange={handleChange}
                     className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <label className="ml-2 block text-sm text-gray-700" htmlFor="requiereVisuales">
+                  <label className="ml-2 block text-sm text-gray-700" htmlFor="requiere_visuales">
                     Requiere visuales
                   </label>
                 </div>
@@ -199,7 +199,7 @@ export default function Servicio() {
                     onChange={handleChange}
                     className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <label className="ml-2 block text-sm text-gray-700" htmlFor="requiereValvulaYMangueras">
+                  <label className="ml-2 block text-sm text-gray-700" htmlFor="requiere_valvula_y_mangueras">
                     Requiere válvula y mangueras
                   </label>
                 </div>
