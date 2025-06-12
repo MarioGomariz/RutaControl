@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTractoresStore } from "@/stores/tractoresStore";
+import { useServiciosStore } from "@/stores/serviciosStore";
+import { toast } from "react-toastify";
 
 export default function Tractor() {
   const { id } = useParams();
@@ -12,8 +14,11 @@ export default function Tractor() {
     fetchTractorById, 
     addTractor, 
     editTractor, 
+    removeTractor,
     clearSelectedTractor 
   } = useTractoresStore();
+  
+  const { servicios, fetchServicios } = useServiciosStore();
   
   const isEditing = id !== 'new';
 
@@ -22,8 +27,11 @@ export default function Tractor() {
       fetchTractorById(id);
     }
     
+    // Cargar la lista de servicios disponibles
+    fetchServicios();
+    
     return () => clearSelectedTractor();
-  }, [id, isEditing, fetchTractorById, clearSelectedTractor]);
+  }, [id, isEditing, fetchTractorById, fetchServicios, clearSelectedTractor]);
 
   const [formData, setFormData] = useState({
     marca: "",
@@ -66,13 +74,31 @@ export default function Tractor() {
     try {
       if (isEditing && id) {
         await editTractor(id, formData);
+        toast.success("Tractor actualizado correctamente");
       } else {
         await addTractor(formData);
+        toast.success("Tractor agregado correctamente");
       }
       navigate("/tractores");
     } catch (err: any) {
       // El error ya se maneja en el store
       console.error(err);
+      toast.error("Error al guardar el tractor");
+    }
+  };
+  
+  const handleDelete = async () => {
+    if (!id) return;
+    
+    if (window.confirm('¿Está seguro de que desea eliminar este tractor? Esta acción no se puede deshacer.')) {
+      try {
+        await removeTractor(id);
+        toast.success('Tractor eliminado correctamente');
+        navigate('/tractores');
+      } catch (err) {
+        console.error(err);
+        toast.error('Error al eliminar el tractor');
+      }
     }
   };
 
@@ -83,6 +109,15 @@ export default function Tractor() {
           <h1 className="text-2xl font-bold text-gray-800">
             {isEditing ? "Editar tractor" : "Agregar tractor"}
           </h1>
+          {isEditing && (
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+            >
+              Eliminar
+            </button>
+          )}
         </div>
         
         {error && (
@@ -194,16 +229,21 @@ export default function Tractor() {
         {/* Tipo de Servicio */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="tipo_servicio">Tipo de Servicio:</label>
-          <input
-            type="text"
+          <select
             id="tipo_servicio"
             name="tipo_servicio"
             value={formData.tipo_servicio}
             onChange={handleChange}
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-            placeholder="Ej: Transporte de combustibles líquidos, GLP, metanol"
             required
-          />
+          >
+            <option value="">Seleccione un servicio</option>
+            {servicios.map((servicio) => (
+              <option key={servicio.id} value={servicio.nombre}>
+                {servicio.nombre}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Alcance del Servicio */}
