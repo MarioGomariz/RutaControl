@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSemirremolquesStore } from "@/stores";
+import { useServiciosStore } from "@/stores/serviciosStore";
 import { Semirremolque as SemirremolqueType } from "@/utils/supabase";
+import { toast } from "react-toastify";
 
 export default function Semirremolque() {
   const { id } = useParams();
@@ -12,16 +14,22 @@ export default function Semirremolque() {
     fetchSemirremolqueById, 
     addSemirremolque, 
     editSemirremolque,
+    removeSemirremolque,
     isLoading,
     error,
     clearError
   } = useSemirremolquesStore();
   
+  const { servicios, fetchServicios } = useServiciosStore();
+  
   useEffect(() => {
     if (id) {
       fetchSemirremolqueById(id);
     }
-  }, [id, fetchSemirremolqueById]);
+    
+    // Cargar la lista de servicios disponibles
+    fetchServicios();
+  }, [id, fetchSemirremolqueById, fetchServicios]);
 
   const [formData, setFormData] = useState({
     nombre: semirremolque?.nombre || "",
@@ -60,12 +68,30 @@ export default function Semirremolque() {
     try {
       if (semirremolque && id) {
         await editSemirremolque(id, formData);
+        toast.success("Semirremolque actualizado correctamente");
       } else {
         await addSemirremolque(formData as unknown as Omit<SemirremolqueType, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>);
+        toast.success("Semirremolque agregado correctamente");
       }
       navigate("/semirremolques");
     } catch (err) {
       console.error("Error al guardar el semirremolque:", err);
+      toast.error("Error al guardar el semirremolque");
+    }
+  };
+  
+  const handleDelete = async () => {
+    if (!id) return;
+    
+    if (window.confirm('¿Está seguro de que desea eliminar este semirremolque? Esta acción no se puede deshacer.')) {
+      try {
+        await removeSemirremolque(id);
+        toast.success('Semirremolque eliminado correctamente');
+        navigate('/semirremolques');
+      } catch (err) {
+        console.error(err);
+        toast.error('Error al eliminar el semirremolque');
+      }
     }
   };
 
@@ -94,6 +120,15 @@ export default function Semirremolque() {
             <h1 className="text-2xl font-bold text-gray-800">
               {semirremolque ? "Editar semirremolque" : "Agregar semirremolque"}
             </h1>
+            {semirremolque && id && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                Eliminar
+              </button>
+            )}
           </div>
         )}
 
@@ -158,26 +193,31 @@ export default function Semirremolque() {
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                 required
               >
-            <option value="Disponible">Disponible</option>
-            <option value="En uso">En uso</option>
-            <option value="En reparación">En reparación</option>
-            <option value="Fuera de servicio">Fuera de servicio</option>
+                <option value="Disponible">Disponible</option>
+                <option value="En uso">En uso</option>
+                <option value="En reparación">En reparación</option>
+                <option value="Fuera de servicio">Fuera de servicio</option>
               </select>
             </div>
 
             {/* Tipo de Servicio */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="tipo_servicio">Tipo de Servicio:</label>
-              <input
-                type="text"
+              <select
                 id="tipo_servicio"
                 name="tipo_servicio"
                 value={formData.tipo_servicio}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                placeholder="Ej: Transporte de combustibles líquidos, GLP, metanol"
                 required
-              />
+              >
+                <option value="">Seleccione un servicio</option>
+                {servicios.map((servicio) => (
+                  <option key={servicio.id} value={servicio.nombre}>
+                    {servicio.nombre}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Alcance del Servicio */}
