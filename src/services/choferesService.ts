@@ -1,4 +1,5 @@
 import { supabase, Chofer } from '../utils/supabase';
+import { getUsuarioByEmail, deleteUsuario } from './usuariosService';
 
 /**
  * Obtener todos los choferes
@@ -172,6 +173,22 @@ export const deleteChofer = async (id: string): Promise<boolean> => {
   
   if (!existingChofer) {
     return false;
+  }
+  
+  // Buscar si existe un usuario asociado por email
+  if (existingChofer.email) {
+    const usuarioAsociado = await getUsuarioByEmail(existingChofer.email);
+    
+    // Si existe un usuario asociado, eliminarlo
+    if (usuarioAsociado) {
+      try {
+        await deleteUsuario(usuarioAsociado.id);
+        console.log('Usuario asociado eliminado correctamente');
+      } catch (error) {
+        console.error('Error al eliminar usuario asociado:', error);
+        // Continuamos con la eliminación del chofer aunque falle la del usuario
+      }
+    }
   }
   
   // Eliminar el chofer

@@ -19,7 +19,7 @@ export default function ChoferForm() {
     removeChofer,
     clearSelectedChofer 
   } = useChoferesStore();
-  const { addUsuario, removeUsuario } = useUsuariosStore();
+  const { addUsuario } = useUsuariosStore();
 
   const isEditing = id !== 'new';
 
@@ -80,17 +80,7 @@ export default function ChoferForm() {
     if (!id) return;
     
     try {
-      // Buscar si el chofer tiene un usuario asociado por email
-      const usuarios = useUsuariosStore.getState().usuarios;
-      const usuarioAsociado = usuarios.find(u => u.email === selectedChofer?.email);
-      
-      // Primero eliminar el usuario si existe
-      if (usuarioAsociado) {
-        await removeUsuario(usuarioAsociado.id);
-        toast.success("Usuario asociado eliminado correctamente");
-      }
-      
-      // Luego eliminar el chofer
+      // Eliminar el chofer (el servicio se encarga de eliminar también el usuario asociado)
       await removeChofer(id);
       toast.success("Chofer eliminado correctamente");
       setShowDeleteModal(false);
