@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaUserPlus, FaSearch, FaEdit, FaTrash, FaUserSlash, FaUserCheck } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useUsuariosStore } from '@/stores/usuariosStore';
+import ConfirmModal from '@/components/ConfirmModal';
 import { User } from '@/utils/supabase';
 
 const Usuarios: React.FC = () => {
@@ -15,6 +16,8 @@ const Usuarios: React.FC = () => {
     cambiarEstado 
   } = useUsuariosStore();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Cargar usuarios al iniciar
@@ -45,8 +48,16 @@ const Usuarios: React.FC = () => {
 
   // Manejar eliminación de usuario
   const handleDelete = async (id: string) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
-      await removeUsuario(id);
+    setUserToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  // Confirmar eliminación de usuario
+  const confirmDelete = async () => {
+    if (userToDelete) {
+      await removeUsuario(userToDelete);
+      setShowDeleteModal(false);
+      setUserToDelete(null);
     }
   };
 
@@ -173,6 +184,16 @@ const Usuarios: React.FC = () => {
           )}
         </div>
       )}
+      
+      {/* Modal de confirmación para eliminar */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Confirmar eliminación"
+        message="¿Estás seguro de que deseas eliminar este usuario?"
+        onConfirm={confirmDelete}
+        onCancel={() => setShowDeleteModal(false)}
+        confirmText="Eliminar"
+      />
     </div>
   );
 };

@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useChoferesStore } from "@/stores/choferesStore";
 import { useUsuariosStore } from "@/stores/usuariosStore";
 import { Chofer, UserWithPassword } from "@/utils/supabase";
+import { toast } from "react-toastify";
+import ConfirmModal from "@/components/ConfirmModal";
 
 export default function ChoferForm() {
   const { id } = useParams();
@@ -14,9 +16,10 @@ export default function ChoferForm() {
     fetchChoferById, 
     addChofer, 
     editChofer, 
+    removeChofer,
     clearSelectedChofer 
   } = useChoferesStore();
-  const { addUsuario } = useUsuariosStore();
+  const { addUsuario, removeUsuario } = useUsuariosStore();
 
   const isEditing = id !== 'new';
 
@@ -67,10 +70,36 @@ export default function ChoferForm() {
 
   const [error, setError] = useState<string>('');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [newChoferId, setNewChoferId] = useState<string | null>(null);
+
+  const handleDelete = async () => {
+    if (!id) return;
+    
+    try {
+      // Buscar si el chofer tiene un usuario asociado por email
+      const usuarios = useUsuariosStore.getState().usuarios;
+      const usuarioAsociado = usuarios.find(u => u.email === selectedChofer?.email);
+      
+      // Primero eliminar el usuario si existe
+      if (usuarioAsociado) {
+        await removeUsuario(usuarioAsociado.id);
+        toast.success("Usuario asociado eliminado correctamente");
+      }
+      
+      // Luego eliminar el chofer
+      await removeChofer(id);
+      toast.success("Chofer eliminado correctamente");
+      setShowDeleteModal(false);
+      navigate("/choferes");
+    } catch (err: any) {
+      toast.error(err.message || "Error al eliminar el chofer");
+      setShowDeleteModal(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -79,9 +108,11 @@ export default function ChoferForm() {
     try {
       if (isEditing && id) {
         await editChofer(id, formData);
+        toast.success("Chofer actualizado correctamente");
         navigate("/choferes");
       } else {
         await addChofer(formData);
+        toast.success("Chofer creado correctamente");
 
         if (formData.email) {
           const nuevoChofer = useChoferesStore.getState().selectedChofer;
@@ -123,6 +154,7 @@ export default function ChoferForm() {
           observaciones: `Usuario creado automáticamente para el chofer ID: ${newChoferId}`
         };
         await addUsuario(nuevoUsuario);
+        toast.success("Usuario creado correctamente");
       }
 
       setShowPasswordModal(false);
@@ -139,6 +171,15 @@ export default function ChoferForm() {
           <h1 className="text-2xl font-bold text-gray-800">
             {isEditing ? "Editar chofer" : "Agregar chofer"}
           </h1>
+          {isEditing && (
+            <button
+              type="button"
+              onClick={() => setShowDeleteModal(true)}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Eliminar
+            </button>
+          )}
         </div>
 
         {(error || choferError) && (
@@ -284,6 +325,18 @@ export default function ChoferForm() {
         )}
       </div>
 
+      {/* Modal de confirmación para eliminar */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Confirmar eliminación"
+        message="¿Está seguro que desea eliminar este chofer? Esta acción también eliminará el usuario asociado si existe."
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteModal(false)}
+        confirmText="Eliminar"
+        confirmButtonClass="bg-red-600 hover:bg-red-700"
+      />
+
+      {/* Modal para crear usuario */}
       {showPasswordModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg w-full max-w-md shadow-xl">

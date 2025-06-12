@@ -4,6 +4,7 @@ import { useSemirremolquesStore } from "@/stores";
 import { useServiciosStore } from "@/stores/serviciosStore";
 import { Semirremolque as SemirremolqueType } from "@/utils/supabase";
 import { toast } from "react-toastify";
+import ConfirmModal from '@/components/ConfirmModal';
 
 export default function Semirremolque() {
   const { id } = useParams();
@@ -101,18 +102,20 @@ export default function Semirremolque() {
     }
   };
   
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   const handleDelete = async () => {
     if (!id) return;
     
-    if (window.confirm('¿Está seguro de que desea eliminar este semirremolque? Esta acción no se puede deshacer.')) {
-      try {
-        await removeSemirremolque(id);
-        toast.success('Semirremolque eliminado correctamente');
-        navigate('/semirremolques');
-      } catch (err) {
-        console.error(err);
-        toast.error('Error al eliminar el semirremolque');
-      }
+    try {
+      await removeSemirremolque(id);
+      toast.success('Semirremolque eliminado correctamente');
+      setShowDeleteModal(false);
+      navigate('/semirremolques');
+    } catch (err) {
+      console.error(err);
+      toast.error('Error al eliminar el semirremolque');
+      setShowDeleteModal(false);
     }
   };
 
@@ -144,7 +147,7 @@ export default function Semirremolque() {
             {semirremolque && id && (
               <button
                 type="button"
-                onClick={handleDelete}
+                onClick={() => setShowDeleteModal(true)}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >
                 Eliminar
@@ -369,6 +372,17 @@ export default function Semirremolque() {
           </div>
         </form>
       </div>
+
+      {/* Modal de confirmación para eliminar */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Confirmar eliminación"
+        message="¿Está seguro de que desea eliminar este semirremolque? Esta acción no se puede deshacer."
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteModal(false)}
+        confirmText="Eliminar"
+        confirmButtonClass="bg-red-600 hover:bg-red-700"
+      />
     </div>
   );
 }

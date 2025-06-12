@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useServiciosStore } from "@/stores/serviciosStore";
 import { toast } from "react-toastify";
+import ConfirmModal from '@/components/ConfirmModal';
 
 export default function Servicio() {
   const { id } = useParams();
@@ -19,6 +20,7 @@ export default function Servicio() {
   
   const isEditing = id !== 'new';
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [formData, setFormData] = useState({
     nombre: "",
     descripcion: "",
@@ -79,15 +81,15 @@ export default function Servicio() {
   const handleDelete = async () => {
     if (!id) return;
     
-    if (window.confirm('¿Está seguro de que desea eliminar este servicio? Esta acción no se puede deshacer.')) {
-      try {
-        await removeServicio(id);
-        toast.success('Servicio eliminado correctamente');
-        navigate('/servicios');
-      } catch (err) {
-        console.error(err);
-        toast.error('Error al eliminar el servicio');
-      }
+    try {
+      await removeServicio(id);
+      toast.success('Servicio eliminado correctamente');
+      setShowDeleteModal(false);
+      navigate('/servicios');
+    } catch (err) {
+      console.error(err);
+      toast.error('Error al eliminar el servicio');
+      setShowDeleteModal(false);
     }
   };
 
@@ -101,7 +103,7 @@ export default function Servicio() {
           {isEditing && (
             <button
               type="button"
-              onClick={handleDelete}
+              onClick={() => setShowDeleteModal(true)}
               className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             >
               Eliminar
@@ -239,6 +241,17 @@ export default function Servicio() {
         </form>
         )}
       </div>
+
+      {/* Modal de confirmación para eliminar */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Confirmar eliminación"
+        message="¿Está seguro de que desea eliminar este servicio? Esta acción no se puede deshacer."
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteModal(false)}
+        confirmText="Eliminar"
+        confirmButtonClass="bg-red-600 hover:bg-red-700"
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useTractoresStore } from "@/stores/tractoresStore";
 import { useServiciosStore } from "@/stores/serviciosStore";
 import { toast } from "react-toastify";
+import ConfirmModal from '@/components/ConfirmModal';
 
 export default function Tractor() {
   const { id } = useParams();
@@ -33,6 +34,7 @@ export default function Tractor() {
     return () => clearSelectedTractor();
   }, [id, isEditing, fetchTractorById, fetchServicios, clearSelectedTractor]);
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [formData, setFormData] = useState({
     marca: "",
     modelo: "",
@@ -90,15 +92,15 @@ export default function Tractor() {
   const handleDelete = async () => {
     if (!id) return;
     
-    if (window.confirm('¿Está seguro de que desea eliminar este tractor? Esta acción no se puede deshacer.')) {
-      try {
-        await removeTractor(id);
-        toast.success('Tractor eliminado correctamente');
-        navigate('/tractores');
-      } catch (err) {
-        console.error(err);
-        toast.error('Error al eliminar el tractor');
-      }
+    try {
+      await removeTractor(id);
+      toast.success('Tractor eliminado correctamente');
+      setShowDeleteModal(false);
+      navigate('/tractores');
+    } catch (err) {
+      console.error(err);
+      toast.error('Error al eliminar el tractor');
+      setShowDeleteModal(false);
     }
   };
 
@@ -112,7 +114,7 @@ export default function Tractor() {
           {isEditing && (
             <button
               type="button"
-              onClick={handleDelete}
+              onClick={() => setShowDeleteModal(true)}
               className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             >
               Eliminar
@@ -282,6 +284,17 @@ export default function Tractor() {
         </form>
         )}
       </div>
+
+      {/* Modal de confirmación para eliminar */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Confirmar eliminación"
+        message="¿Está seguro de que desea eliminar este tractor? Esta acción no se puede deshacer."
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteModal(false)}
+        confirmText="Eliminar"
+        confirmButtonClass="bg-red-600 hover:bg-red-700"
+      />
     </div>
   );
 }
