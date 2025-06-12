@@ -10,7 +10,7 @@ export const getAllServicios = async (): Promise<Servicio[]> => {
     .select(`
       *
     `)
-    .order('fecha_inicio', { ascending: false });
+    .order('fecha_creacion', { ascending: false });
   
   if (error) {
     console.error('Error al obtener servicios:', error);
@@ -50,15 +50,6 @@ export const getServicioById = async (id: string): Promise<Servicio | null> => {
 export const createServicio = async (servicio: Omit<Servicio, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>): Promise<Servicio> => {
   // Preparar los datos para la creación
   const createData = { ...servicio };
-  
-  // Convertir las fechas a formato ISO
-  if (createData.fecha_inicio && (typeof createData.fecha_inicio === 'string' || typeof createData.fecha_inicio === 'number')) {
-    createData.fecha_inicio = new Date(createData.fecha_inicio).toISOString();
-  }
-  
-  if (createData.fecha_fin && (typeof createData.fecha_fin === 'string' || typeof createData.fecha_fin === 'number')) {
-    createData.fecha_fin = new Date(createData.fecha_fin).toISOString();
-  }
   
   // Crear el servicio
   const { data, error } = await supabase
@@ -100,15 +91,6 @@ export const updateServicio = async (
   
   // Preparar los datos para la actualización
   const updateData = { ...servicioData };
-  
-  // Convertir las fechas a formato ISO
-  if (updateData.fecha_inicio && (typeof updateData.fecha_inicio === 'string' || typeof updateData.fecha_inicio === 'number')) {
-    updateData.fecha_inicio = new Date(updateData.fecha_inicio).toISOString();
-  }
-  
-  if (updateData.fecha_fin && (typeof updateData.fecha_fin === 'string' || typeof updateData.fecha_fin === 'number')) {
-    updateData.fecha_fin = new Date(updateData.fecha_fin).toISOString();
-  }
   
   // Actualizar el servicio
   const { data, error } = await supabase
@@ -160,7 +142,7 @@ export const deleteServicio = async (id: string): Promise<boolean> => {
 };
 
 /**
- * Buscar servicios por origen, destino o número de remito
+ * Buscar servicios por nombre, descripcion o número de remito
  * @param query Texto de búsqueda
  * @returns Promise con array de servicios que coinciden con la búsqueda
  */
@@ -172,7 +154,7 @@ export const searchServicios = async (query: string): Promise<Servicio[]> => {
     .select(`
       *
     `)
-    .or(`origen.ilike.${searchTerm},destino.ilike.${searchTerm},numero_remito.ilike.${searchTerm}`);
+    .or(`nombre.ilike.${searchTerm},descripcion.ilike.${searchTerm},observaciones.ilike.${searchTerm}`);
   
   if (error) {
     console.error('Error al buscar servicios:', error);
@@ -188,15 +170,15 @@ export const searchServicios = async (query: string): Promise<Servicio[]> => {
  * @param fechaFin Fecha de fin del rango
  * @returns Promise con array de servicios en el rango de fechas
  */
-export const getServiciosPorRangoFechas = async (fechaInicio: Date, fechaFin: Date): Promise<Servicio[]> => {
+export const getServiciosPorFechaCreacion = async (fechaInicio: Date, fechaFin: Date): Promise<Servicio[]> => {
   const { data, error } = await supabase
     .from('servicios')
     .select(`
       *
     `)
-    .gte('fecha_inicio', fechaInicio.toISOString())
-    .lte('fecha_inicio', fechaFin.toISOString())
-    .order('fecha_inicio', { ascending: false });
+    .gte('fecha_creacion', fechaInicio.toISOString())
+    .lte('fecha_creacion', fechaFin.toISOString())
+    .order('fecha_creacion', { ascending: false });
   
   if (error) {
     console.error('Error al obtener servicios por rango de fechas:', error);
@@ -207,21 +189,21 @@ export const getServiciosPorRangoFechas = async (fechaInicio: Date, fechaFin: Da
 };
 
 /**
- * Obtener servicios por estado
- * @param estado Estado del servicio
- * @returns Promise con array de servicios con el estado especificado
+ * Obtener servicios por observaciones
+ * @param observaciones Estado del servicio
+ * @returns Promise con array de servicios con el observaciones especificado
  */
-export const getServiciosPorEstado = async (estado: 'pendiente' | 'en_curso' | 'completado' | 'cancelado'): Promise<Servicio[]> => {
+export const getServiciosPorTipo = async (nombre: string): Promise<Servicio[]> => {
   const { data, error } = await supabase
     .from('servicios')
     .select(`
       *
     `)
-    .eq('estado', estado)
-    .order('fecha_inicio', { ascending: false });
+    .eq('nombre', nombre)
+    .order('fecha_creacion', { ascending: false });
   
   if (error) {
-    console.error(`Error al obtener servicios con estado ${estado}:`, error);
+    console.error(`Error al obtener servicios con nombre ${nombre}:`, error);
     throw error;
   }
   
@@ -233,17 +215,17 @@ export const getServiciosPorEstado = async (estado: 'pendiente' | 'en_curso' | '
  * @param choferId ID del chofer
  * @returns Promise con array de servicios del chofer especificado
  */
-export const getServiciosPorChofer = async (choferId: string): Promise<Servicio[]> => {
+export const getServiciosPorRequerimiento = async (requiere: boolean): Promise<Servicio[]> => {
   const { data, error } = await supabase
     .from('servicios')
     .select(`
       *
     `)
-    .eq('chofer_id', choferId)
-    .order('fecha_inicio', { ascending: false });
+    .eq('requierePruebaHidraulica', requiere)
+    .order('fecha_creacion', { ascending: false });
   
   if (error) {
-    console.error(`Error al obtener servicios del chofer ${choferId}:`, error);
+    console.error(`Error al obtener servicios con requerimiento de prueba hidráulica:`, error);
     throw error;
   }
   
@@ -255,17 +237,17 @@ export const getServiciosPorChofer = async (choferId: string): Promise<Servicio[
  * @param tractorId ID del tractor
  * @returns Promise con array de servicios del tractor especificado
  */
-export const getServiciosPorTractor = async (tractorId: string): Promise<Servicio[]> => {
+export const getServiciosPorVisual = async (requiere: boolean): Promise<Servicio[]> => {
   const { data, error } = await supabase
     .from('servicios')
     .select(`
       *
     `)
-    .eq('tractor_id', tractorId)
-    .order('fecha_inicio', { ascending: false });
+    .eq('requiereVisuales', requiere)
+    .order('fecha_creacion', { ascending: false });
   
   if (error) {
-    console.error(`Error al obtener servicios del tractor ${tractorId}:`, error);
+    console.error(`Error al obtener servicios con requerimiento de visuales:`, error);
     throw error;
   }
   
@@ -277,17 +259,17 @@ export const getServiciosPorTractor = async (tractorId: string): Promise<Servici
  * @param semirremolqueId ID del semirremolque
  * @returns Promise con array de servicios del semirremolque especificado
  */
-export const getServiciosPorSemirremolque = async (semirremolqueId: string): Promise<Servicio[]> => {
+export const getServiciosPorValvula = async (requiere: boolean): Promise<Servicio[]> => {
   const { data, error } = await supabase
     .from('servicios')
     .select(`
       *
     `)
-    .eq('semirremolque_id', semirremolqueId)
-    .order('fecha_inicio', { ascending: false });
+    .eq('requiereValvulaYMangueras', requiere)
+    .order('fecha_creacion', { ascending: false });
   
   if (error) {
-    console.error(`Error al obtener servicios del semirremolque ${semirremolqueId}:`, error);
+    console.error(`Error al obtener servicios con requerimiento de válvulas y mangueras:`, error);
     throw error;
   }
   
@@ -295,16 +277,16 @@ export const getServiciosPorSemirremolque = async (semirremolqueId: string): Pro
 };
 
 /**
- * Actualizar el estado de un servicio
+ * Actualizar el observaciones de un servicio
  * @param id ID del servicio
- * @param estado Nuevo estado del servicio
+ * @param observaciones Nuevo observaciones del servicio
  * @returns Promise con el servicio actualizado o null si no existe
  */
-export const updateEstadoServicio = async (
+export const updateObservacionesServicio = async (
   id: string, 
-  estado: 'pendiente' | 'en_curso' | 'completado' | 'cancelado'
+  observaciones: string
 ): Promise<Servicio | null> => {
-  return updateServicio(id, { estado });
+  return updateServicio(id, { observaciones });
 };
 
 /**
@@ -314,14 +296,13 @@ export const updateEstadoServicio = async (
  * @param observaciones Observaciones opcionales sobre la finalización
  * @returns Promise con el servicio actualizado o null si no existe
  */
-export const completarServicio = async (
+export const actualizarServicio = async (
   id: string,
-  fechaFin: Date | string,
+  descripcion: string,
   observaciones?: string
 ): Promise<Servicio | null> => {
   return updateServicio(id, { 
-    estado: 'completado', 
-    fecha_fin: typeof fechaFin === 'string' ? fechaFin : fechaFin.toISOString(),
+    descripcion,
     observaciones: observaciones || undefined
   });
 };
@@ -332,12 +313,16 @@ export const completarServicio = async (
  * @param motivo Motivo de la cancelación
  * @returns Promise con el servicio actualizado o null si no existe
  */
-export const cancelarServicio = async (
+export const agregarObservacionServicio = async (
   id: string,
-  motivo: string
+  observacion: string
 ): Promise<Servicio | null> => {
-  return updateServicio(id, { 
-    estado: 'cancelado', 
-    observaciones: motivo
-  });
+  const servicio = await getServicioById(id);
+  if (!servicio) return null;
+  
+  const observaciones = servicio.observaciones 
+    ? `${servicio.observaciones}\n${observacion}` 
+    : observacion;
+  
+  return updateServicio(id, { observaciones });
 };

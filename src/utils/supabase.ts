@@ -96,20 +96,12 @@ export interface Tractor {
 
 export interface Servicio {
   id: string; // UUID en Supabase
-  origen: string;
-  destino: string;
-  fecha_inicio: string;
-  fecha_fin?: string;
-  estado: 'pendiente' | 'en_curso' | 'completado' | 'cancelado';
-  chofer_id: string;
-  tractor_id: string;
-  semirremolque_id: string;
-  numero_remito?: string;
+  nombre: string;
+  descripcion: string;
+  requierePruebaHidraulica: boolean;
+  requiereVisuales: boolean;
+  requiereValvulaYMangueras: boolean;
   observaciones?: string;
-  // Relaciones
-  chofer?: Chofer;
-  tractor?: Tractor;
-  semirremolque?: Semirremolque;
   fecha_creacion: string;
   fecha_actualizacion: string;
 }

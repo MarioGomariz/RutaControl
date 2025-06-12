@@ -57,14 +57,25 @@ export default function Servicios() {
                                 <div className="p-6">
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <h3 className="text-lg font-semibold">{servicio.origen} → {servicio.destino}</h3>
+                                            <h3 className="text-lg font-semibold">{servicio.nombre}</h3>
                                             <p className="text-sm text-gray-600 mt-1">
-                                                Fecha: {new Date(servicio.fecha_inicio).toLocaleDateString()}
+                                                {servicio.descripcion}
+                                            </p>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                Fecha: {new Date(servicio.fecha_creacion).toLocaleDateString()}
                                             </p>
                                         </div>
-                                        <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(servicio.estado as 'pendiente' | 'en_curso' | 'completado' | 'cancelado')}`}>
-                                            {getStatusText(servicio.estado as 'pendiente' | 'en_curso' | 'completado' | 'cancelado')}
-                                        </span>
+                                        <div className="flex flex-col gap-1">
+                                            {servicio.requierePruebaHidraulica && (
+                                                <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Prueba Hidráulica</span>
+                                            )}
+                                            {servicio.requiereVisuales && (
+                                                <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Visuales</span>
+                                            )}
+                                            {servicio.requiereValvulaYMangueras && (
+                                                <span className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">Válvulas y Mangueras</span>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="mt-4 pt-4 border-t border-gray-100">
                                         <Link 
@@ -82,36 +93,4 @@ export default function Servicios() {
             </div>
         </div>
     );
-}
-
-// Función auxiliar para obtener el color según el estado
-function getStatusColor(estado: 'pendiente' | 'en_curso' | 'completado' | 'cancelado'): string {
-    switch (estado) {
-        case 'pendiente':
-            return 'bg-yellow-100 text-yellow-800';
-        case 'en_curso':
-            return 'bg-blue-100 text-blue-800';
-        case 'completado':
-            return 'bg-green-100 text-green-800';
-        case 'cancelado':
-            return 'bg-red-100 text-red-800';
-        default:
-            return 'bg-gray-100 text-gray-800';
-    }
-}
-
-// Función auxiliar para obtener el texto según el estado
-function getStatusText(estado: 'pendiente' | 'en_curso' | 'completado' | 'cancelado'): string {
-    switch (estado) {
-        case 'pendiente':
-            return 'Pendiente';
-        case 'en_curso':
-            return 'En curso';
-        case 'completado':
-            return 'Completado';
-        case 'cancelado':
-            return 'Cancelado';
-        default:
-            return estado;
-    }
 }

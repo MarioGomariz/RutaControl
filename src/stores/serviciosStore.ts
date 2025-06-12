@@ -6,14 +6,14 @@ import {
   updateServicio,
   deleteServicio,
   searchServicios,
-  getServiciosPorRangoFechas,
-  getServiciosPorEstado,
-  getServiciosPorChofer,
-  getServiciosPorTractor,
-  getServiciosPorSemirremolque,
-  updateEstadoServicio,
-  completarServicio,
-  cancelarServicio
+  getServiciosPorFechaCreacion,
+  getServiciosPorTipo,
+  getServiciosPorRequerimiento,
+  getServiciosPorVisual,
+  getServiciosPorValvula,
+  updateObservacionesServicio,
+  actualizarServicio,
+  agregarObservacionServicio
 } from '../services/serviciosService';
 import { Servicio } from '../utils/supabase';
 
@@ -31,14 +31,14 @@ interface ServiciosState {
   editServicio: (id: string, servicio: Partial<Omit<Servicio, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>>) => Promise<void>;
   removeServicio: (id: string) => Promise<void>;
   searchServicio: (query: string) => Promise<void>;
-  fetchPorRangoFechas: (fechaInicio: Date, fechaFin: Date) => Promise<void>;
-  fetchPorEstado: (estado: 'pendiente' | 'en_curso' | 'completado' | 'cancelado') => Promise<void>;
-  fetchPorChofer: (choferId: string) => Promise<void>;
-  fetchPorTractor: (tractorId: string) => Promise<void>;
-  fetchPorSemirremolque: (semirremolqueId: string) => Promise<void>;
-  cambiarEstado: (id: string, estado: 'pendiente' | 'en_curso' | 'completado' | 'cancelado') => Promise<void>;
-  completar: (id: string, fechaFin: Date, observaciones?: string) => Promise<void>;
-  cancelar: (id: string, motivo: string) => Promise<void>;
+  fetchPorFechaCreacion: (fechaInicio: Date, fechaFin: Date) => Promise<void>;
+  fetchPorTipo: (tipo: string) => Promise<void>;
+  fetchPorRequerimiento: (requiere: boolean) => Promise<void>;
+  fetchPorVisual: (requiere: boolean) => Promise<void>;
+  fetchPorValvula: (requiere: boolean) => Promise<void>;
+  updateObservaciones: (id: string, observaciones: string) => Promise<void>;
+  actualizarServicio: (id: string, descripcion: string, observaciones?: string) => Promise<void>;
+  agregarObservacion: (id: string, observacion: string) => Promise<void>;
   clearSelectedServicio: () => void;
   clearError: () => void;
 }
@@ -156,10 +156,10 @@ export const useServiciosStore = create<ServiciosState>((set) => ({
     }
   },
   
-  fetchPorRangoFechas: async (fechaInicio, fechaFin) => {
+  fetchPorFechaCreacion: async (fechaInicio, fechaFin) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await getServiciosPorRangoFechas(fechaInicio, fechaFin);
+      const data = await getServiciosPorFechaCreacion(fechaInicio, fechaFin);
       set({ servicios: data, isLoading: false });
     } catch (error) {
       set({ 
@@ -169,62 +169,62 @@ export const useServiciosStore = create<ServiciosState>((set) => ({
     }
   },
   
-  fetchPorEstado: async (estado) => {
+  fetchPorTipo: async (tipo) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await getServiciosPorEstado(estado);
+      const data = await getServiciosPorTipo(tipo);
       set({ servicios: data, isLoading: false });
     } catch (error) {
       set({ 
-        error: error instanceof Error ? error.message : `Error al cargar servicios con estado ${estado}`, 
+        error: error instanceof Error ? error.message : `Error al cargar servicios de tipo ${tipo}`, 
         isLoading: false 
       });
     }
   },
   
-  fetchPorChofer: async (choferId) => {
+  fetchPorRequerimiento: async (requiere) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await getServiciosPorChofer(choferId);
+      const data = await getServiciosPorRequerimiento(requiere);
       set({ servicios: data, isLoading: false });
     } catch (error) {
       set({ 
-        error: error instanceof Error ? error.message : 'Error al cargar servicios por chofer', 
+        error: error instanceof Error ? error.message : 'Error al cargar servicios por requerimiento de prueba hidráulica', 
         isLoading: false 
       });
     }
   },
   
-  fetchPorTractor: async (tractorId) => {
+  fetchPorVisual: async (requiere) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await getServiciosPorTractor(tractorId);
+      const data = await getServiciosPorVisual(requiere);
       set({ servicios: data, isLoading: false });
     } catch (error) {
       set({ 
-        error: error instanceof Error ? error.message : 'Error al cargar servicios por tractor', 
+        error: error instanceof Error ? error.message : 'Error al cargar servicios por requerimiento de visuales', 
         isLoading: false 
       });
     }
   },
   
-  fetchPorSemirremolque: async (semirremolqueId) => {
+  fetchPorValvula: async (requiere) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await getServiciosPorSemirremolque(semirremolqueId);
+      const data = await getServiciosPorValvula(requiere);
       set({ servicios: data, isLoading: false });
     } catch (error) {
       set({ 
-        error: error instanceof Error ? error.message : 'Error al cargar servicios por semirremolque', 
+        error: error instanceof Error ? error.message : 'Error al cargar servicios por requerimiento de válvulas y mangueras', 
         isLoading: false 
       });
     }
   },
   
-  cambiarEstado: async (id, estado) => {
+  updateObservaciones: async (id, observaciones) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedServicio = await updateEstadoServicio(id, estado);
+      const updatedServicio = await updateObservacionesServicio(id, observaciones);
       if (updatedServicio) {
         set(state => ({ 
           servicios: state.servicios.map(item => 
@@ -238,16 +238,16 @@ export const useServiciosStore = create<ServiciosState>((set) => ({
       }
     } catch (error) {
       set({ 
-        error: error instanceof Error ? error.message : 'Error al cambiar el estado del servicio', 
+        error: error instanceof Error ? error.message : 'Error al actualizar las observaciones del servicio', 
         isLoading: false 
       });
     }
   },
   
-  completar: async (id, fechaFin, observaciones) => {
+  actualizarServicio: async (id, descripcion, observaciones) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedServicio = await completarServicio(id, fechaFin, observaciones);
+      const updatedServicio = await actualizarServicio(id, descripcion, observaciones);
       if (updatedServicio) {
         set(state => ({ 
           servicios: state.servicios.map(item => 
@@ -261,16 +261,16 @@ export const useServiciosStore = create<ServiciosState>((set) => ({
       }
     } catch (error) {
       set({ 
-        error: error instanceof Error ? error.message : 'Error al completar el servicio', 
+        error: error instanceof Error ? error.message : 'Error al actualizar el servicio', 
         isLoading: false 
       });
     }
   },
   
-  cancelar: async (id, motivo) => {
+  agregarObservacion: async (id, observacion) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedServicio = await cancelarServicio(id, motivo);
+      const updatedServicio = await agregarObservacionServicio(id, observacion);
       if (updatedServicio) {
         set(state => ({ 
           servicios: state.servicios.map(item => 
@@ -284,7 +284,7 @@ export const useServiciosStore = create<ServiciosState>((set) => ({
       }
     } catch (error) {
       set({ 
-        error: error instanceof Error ? error.message : 'Error al cancelar el servicio', 
+        error: error instanceof Error ? error.message : 'Error al agregar observación al servicio', 
         isLoading: false 
       });
     }

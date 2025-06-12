@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useServiciosStore } from "@/stores/serviciosStore";
+import { toast } from "react-toastify";
 
 export default function Servicio() {
   const { id } = useParams();
@@ -12,21 +13,18 @@ export default function Servicio() {
     fetchServicioById, 
     addServicio, 
     editServicio, 
+    removeServicio,
     clearSelectedServicio 
   } = useServiciosStore();
   
   const isEditing = id !== 'new';
 
   const [formData, setFormData] = useState({
-    origen: "",
-    destino: "",
-    fecha_inicio: new Date().toISOString().split('T')[0],
-    fecha_fin: "",
-    estado: "pendiente" as 'pendiente' | 'en_curso' | 'completado' | 'cancelado',
-    chofer_id: "",
-    tractor_id: "",
-    semirremolque_id: "",
-    numero_remito: "",
+    nombre: "",
+    descripcion: "",
+    requierePruebaHidraulica: false,
+    requiereVisuales: false,
+    requiereValvulaYMangueras: false,
     observaciones: "",
   });
   
@@ -41,25 +39,21 @@ export default function Servicio() {
   useEffect(() => {
     if (selectedServicio) {
       setFormData({
-        origen: selectedServicio.origen,
-        destino: selectedServicio.destino,
-        fecha_inicio: selectedServicio.fecha_inicio.split('T')[0],
-        fecha_fin: selectedServicio.fecha_fin ? selectedServicio.fecha_fin.split('T')[0] : "",
-        estado: selectedServicio.estado,
-        chofer_id: selectedServicio.chofer_id,
-        tractor_id: selectedServicio.tractor_id,
-        semirremolque_id: selectedServicio.semirremolque_id,
-        numero_remito: selectedServicio.numero_remito || "",
+        nombre: selectedServicio.nombre,
+        descripcion: selectedServicio.descripcion,
+        requierePruebaHidraulica: selectedServicio.requierePruebaHidraulica,
+        requiereVisuales: selectedServicio.requiereVisuales,
+        requiereValvulaYMangueras: selectedServicio.requiereValvulaYMangueras,
         observaciones: selectedServicio.observaciones || "",
       });
     }
   }, [selectedServicio]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target as HTMLInputElement;
+    const { name, value, type, checked } = e.target as HTMLInputElement;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -69,13 +63,31 @@ export default function Servicio() {
     try {
       if (isEditing && id) {
         await editServicio(id, formData);
+        toast.success('Servicio actualizado correctamente');
       } else {
         await addServicio(formData as any);
+        toast.success('Servicio creado correctamente');
       }
       navigate("/servicios");
     } catch (err: any) {
       // El error ya se maneja en el store
       console.error(err);
+      toast.error('Error al guardar el servicio');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id) return;
+    
+    if (window.confirm('¿Está seguro de que desea eliminar este servicio? Esta acción no se puede deshacer.')) {
+      try {
+        await removeServicio(id);
+        toast.success('Servicio eliminado correctamente');
+        navigate('/servicios');
+      } catch (err) {
+        console.error(err);
+        toast.error('Error al eliminar el servicio');
+      }
     }
   };
 
@@ -86,6 +98,15 @@ export default function Servicio() {
           <h1 className="text-2xl font-bold text-gray-800">
             {isEditing ? "Editar servicio" : "Agregar servicio"}
           </h1>
+          {isEditing && (
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+            >
+              Eliminar
+            </button>
+          )}
         </div>
 
         {error && (
@@ -104,134 +125,85 @@ export default function Servicio() {
             className="space-y-6"
           >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Origen */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="origen">Origen:</label>
+            {/* Nombre */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="nombre">Nombre:</label>
               <input
                 type="text"
-                id="origen"
-                name="origen"
-                value={formData.origen}
+                id="nombre"
+                name="nombre"
+                value={formData.nombre}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                placeholder="Ciudad o lugar de origen"
+                placeholder="Nombre del servicio"
                 required
               />
             </div>
 
-            {/* Destino */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="destino">Destino:</label>
-              <input
-                type="text"
-                id="destino"
-                name="destino"
-                value={formData.destino}
+            {/* Descripción */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="descripcion">Descripción:</label>
+              <textarea
+                id="descripcion"
+                name="descripcion"
+                value={formData.descripcion}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                placeholder="Ciudad o lugar de destino"
+                placeholder="Descripción detallada del servicio"
+                rows={3}
                 required
               />
             </div>
 
-            {/* Fecha Inicio */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="fecha_inicio">Fecha de inicio:</label>
-              <input
-                type="date"
-                id="fecha_inicio"
-                name="fecha_inicio"
-                value={formData.fecha_inicio}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                required
-              />
-            </div>
-
-            {/* Fecha Fin */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="fecha_fin">Fecha de finalización:</label>
-              <input
-                type="date"
-                id="fecha_fin"
-                name="fecha_fin"
-                value={formData.fecha_fin}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-              />
-            </div>
-
-            {/* Estado */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="estado">Estado:</label>
-              <select
-                id="estado"
-                name="estado"
-                value={formData.estado}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                required
-              >
-                <option value="pendiente">Pendiente</option>
-                <option value="en_curso">En curso</option>
-                <option value="completado">Completado</option>
-                <option value="cancelado">Cancelado</option>
-              </select>
-            </div>
-
-            {/* Chofer ID */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="chofer_id">Chofer:</label>
-              <input
-                type="text"
-                id="chofer_id"
-                name="chofer_id"
-                value={formData.chofer_id}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                required
-              />
-            </div>
-
-            {/* Tractor ID */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="tractor_id">Tractor:</label>
-              <input
-                type="text"
-                id="tractor_id"
-                name="tractor_id"
-                value={formData.tractor_id}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                required
-              />
-            </div>
-
-            {/* Semirremolque ID */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="semirremolque_id">Semirremolque:</label>
-              <input
-                type="text"
-                id="semirremolque_id"
-                name="semirremolque_id"
-                value={formData.semirremolque_id}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                required
-              />
-            </div>
-
-            {/* Número de Remito */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="numero_remito">Número de Remito:</label>
-              <input
-                type="text"
-                id="numero_remito"
-                name="numero_remito"
-                value={formData.numero_remito}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-              />
+            {/* Requerimientos */}
+            <div className="md:col-span-2">
+              <h3 className="text-md font-medium text-gray-700 mb-3">Requerimientos del servicio:</h3>
+              <div className="space-y-3">
+                {/* Prueba Hidráulica */}
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="requierePruebaHidraulica"
+                    name="requierePruebaHidraulica"
+                    checked={formData.requierePruebaHidraulica}
+                    onChange={handleChange}
+                    className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label className="ml-2 block text-sm text-gray-700" htmlFor="requierePruebaHidraulica">
+                    Requiere prueba hidráulica
+                  </label>
+                </div>
+                
+                {/* Visuales */}
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="requiereVisuales"
+                    name="requiereVisuales"
+                    checked={formData.requiereVisuales}
+                    onChange={handleChange}
+                    className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label className="ml-2 block text-sm text-gray-700" htmlFor="requiereVisuales">
+                    Requiere visuales
+                  </label>
+                </div>
+                
+                {/* Válvula y Mangueras */}
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="requiereValvulaYMangueras"
+                    name="requiereValvulaYMangueras"
+                    checked={formData.requiereValvulaYMangueras}
+                    onChange={handleChange}
+                    className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label className="ml-2 block text-sm text-gray-700" htmlFor="requiereValvulaYMangueras">
+                    Requiere válvula y mangueras
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
