@@ -8,7 +8,15 @@ import { useServiciosStore } from "@/stores/serviciosStore";
 import type { Viaje as ViajeType } from "@/services/viajesService";
 import { toast } from "react-toastify";
 import ConfirmModal from "@/components/ConfirmModal";
-import { FaArrowLeft, FaMapMarkerAlt, FaTruck, FaRoute, FaRuler, FaClipboardList, FaTrash, FaSave } from "react-icons/fa";
+import { FaArrowLeft, FaTruck, FaRoute, FaClipboardList, FaTrash, FaSave, FaMapMarked } from "react-icons/fa";
+import { 
+  FormSection, 
+  FormField, 
+  FormInput, 
+  FormSelect, 
+  FormTextarea, 
+  FormButton 
+} from "@/components/FormComponents";
 
 export default function Viaje() {
   const { id } = useParams();
@@ -108,6 +116,15 @@ export default function Viaje() {
       }));
     }
   };
+  
+  // Función específica para campos numéricos
+  const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value === "" ? null : Number(value)
+    }));
+  };
 
   const [error, setError] = useState<string>('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -199,94 +216,78 @@ export default function Viaje() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
-              <h2 className="text-lg font-medium text-gray-800 mb-3 flex items-center">
-                <FaTruck className="mr-2 text-primary" />
-                Información del vehículo y conductor
-              </h2>
+            <FormSection 
+              title="Información del vehículo y conductor" 
+              icon={<FaTruck />} 
+              color="blue"
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Chofer */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Chofer *
-                </label>
-                <select
-                  name="chofer_id"
-                  value={formData.chofer_id}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Seleccionar chofer</option>
-                  {choferesActivos.map(chofer => (
-                    <option key={chofer.id} value={chofer.id}>
-                      {chofer.nombre} {chofer.apellido}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                {/* Chofer */}
+                <FormField label="Chofer" name="chofer_id" required>
+                  <FormSelect
+                    name="chofer_id"
+                    value={formData.chofer_id}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Seleccionar chofer</option>
+                    {choferesActivos.map(chofer => (
+                      <option key={chofer.id} value={chofer.id}>
+                        {chofer.nombre} {chofer.apellido}
+                      </option>
+                    ))}
+                  </FormSelect>
+                </FormField>
 
-              {/* Tractor */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tractor *
-                </label>
-                <select
-                  name="tractor_id"
-                  value={formData.tractor_id}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Seleccionar tractor</option>
-                  {tractoresActivos.map(tractor => (
-                    <option key={tractor.id} value={tractor.id}>
-                      {tractor.marca} {tractor.modelo} - {tractor.dominio}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                {/* Tractor */}
+                <FormField label="Tractor" name="tractor_id" required>
+                  <FormSelect
+                    name="tractor_id"
+                    value={formData.tractor_id}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Seleccionar tractor</option>
+                    {tractoresActivos.map(tractor => (
+                      <option key={tractor.id} value={tractor.id}>
+                        {tractor.marca} {tractor.modelo} - {tractor.dominio}
+                      </option>
+                    ))}
+                  </FormSelect>
+                </FormField>
 
-              {/* Semirremolque */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Semirremolque *
-                </label>
-                <select
-                  name="semirremolque_id"
-                  value={formData.semirremolque_id}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Seleccionar semirremolque</option>
-                  {semirremolquesActivos.map(semirremolque => (
-                    <option key={semirremolque.id} value={semirremolque.id}>
-                      {semirremolque.nombre} - {semirremolque.dominio}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                {/* Semirremolque */}
+                <FormField label="Semirremolque" name="semirremolque_id" required>
+                  <FormSelect
+                    name="semirremolque_id"
+                    value={formData.semirremolque_id}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Seleccionar semirremolque</option>
+                    {semirremolquesActivos.map(semirremolque => (
+                      <option key={semirremolque.id} value={semirremolque.id}>
+                        {semirremolque.nombre} - {semirremolque.dominio}
+                      </option>
+                    ))}
+                  </FormSelect>
+                </FormField>
 
               </div>
-            </div>
+            </FormSection>
 
-            <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-100">
-              <h2 className="text-lg font-medium text-gray-800 mb-3 flex items-center">
-                <FaRoute className="mr-2 text-green-600" />
-                Información del servicio y ruta
-              </h2>
+            <FormSection
+              title="Información del servicio y ruta" 
+              icon={<FaRoute />} 
+              color="green"
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Tipo de servicio */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tipo de servicio *
-                  </label>
-                  <select
+                <FormField label="Tipo de servicio" name="tipo_servicio" required>
+                  <FormSelect
                     name="tipo_servicio"
                     value={formData.tipo_servicio}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   >
                     <option value="">Seleccionar tipo de servicio</option>
@@ -295,174 +296,165 @@ export default function Viaje() {
                         {servicio.nombre}
                       </option>
                     ))}
-                  </select>
-                </div>
-
-              {/* Fecha de salida */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fecha y hora de salida *
-                </label>
-                <input
-                  type="datetime-local"
-                  name="fecha_salida"
-                  value={formData.fecha_salida}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              {/* Fecha de llegada */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fecha y hora de llegada
-                </label>
-                <input
-                  type="datetime-local"
-                  name="fecha_llegada"
-                  value={formData.fecha_llegada}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  min={formData.fecha_salida} // No permitir fechas anteriores a la salida
-                />
-              </div>
-
-              {/* Origen */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Origen *
-                </label>
-                <input
-                  type="text"
-                  name="origen"
-                  value={formData.origen}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              {/* Destino */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Destino *
-                </label>
-                <input
-                  type="text"
-                  name="destino"
-                  value={formData.destino}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              </div>
-            </div>
-            
-            <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-100">
-              <h2 className="text-lg font-medium text-gray-800 mb-3 flex items-center">
-                <FaMapMarkerAlt className="mr-2 text-yellow-600" />
-                Origen, destino y distancia
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Kilómetros recorridos */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                    <FaRuler className="mr-1 text-gray-500" />
-                    Kilómetros recorridos
-                  </label>
-                  <input
-                    type="number"
-                    name="kilometros_recorridos"
-                    value={formData.kilometros_recorridos === null ? '' : formData.kilometros_recorridos}
-                    onChange={handleChange}
-                    min="0"
-                    step="0.1"
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
+                  </FormSelect>
+                </FormField>
 
                 {/* Alcance del servicio */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                    <FaRoute className="mr-1 text-gray-500" />
-                    Alcance del servicio *
-                  </label>
-                  <select
+                <FormField label="Alcance del servicio" name="alcance_servicio" required>
+                  <FormSelect
                     name="alcance_servicio"
                     value={formData.alcance_servicio}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   >
                     <option value="Nacional">Nacional</option>
                     <option value="Internacional">Internacional</option>
-                  </select>
-                </div>
+                  </FormSelect>
+                </FormField>
               </div>
-            </div>
-            
-            <div className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-100">
-              <h2 className="text-lg font-medium text-gray-800 mb-3 flex items-center">
-                <FaClipboardList className="mr-2 text-purple-600" />
-                Estado y observaciones
-              </h2>
+            </FormSection>
+
+            <FormSection
+              title="Origen, destino y fechas"
+              icon={<FaMapMarked />}
+              color="amber"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                {/* Origen */}
+                <FormField label="Origen" name="origen" required>
+                  <FormInput
+                    type="text"
+                    name="origen"
+                    value={formData.origen}
+                    onChange={handleChange}
+                    placeholder="Ciudad o lugar de origen"
+                    required
+                  />
+                </FormField>
+
+                {/* Destino */}
+                <FormField label="Destino" name="destino" required>
+                  <FormInput
+                    type="text"
+                    name="destino"
+                    value={formData.destino}
+                    onChange={handleChange}
+                    placeholder="Ciudad o lugar de destino"
+                    required
+                  />
+                </FormField>
+
+                {/* Fecha de salida */}
+                <FormField label="Fecha y hora de salida" name="fecha_salida" required>
+                  <FormInput
+                    type="datetime-local"
+                    name="fecha_salida"
+                    value={formData.fecha_salida}
+                    onChange={handleChange}
+                    required
+                  />
+                </FormField>
+
+                {/* Fecha de llegada */}
+                <FormField label="Fecha y hora de llegada" name="fecha_llegada">
+                  <FormInput
+                    type="datetime-local"
+                    name="fecha_llegada"
+                    value={formData.fecha_llegada || ''}
+                    onChange={handleChange}
+                    min={formData.fecha_salida} // No permitir fechas anteriores a la salida
+                  />
+                </FormField>
+
+                {/* Kilómetros recorridos */}
+                <FormField label="Kilómetros recorridos" name="kilometros_recorridos">
+                  <FormInput
+                    type="number"
+                    name="kilometros_recorridos"
+                    value={formData.kilometros_recorridos || ''}
+                    onChange={handleNumericChange}
+                    min="0"
+                    step="1"
+                    placeholder="Distancia total en km"
+                  />
+                </FormField>
+                
+                {/* Duración en horas */}
+                <FormField label="Duración estimada (horas)" name="duracion_horas">
+                  <FormInput
+                    type="number"
+                    name="duracion_horas"
+                    value={formData.duracion_horas || ''}
+                    onChange={handleNumericChange}
+                    min="0"
+                    step="0.5"
+                    placeholder="Tiempo estimado de viaje"
+                  />
+                </FormField>
+              </div>
+            </FormSection>
+
+            <FormSection
+              title="Estado y observaciones"
+              icon={<FaClipboardList />}
+              color="purple"
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                 {/* Estado del viaje */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2">
-                    Estado del viaje *
-                  </label>
-                  <select
+                <FormField label="Estado del viaje" name="estado_viaje" required>
+                  <FormSelect
                     name="estado_viaje"
                     value={formData.estado_viaje}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   >
                     <option value="Programado">Programado</option>
                     <option value="En curso">En curso</option>
                     <option value="Finalizado">Finalizado</option>
                     <option value="Cancelado">Cancelado</option>
-                  </select>
-                </div>
+                  </FormSelect>
+                </FormField>
               </div>
 
               {/* Observaciones */}
               <div className="col-span-1 md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Observaciones
-                </label>
-                <textarea
-                  name="observaciones"
-                  value={formData.observaciones || ''}
-                  onChange={handleChange}
-                  rows={4}
-                  placeholder="Ingrese cualquier información adicional relevante para este viaje..."
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <FormField label="Observaciones" name="observaciones">
+                  <FormTextarea
+                    name="observaciones"
+                    value={formData.observaciones || ''}
+                    onChange={handleChange}
+                    rows={4}
+                    placeholder="Ingrese cualquier información adicional relevante para este viaje..."
+                  />
+                </FormField>
               </div>
-            </div>
+            </FormSection>
             
             <div className="flex justify-end space-x-4 mt-8 pt-4 border-t border-gray-200">
-              <button
+              <FormButton
                 type="button"
                 onClick={() => navigate("/viajes")}
-                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-colors flex items-center"
+                variant="secondary"
               >
-                <FaArrowLeft className="mr-2" />
                 Cancelar
-              </button>
-              <button
+              </FormButton>
+              {isEditing && (
+                <FormButton
+                  type="button"
+                  onClick={() => setShowDeleteModal(true)}
+                  variant="danger"
+                  icon={<FaTrash />}
+                >
+                  Eliminar
+                </FormButton>
+              )}
+              <FormButton
                 type="submit"
-                className="px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-700 transition-colors flex items-center shadow-sm"
-                disabled={isLoadingViaje}
+                variant="primary"
+                icon={<FaSave />}
               >
-                <FaSave className="mr-2" />
-                {isEditing ? "Actualizar viaje" : "Guardar viaje"}
-              </button>
+                {isEditing ? 'Guardar cambios' : 'Crear viaje'}
+              </FormButton>
             </div>
           </form>
         )}

@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useServiciosStore } from "@/stores/serviciosStore";
 import { toast } from "react-toastify";
 import ConfirmModal from '@/components/ConfirmModal';
+import { FormSection, FormField, FormInput, FormCheckbox, FormButton, FormTextarea } from '@/components/FormComponents';
+import { FaTools, FaClipboardList, FaInfoCircle } from 'react-icons/fa';
 
 export default function Servicio() {
   const { id } = useParams();
@@ -101,13 +103,13 @@ export default function Servicio() {
             {isEditing ? "Editar servicio" : "Agregar servicio"}
           </h1>
           {isEditing && (
-            <button
+            <FormButton
               type="button"
               onClick={() => setShowDeleteModal(true)}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              variant="danger"
             >
               Eliminar
-            </button>
+            </FormButton>
           )}
         </div>
 
@@ -126,119 +128,101 @@ export default function Servicio() {
             onSubmit={handleSubmit}
             className="space-y-6"
           >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Nombre */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="nombre">Nombre:</label>
-              <input
-                type="text"
-                id="nombre"
-                name="nombre"
-                value={formData.nombre}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                placeholder="Nombre del servicio"
-                required
-              />
-            </div>
+            <FormSection
+              title="Información del servicio"
+              icon={<FaTools />}
+              color="blue"
+            >
+              <div className="grid grid-cols-1 gap-6">
+                <FormField label="Nombre" name="nombre" required>
+                  <FormInput
+                    type="text"
+                    name="nombre"
+                    value={formData.nombre}
+                    onChange={handleChange}
+                    placeholder="Nombre del servicio"
+                    required
+                  />
+                </FormField>
 
-            {/* Descripción */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="descripcion">Descripción:</label>
-              <textarea
-                id="descripcion"
-                name="descripcion"
-                value={formData.descripcion}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                placeholder="Descripción detallada del servicio"
-                rows={3}
-                required
-              />
-            </div>
+                <FormField label="Descripción" name="descripcion" required>
+                  <FormTextarea
+                    name="descripcion"
+                    value={formData.descripcion}
+                    onChange={handleChange}
+                    placeholder="Descripción detallada del servicio"
+                    rows={3}
+                    required
+                  />
+                </FormField>
+              </div>
+            </FormSection>
 
-            {/* Requerimientos */}
-            <div className="md:col-span-2">
-              <h3 className="text-md font-medium text-gray-700 mb-3">Requerimientos del servicio:</h3>
+            <FormSection
+              title="Requerimientos del servicio"
+              icon={<FaClipboardList />}
+              color="amber"
+            >
               <div className="space-y-3">
-                {/* Prueba Hidráulica */}
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="requiere_prueba_hidraulica"
+                <FormField label="Requiere prueba hidráulica" name="requiere_prueba_hidraulica">
+                  <FormCheckbox
                     name="requiere_prueba_hidraulica"
                     checked={formData.requiere_prueba_hidraulica}
                     onChange={handleChange}
-                    className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <label className="ml-2 block text-sm text-gray-700" htmlFor="requiere_prueba_hidraulica">
-                    Requiere prueba hidráulica
-                  </label>
-                </div>
+                </FormField>
                 
-                {/* Visuales */}
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="requiere_visuales"
+                <FormField label="Requiere visuales" name="requiere_visuales">
+                  <FormCheckbox
                     name="requiere_visuales"
                     checked={formData.requiere_visuales}
                     onChange={handleChange}
-                    className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <label className="ml-2 block text-sm text-gray-700" htmlFor="requiere_visuales">
-                    Requiere visuales
-                  </label>
-                </div>
+                </FormField>
                 
-                {/* Válvula y Mangueras */}
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="requiere_valvula_y_mangueras"
+                <FormField label="Requiere válvula y mangueras" name="requiere_valvula_y_mangueras">
+                  <FormCheckbox
                     name="requiere_valvula_y_mangueras"
                     checked={formData.requiere_valvula_y_mangueras}
                     onChange={handleChange}
-                    className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <label className="ml-2 block text-sm text-gray-700" htmlFor="requiere_valvula_y_mangueras">
-                    Requiere válvula y mangueras
-                  </label>
-                </div>
+                </FormField>
               </div>
+            </FormSection>
+
+            <FormSection
+              title="Observaciones"
+              icon={<FaInfoCircle />}
+              color="green"
+            >
+              <FormField label="Observaciones adicionales" name="observaciones">
+                <FormTextarea
+                  name="observaciones"
+                  value={formData.observaciones}
+                  onChange={handleChange}
+                  placeholder="Observaciones adicionales sobre el servicio"
+                  rows={3}
+                />
+              </FormField>
+            </FormSection>
+
+            <div className="flex justify-end gap-4 pt-4">
+              <FormButton
+                type="button"
+                onClick={() => navigate("/servicios")}
+                variant="secondary"
+              >
+                Cancelar
+              </FormButton>
+              <FormButton
+                type="submit"
+                variant="primary"
+                disabled={isLoading}
+              >
+                {isEditing ? "Actualizar" : "Guardar"}
+              </FormButton>
             </div>
-          </div>
-
-          {/* Observaciones */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="observaciones">Observaciones:</label>
-            <textarea
-              id="observaciones"
-              name="observaciones"
-              value={formData.observaciones}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-              rows={3}
-            />
-          </div>
-
-          <div className="flex justify-end gap-4 pt-4">
-            <button
-              type="button"
-              onClick={() => navigate("/servicios")}
-              className="px-5 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-5 py-3 bg-primary text-white rounded-md hover:bg-blue-700 transition-colors"
-              disabled={isLoading}
-            >
-              {isEditing ? "Actualizar" : "Guardar"}
-            </button>
-          </div>
-        </form>
+          </form>
         )}
       </div>
 

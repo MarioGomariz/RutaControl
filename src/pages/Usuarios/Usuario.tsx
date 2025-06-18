@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FaSave, FaTimes } from 'react-icons/fa';
+import { FaSave, FaTimes, FaUser, FaKey, FaIdCard, FaClipboardList } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUsuariosStore } from '@/stores/usuariosStore';
 import { User, UserWithPassword } from '@/utils/supabase';
+import { FormSection, FormField, FormInput, FormSelect, FormTextarea, FormButton } from '@/components/FormComponents';
 
 // Extender el tipo User para incluir el campo contraseña para el formulario
 interface FormUser extends Omit<User, 'id' | 'fecha_creacion' | 'fecha_actualizacion'> {
@@ -152,13 +153,12 @@ const Usuario: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-800">
             {isEditing ? 'Editar Usuario' : 'Crear Nuevo Usuario'}
           </h1>
-          <button 
+          <FormButton
             onClick={() => navigate('/usuarios')}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
             title="Volver"
           >
             <FaTimes size={20} />
-          </button>
+          </FormButton>
         </div>
 
         {(error || storeError) && (
@@ -172,156 +172,163 @@ const Usuario: React.FC = () => {
             <p className="text-gray-500">Cargando...</p>
           </div>
         ) : (
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre *
-              </label>
-              <input
-                type="text"
-                name="nombre"
-                value={formData.nombre}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Apellido *
-              </label>
-              <input
-                type="text"
-                name="apellido"
-                value={formData.apellido}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email *
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre de Usuario *
-              </label>
-              <input
-                type="text"
-                name="usuario"
-                value={formData.usuario}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {isEditing ? 'Contraseña (dejar en blanco para no cambiar)' : 'Contraseña *'}
-              </label>
-              <input
-                type="password"
-                name="contraseña"
-                value={formData.contraseña}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required={!isEditing}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Confirmar Contraseña {!isEditing && '*'}
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required={!isEditing}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Rol *
-              </label>
-              <select
-                name="rol_id"
-                value={formData.rol_id}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              >
-                <option value={1}>Administrador</option>
-                <option value={2}>Chofer</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Estado *
-              </label>
-              <select
-                name="estado"
-                value={formData.estado}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              >
-                <option value="Activo">Activo</option>
-                <option value="Inactivo">Inactivo</option>
-                <option value="Suspendido">Suspendido</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Observaciones
-            </label>
-            <textarea
-              name="observaciones"
-              value={formData.observaciones}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              rows={3}
-            />
-          </div>
-
-          <div className="flex justify-end space-x-4 mt-8">
-            <button
-              type="button"
-              onClick={() => navigate('/usuarios')}
-              className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <FormSection
+              title="Información personal"
+              icon={<FaUser />}
+              color="blue"
             >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="flex items-center justify-center gap-2 px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-700 transition-colors"
-              disabled={isLoading}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField label="Nombre" name="nombre" required>
+                  <FormInput
+                    type="text"
+                    name="nombre"
+                    value={formData.nombre}
+                    onChange={handleChange}
+                    placeholder="Nombre del usuario"
+                    required
+                  />
+                </FormField>
+                
+                <FormField label="Apellido" name="apellido" required>
+                  <FormInput
+                    type="text"
+                    name="apellido"
+                    value={formData.apellido}
+                    onChange={handleChange}
+                    placeholder="Apellido del usuario"
+                    required
+                  />
+                </FormField>
+
+                <FormField label="Email" name="email" required>
+                  <FormInput
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="correo@ejemplo.com"
+                    required
+                  />
+                </FormField>
+
+                <FormField label="Nombre de Usuario" name="usuario" required>
+                  <FormInput
+                    type="text"
+                    name="usuario"
+                    value={formData.usuario}
+                    onChange={handleChange}
+                    placeholder="Nombre de usuario para acceso"
+                    required
+                  />
+                </FormField>
+              </div>
+            </FormSection>
+
+            <FormSection
+              title="Seguridad"
+              icon={<FaKey />}
             >
-              <FaSave /> {isEditing ? 'Actualizar' : 'Guardar'}
-            </button>
-          </div>
-        </form>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField 
+                  label={isEditing ? 'Contraseña (dejar en blanco para no cambiar)' : 'Contraseña'} 
+                  name="contraseña" 
+                  required={!isEditing}
+                >
+                  <FormInput
+                    type="password"
+                    name="contraseña"
+                    value={formData.contraseña}
+                    onChange={handleChange}
+                    placeholder="Mínimo 6 caracteres"
+                    required={!isEditing}
+                  />
+                </FormField>
+
+                <FormField 
+                  label={`Confirmar Contraseña ${!isEditing ? '*' : ''}`} 
+                  name="confirmPassword"
+                  required={!isEditing}
+                >
+                  <FormInput
+                    type="password"
+                    name="confirmPassword"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Repita la contraseña"
+                    required={!isEditing}
+                  />
+                </FormField>
+              </div>
+            </FormSection>
+
+            <FormSection
+              title="Rol y estado"
+              icon={<FaIdCard />}
+              color="green"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField label="Rol" name="rol_id" required>
+                  <FormSelect
+                    name="rol_id"
+                    value={formData.rol_id}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value={1}>Administrador</option>
+                    <option value={2}>Chofer</option>
+                  </FormSelect>
+                </FormField>
+
+                <FormField label="Estado" name="estado" required>
+                  <FormSelect
+                    name="estado"
+                    value={formData.estado}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                    <option value="Suspendido">Suspendido</option>
+                  </FormSelect>
+                </FormField>
+              </div>
+            </FormSection>
+
+            <FormSection
+              title="Información adicional"
+              icon={<FaClipboardList />}
+              color="amber"
+            >
+              <FormField label="Observaciones" name="observaciones">
+                <FormTextarea
+                  name="observaciones"
+                  value={formData.observaciones}
+                  onChange={handleChange}
+                  placeholder="Notas adicionales sobre el usuario"
+                  rows={4}
+                />
+              </FormField>
+            </FormSection>
+
+            <div className="flex justify-end space-x-4">
+              <FormButton
+                type="button"
+                onClick={() => navigate('/usuarios')}
+                variant="secondary"
+              >
+                Cancelar
+              </FormButton>
+              <FormButton
+                type="submit"
+                variant="primary"
+                disabled={isLoading}
+                icon={<FaSave />}
+              >
+                {isEditing ? 'Actualizar' : 'Guardar'}
+              </FormButton>
+            </div>
+          </form>
         )}
       </div>
     </div>

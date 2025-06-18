@@ -5,6 +5,8 @@ import { useUsuariosStore } from "@/stores/usuariosStore";
 import { Chofer, UserWithPassword } from "@/utils/supabase";
 import { toast } from "react-toastify";
 import ConfirmModal from "@/components/ConfirmModal";
+import { FormSection, FormField, FormInput, FormCheckbox, FormButton } from '@/components/FormComponents';
+import { FaUserTie, FaIdCard, FaAddressCard } from 'react-icons/fa';
 
 export default function ChoferForm() {
   const { id } = useParams();
@@ -162,13 +164,13 @@ export default function ChoferForm() {
             {isEditing ? "Editar chofer" : "Agregar chofer"}
           </h1>
           {isEditing && (
-            <button
+            <FormButton
               type="button"
               onClick={() => setShowDeleteModal(true)}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              variant="danger"
             >
               Eliminar
-            </button>
+            </FormButton>
           )}
         </div>
 
@@ -184,132 +186,119 @@ export default function ChoferForm() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nombre *
-                </label>
-                <input
-                  type="text"
-                  name="nombre"
-                  value={formData.nombre}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
+            <FormSection
+              title="Información personal"
+              icon={<FaUserTie />}
+              color="blue"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField label="Nombre" name="nombre" required>
+                  <FormInput
+                    type="text"
+                    name="nombre"
+                    value={formData.nombre}
+                    onChange={handleChange}
+                    required
+                  />
+                </FormField>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Apellido *
-                </label>
-                <input
-                  type="text"
-                  name="apellido"
-                  value={formData.apellido}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
+                <FormField label="Apellido" name="apellido" required>
+                  <FormInput
+                    type="text"
+                    name="apellido"
+                    value={formData.apellido}
+                    onChange={handleChange}
+                    required
+                  />
+                </FormField>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  DNI *
-                </label>
-                <input
-                  type="text"
-                  name="dni"
-                  value={formData.dni}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
+                <FormField label="DNI" name="dni" required>
+                  <FormInput
+                    type="text"
+                    name="dni"
+                    value={formData.dni}
+                    onChange={handleChange}
+                    required
+                  />
+                </FormField>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Teléfono
-                </label>
-                <input
-                  type="tel"
-                  name="telefono"
-                  value={formData.telefono}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+                <FormField label="Teléfono" name="telefono">
+                  <FormInput
+                    type="tel"
+                    name="telefono"
+                    value={formData.telefono}
+                    onChange={handleChange}
+                  />
+                </FormField>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <FormField label="Email" name="email">
+                  <FormInput
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </FormField>
               </div>
+            </FormSection>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Licencia *
-                </label>
-                <input
-                  type="text"
-                  name="licencia"
-                  value={formData.licencia}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
+            <FormSection
+              title="Información de licencia"
+              icon={<FaIdCard />}
+              color="amber"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField label="Licencia" name="licencia" required>
+                  <FormInput
+                    type="text"
+                    name="licencia"
+                    value={formData.licencia}
+                    onChange={handleChange}
+                    required
+                  />
+                </FormField>
+
+                <FormField label="Fecha vencimiento licencia" name="fecha_vencimiento_licencia" required>
+                  <FormInput
+                    type="date"
+                    name="fecha_vencimiento_licencia"
+                    value={formData.fecha_vencimiento_licencia}
+                    onChange={handleChange}
+                    required
+                  />
+                </FormField>
               </div>
+            </FormSection>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fecha vencimiento licencia *
-                </label>
-                <input
-                  type="date"
-                  name="fecha_vencimiento_licencia"
-                  value={formData.fecha_vencimiento_licencia}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
+            <FormSection
+              title="Estado"
+              icon={<FaAddressCard />}
+              color="green"
+            >
+              <FormField label="Activo" name="activo">
+                <FormCheckbox
                   name="activo"
                   checked={formData.activo}
                   onChange={handleChange}
-                  className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <label className="ml-2 block text-sm text-gray-700">
-                  Activo
-                </label>
-              </div>
-            </div>
+              </FormField>
+            </FormSection>
 
             <div className="flex justify-end space-x-4 mt-8">
-              <button
+              <FormButton
                 type="button"
                 onClick={() => navigate("/choferes")}
-                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
+                variant="secondary"
               >
                 Cancelar
-              </button>
-              <button
+              </FormButton>
+              <FormButton
                 type="submit"
-                className="px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-700 transition-colors"
+                variant="primary"
                 disabled={isLoading}
               >
                 {isEditing ? "Actualizar" : "Guardar"}
-              </button>
+              </FormButton>
             </div>
           </form>
         )}
@@ -339,49 +328,45 @@ export default function ChoferForm() {
               </div>
             )}
             
-            <div className="mb-4">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
-              <input
+            <FormField label="Contraseña" name="password">
+              <FormInput
                 type="password"
-                id="password"
+                name="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 minLength={6}
                 required
               />
-            </div>
+            </FormField>
             
-            <div className="mb-6">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">Confirmar contraseña</label>
-              <input
+            <FormField label="Confirmar contraseña" name="confirmPassword">
+              <FormInput
                 type="password"
-                id="confirmPassword"
+                name="confirmPassword"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
-            </div>
+            </FormField>
             
-            <div className="flex justify-end gap-4">
-              <button
+            <div className="flex justify-end gap-4 mt-6">
+              <FormButton
                 type="button"
                 onClick={() => {
                   setShowPasswordModal(false);
                   navigate("/choferes");
                 }}
-                className="px-5 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                variant="secondary"
               >
                 Cancelar
-              </button>
-              <button
+              </FormButton>
+              <FormButton
                 type="button"
                 onClick={handleCreateUsuario}
-                className="px-5 py-3 bg-primary text-white rounded-md hover:bg-blue-700 transition-colors"
+                variant="primary"
               >
                 Crear usuario
-              </button>
+              </FormButton>
             </div>
           </div>
         </div>

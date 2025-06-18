@@ -5,6 +5,8 @@ import { useServiciosStore } from "@/stores/serviciosStore";
 import { Semirremolque as SemirremolqueType } from "@/utils/supabase";
 import { toast } from "react-toastify";
 import ConfirmModal from '@/components/ConfirmModal';
+import { FormSection, FormField, FormInput, FormSelect, FormButton } from '@/components/FormComponents';
+import { FaTruck, FaCalendarAlt, FaGlobeAmericas } from 'react-icons/fa';
 
 export default function Semirremolque() {
   const { id } = useParams();
@@ -145,13 +147,13 @@ export default function Semirremolque() {
               {semirremolque ? "Editar semirremolque" : "Agregar semirremolque"}
             </h1>
             {semirremolque && id && (
-              <button
+              <FormButton
                 type="button"
                 onClick={() => setShowDeleteModal(true)}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                variant="danger"
               >
                 Eliminar
-              </button>
+              </FormButton>
             )}
           </div>
         )}
@@ -160,215 +162,186 @@ export default function Semirremolque() {
           onSubmit={(e) => handleSubmit(e)}
           className="space-y-6"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Nombre */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="nombre">Nombre/Tipo:</label>
-              <input
-                type="text"
-                id="nombre"
-                name="nombre"
-                value={formData.nombre}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                placeholder="Ej: Cisterna para GLP"
-                required
-              />
-            </div>
+          <FormSection
+            title="Información del semirremolque"
+            icon={<FaTruck />}
+            color="blue"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField label="Nombre/Tipo" name="nombre" required>
+                <FormInput
+                  type="text"
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  placeholder="Ej: Cisterna para GLP"
+                  required
+                />
+              </FormField>
 
-            {/* Dominio (Patente) */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="dominio">Dominio (Patente):</label>
-              <input
-                type="text"
-                id="dominio"
-                name="dominio"
-                value={formData.dominio}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                required
-              />
-            </div>
+              <FormField label="Dominio (Patente)" name="dominio" required>
+                <FormInput
+                  type="text"
+                  name="dominio"
+                  value={formData.dominio}
+                  onChange={handleChange}
+                  placeholder="Ej: AB123CD"
+                  required
+                />
+              </FormField>
 
-            {/* Año */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="año">Año:</label>
-              <input
-                type="number"
-                id="año"
-                name="año"
-                value={formData.año}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                min="1990"
-                max={new Date().getFullYear() + 1}
-                required
-              />
-            </div>
+              <FormField label="Año" name="año" required>
+                <FormInput
+                  type="number"
+                  name="año"
+                  value={formData.año}
+                  onChange={handleChange}
+                  min="1990"
+                  max={new Date().getFullYear() + 1}
+                  required
+                />
+              </FormField>
 
-            {/* Estado */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="estado">Estado:</label>
-              <select
-                id="estado"
-                name="estado"
-                value={formData.estado}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                required
-              >
-                <option value="Disponible">Disponible</option>
-                <option value="En uso">En uso</option>
-                <option value="En reparación">En reparación</option>
-                <option value="Fuera de servicio">Fuera de servicio</option>
-              </select>
+              <FormField label="Estado" name="estado" required>
+                <FormSelect
+                  name="estado"
+                  value={formData.estado}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="Disponible">Disponible</option>
+                  <option value="En uso">En uso</option>
+                  <option value="En reparación">En reparación</option>
+                  <option value="Fuera de servicio">Fuera de servicio</option>
+                </FormSelect>
+              </FormField>
             </div>
+          </FormSection>
 
-            {/* Tipo de Servicio */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="tipo_servicio">Tipo de Servicio:</label>
-              <select
-                id="tipo_servicio"
-                name="tipo_servicio"
-                value={formData.tipo_servicio}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                required
-              >
-                <option value="">Seleccione un servicio</option>
-                {servicios.map((servicio) => (
-                  <option key={servicio.id} value={servicio.nombre}>
-                    {servicio.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <FormSection
+            title="Servicio y alcance"
+            icon={<FaGlobeAmericas />}
+            color="amber"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField label="Tipo de Servicio" name="tipo_servicio" required>
+                <FormSelect
+                  name="tipo_servicio"
+                  value={formData.tipo_servicio}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Seleccione un servicio</option>
+                  {servicios.map((servicio) => (
+                    <option key={servicio.id} value={servicio.nombre}>
+                      {servicio.nombre}
+                    </option>
+                  ))}
+                </FormSelect>
+              </FormField>
 
-            {/* Alcance del Servicio */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="alcance_servicio">Alcance del Servicio:</label>
-              <select
-                id="alcance_servicio"
-                name="alcance_servicio"
-                value={formData.alcance_servicio.toString()}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                required
-              >
-            <option value="Nacional">Nacional</option>
-            <option value="Internacional">Internacional</option>
-              </select>
+              <FormField label="Alcance del Servicio" name="alcance_servicio" required>
+                <FormSelect
+                  name="alcance_servicio"
+                  value={formData.alcance_servicio.toString()}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="false">Nacional</option>
+                  <option value="true">Internacional</option>
+                </FormSelect>
+              </FormField>
             </div>
+          </FormSection>
 
-            {/* Vencimiento RTO */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimiento_rto">Vencimiento RTO:</label>
-              <input
-                type="date"
-                id="vencimiento_rto"
-                name="vencimiento_rto"
-                value={formData.vencimiento_rto}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-                required
-              />
-            </div>
+          <FormSection
+            title="Documentación y vencimientos"
+            icon={<FaCalendarAlt />}
+            color="green"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField label="Vencimiento RTO" name="vencimiento_rto" required>
+                <FormInput
+                  type="date"
+                  name="vencimiento_rto"
+                  value={formData.vencimiento_rto}
+                  onChange={handleChange}
+                  required
+                />
+              </FormField>
 
-            {/* Vencimiento Visual Externa */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimiento_visual_ext">Vencimiento Visual Externa:</label>
-              <input
-                type="date"
-                id="vencimiento_visual_ext"
-                name="vencimiento_visual_ext"
-                value={formData.vencimiento_visual_ext}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-              />
-            </div>
+              <FormField label="Vencimiento Visual Externa" name="vencimiento_visual_ext">
+                <FormInput
+                  type="date"
+                  name="vencimiento_visual_ext"
+                  value={formData.vencimiento_visual_ext}
+                  onChange={handleChange}
+                />
+              </FormField>
 
-            {/* Vencimiento Visual Interna */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimiento_visual_int">Vencimiento Visual Interna:</label>
-              <input
-                type="date"
-                id="vencimiento_visual_int"
-                name="vencimiento_visual_int"
-                value={formData.vencimiento_visual_int}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-              />
-            </div>
+              <FormField label="Vencimiento Visual Interna" name="vencimiento_visual_int">
+                <FormInput
+                  type="date"
+                  name="vencimiento_visual_int"
+                  value={formData.vencimiento_visual_int}
+                  onChange={handleChange}
+                />
+              </FormField>
 
-            {/* Vencimiento Espesores */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimiento_espesores">Vencimiento Espesores:</label>
-              <input
-                type="date"
-                id="vencimiento_espesores"
-                name="vencimiento_espesores"
-                value={formData.vencimiento_espesores}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-              />
-            </div>
+              <FormField label="Vencimiento Espesores" name="vencimiento_espesores">
+                <FormInput
+                  type="date"
+                  name="vencimiento_espesores"
+                  value={formData.vencimiento_espesores}
+                  onChange={handleChange}
+                />
+              </FormField>
 
-            {/* Vencimiento Prueba Hidráulica */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimiento_prueba_hidraulica">Vencimiento Prueba Hidráulica:</label>
-              <input
-                type="date"
-                id="vencimiento_prueba_hidraulica"
-                name="vencimiento_prueba_hidraulica"
-                value={formData.vencimiento_prueba_hidraulica}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-              />
-            </div>
+              <FormField label="Vencimiento Prueba Hidráulica" name="vencimiento_prueba_hidraulica">
+                <FormInput
+                  type="date"
+                  name="vencimiento_prueba_hidraulica"
+                  value={formData.vencimiento_prueba_hidraulica}
+                  onChange={handleChange}
+                />
+              </FormField>
 
-            {/* Vencimiento Mangueras */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimiento_mangueras">Vencimiento Mangueras:</label>
-              <input
-                type="date"
-                id="vencimiento_mangueras"
-                name="vencimiento_mangueras"
-                value={formData.vencimiento_mangueras}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-              />
-            </div>
+              <FormField label="Vencimiento Mangueras" name="vencimiento_mangueras">
+                <FormInput
+                  type="date"
+                  name="vencimiento_mangueras"
+                  value={formData.vencimiento_mangueras}
+                  onChange={handleChange}
+                />
+              </FormField>
 
-            {/* Vencimiento Válvula Flujo */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimiento_valvula_five">Vencimiento Válvula Five:</label>
-              <input
-                type="date"
-                id="vencimiento_valvula_five"
-                name="vencimiento_valvula_five"
-                value={formData.vencimiento_valvula_five}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-              />
+              <FormField label="Vencimiento Válvula Five" name="vencimiento_valvula_five">
+                <FormInput
+                  type="date"
+                  name="vencimiento_valvula_five"
+                  value={formData.vencimiento_valvula_five}
+                  onChange={handleChange}
+                />
+              </FormField>
             </div>
-          </div>
+          </FormSection>
 
           {/* No incluimos observaciones ya que no existe en el tipo Semirremolque de Supabase */}
 
           <div className="flex justify-end gap-4 pt-4">
-            <button
+            <FormButton
               type="button"
               onClick={() => navigate("/semirremolques")}
-              className="px-5 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              variant="secondary"
             >
               Cancelar
-            </button>
-            <button
+            </FormButton>
+            <FormButton
               type="submit"
-              className="px-5 py-3 bg-primary text-white rounded-md hover:bg-blue-700 transition-colors"
+              variant="primary"
             >
               {semirremolque ? "Actualizar" : "Crear"}
-            </button>
+            </FormButton>
           </div>
         </form>
       </div>

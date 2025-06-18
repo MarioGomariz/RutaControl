@@ -4,6 +4,8 @@ import { useTractoresStore } from "@/stores/tractoresStore";
 import { useServiciosStore } from "@/stores/serviciosStore";
 import { toast } from "react-toastify";
 import ConfirmModal from '@/components/ConfirmModal';
+import { FormSection, FormField, FormInput, FormSelect, FormCheckbox, FormButton } from '@/components/FormComponents';
+import { FaTruck, FaCalendarAlt, FaGlobeAmericas } from 'react-icons/fa';
 
 export default function Tractor() {
   const { id } = useParams();
@@ -112,13 +114,13 @@ export default function Tractor() {
             {isEditing ? "Editar tractor" : "Agregar tractor"}
           </h1>
           {isEditing && (
-            <button
+            <FormButton
               type="button"
               onClick={() => setShowDeleteModal(true)}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              variant="danger"
             >
               Eliminar
-            </button>
+            </FormButton>
           )}
         </div>
         
@@ -137,151 +139,141 @@ export default function Tractor() {
             onSubmit={handleSubmit}
             className="space-y-6"
           >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Marca */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="marca">Marca:</label>
-          <input
-            type="text"
-            id="marca"
-            name="marca"
-            value={formData.marca}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-            required
-          />
-        </div>
-
-        {/* Modelo */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="modelo">Modelo:</label>
-          <input
-            type="text"
-            id="modelo"
-            name="modelo"
-            value={formData.modelo}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-            required
-          />
-        </div>
-
-        {/* Dominio (Patente) */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="dominio">Dominio (Patente):</label>
-          <input
-            type="text"
-            id="dominio"
-            name="dominio"
-            value={formData.dominio}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-            required
-          />
-        </div>
-
-        {/* Año */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="año">Año:</label>
-          <input
-            type="number"
-            id="año"
-            name="año"
-            value={formData.año}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-            min="1990"
-            max={new Date().getFullYear() + 1}
-            required
-          />
-        </div>
-
-        {/* Vencimiento RTO */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="vencimiento_rto">Vencimiento RTO:</label>
-          <input
-            type="date"
-            id="vencimiento_rto"
-            name="vencimiento_rto"
-            value={formData.vencimiento_rto}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-            required
-          />
-        </div>
-
-        {/* Estado */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="estado">Estado:</label>
-          <select
-            id="estado"
-            name="estado"
-            value={formData.estado}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-            required
-          >
-            <option value="Disponible">Disponible</option>
-            <option value="En reparación">En reparación</option>
-            <option value="En viaje">En viaje</option>
-            <option value="Fuera de servicio">Fuera de servicio</option>
-          </select>
-        </div>
-
-        {/* Tipo de Servicio */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="tipo_servicio">Tipo de Servicio:</label>
-          <select
-            id="tipo_servicio"
-            name="tipo_servicio"
-            value={formData.tipo_servicio}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-            required
-          >
-            <option value="">Seleccione un servicio</option>
-            {servicios.map((servicio) => (
-              <option key={servicio.id} value={servicio.nombre}>
-                {servicio.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Alcance del Servicio */}
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id="alcance_servicio"
-            name="alcance_servicio"
-            checked={formData.alcance_servicio}
-            onChange={handleChange}
-            className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-          />
-          <label className="ml-2 block text-sm text-gray-700" htmlFor="alcance_servicio">
-            Alcance Internacional
-          </label>
-        </div>
-
-          </div>
-
-          <div className="flex justify-end gap-4 pt-4">
-            <button
-              type="button"
-              onClick={() => navigate("/tractores")}
-              className="px-5 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+            <FormSection
+              title="Información del vehículo"
+              icon={<FaTruck />}
+              color="blue"
             >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-5 py-3 bg-primary text-white rounded-md hover:bg-blue-700 transition-colors"
-              disabled={isLoading}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField label="Marca" name="marca" required>
+                  <FormInput
+                    type="text"
+                    name="marca"
+                    value={formData.marca}
+                    onChange={handleChange}
+                    placeholder="Marca del tractor"
+                    required
+                  />
+                </FormField>
+
+                <FormField label="Modelo" name="modelo" required>
+                  <FormInput
+                    type="text"
+                    name="modelo"
+                    value={formData.modelo}
+                    onChange={handleChange}
+                    placeholder="Modelo del tractor"
+                    required
+                  />
+                </FormField>
+
+                <FormField label="Dominio (Patente)" name="dominio" required>
+                  <FormInput
+                    type="text"
+                    name="dominio"
+                    value={formData.dominio}
+                    onChange={handleChange}
+                    placeholder="Ej: AB123CD"
+                    required
+                  />
+                </FormField>
+
+                <FormField label="Año" name="año" required>
+                  <FormInput
+                    type="number"
+                    name="año"
+                    value={formData.año}
+                    onChange={handleChange}
+                    min="1990"
+                    max={new Date().getFullYear() + 1}
+                    required
+                  />
+                </FormField>
+              </div>
+            </FormSection>
+
+            <FormSection
+              title="Documentación y estado"
+              icon={<FaCalendarAlt />}
+              color="green"
             >
-              {isEditing ? "Actualizar" : "Guardar"}
-            </button>
-          </div>
-        </form>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField label="Vencimiento RTO" name="vencimiento_rto" required>
+                  <FormInput
+                    type="date"
+                    name="vencimiento_rto"
+                    value={formData.vencimiento_rto}
+                    onChange={handleChange}
+                    required
+                  />
+                </FormField>
+
+                <FormField label="Estado" name="estado" required>
+                  <FormSelect
+                    name="estado"
+                    value={formData.estado}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="Disponible">Disponible</option>
+                    <option value="En reparación">En reparación</option>
+                    <option value="En viaje">En viaje</option>
+                    <option value="Fuera de servicio">Fuera de servicio</option>
+                  </FormSelect>
+                </FormField>
+              </div>
+            </FormSection>
+
+            <FormSection
+              title="Servicio y alcance"
+              icon={<FaGlobeAmericas />}
+              color="amber"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField label="Tipo de Servicio" name="tipo_servicio" required>
+                  <FormSelect
+                    name="tipo_servicio"
+                    value={formData.tipo_servicio}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Seleccione un servicio</option>
+                    {servicios.map((servicio) => (
+                      <option key={servicio.id} value={servicio.nombre}>
+                        {servicio.nombre}
+                      </option>
+                    ))}
+                  </FormSelect>
+                </FormField>
+
+                <FormField label="Alcance del Servicio" name="alcance_servicio">
+                  <FormCheckbox
+                    name="alcance_servicio"
+                    checked={formData.alcance_servicio}
+                    onChange={handleChange}
+                    label="Alcance Internacional"
+                  />
+                </FormField>
+              </div>
+            </FormSection>
+
+            <div className="flex justify-end gap-4 pt-4">
+              <FormButton
+                type="button"
+                onClick={() => navigate("/tractores")}
+                variant="secondary"
+              >
+                Cancelar
+              </FormButton>
+              <FormButton
+                type="submit"
+                variant="primary"
+                disabled={isLoading}
+              >
+                {isEditing ? "Actualizar" : "Guardar"}
+              </FormButton>
+            </div>
+          </form>
         )}
       </div>
 
