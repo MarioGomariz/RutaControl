@@ -114,7 +114,6 @@ function App() {
           } />
 
         </Route>
-        <Route path="/login" element={<Login />} />
       </Routes>
     </BrowserRouter>
   );
