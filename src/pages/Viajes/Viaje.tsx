@@ -5,7 +5,7 @@ import { useChoferesStore } from "@/stores/choferesStore";
 import { useTractoresStore } from "@/stores/tractoresStore";
 import { useSemirremolquesStore } from "@/stores/semirremolquesStore";
 import { useServiciosStore } from "@/stores/serviciosStore";
-import type { Viaje as ViajeType, EstadoViaje } from "@/types";
+import type { Viaje as ViajeType, EstadoViaje } from "@/types/viaje";
 import { toast } from "react-toastify";
 import ConfirmModal from "@/components/ConfirmModal";
 import { FaArrowLeft, FaTruck, FaRoute, FaClipboardList, FaTrash, FaSave, FaMapMarked } from "react-icons/fa";
@@ -37,6 +37,7 @@ export default function Viaje() {
   const { servicios, fetchServicios } = useServiciosStore();
 
   const isEditing = id !== 'new';
+  const parsedId = isEditing && id ? Number(id) : null;
 
   useEffect(() => {
     // Cargar datos necesarios
@@ -45,11 +46,11 @@ export default function Viaje() {
     fetchSemirremolques();
     fetchServicios();
 
-    if (isEditing && id) {
-      fetchViajeById(id);
+    if (isEditing && parsedId !== null && !Number.isNaN(parsedId)) {
+      fetchViajeById(parsedId);
     }
     return () => clearSelectedViaje();
-  }, [id, isEditing, fetchViajeById, clearSelectedViaje, fetchChoferes, fetchTractores, fetchSemirremolques, fetchServicios]);
+  }, [parsedId, isEditing, fetchViajeById, clearSelectedViaje, fetchChoferes, fetchTractores, fetchSemirremolques, fetchServicios]);
 
   interface ViajeForm extends Omit<ViajeType, 'id'> {}
 
@@ -58,9 +59,10 @@ export default function Viaje() {
     tractor_id: 0,
     semirremolque_id: 0,
     servicio_id: 0,
+    alcance: 'nacional',
     origen: "",
     cantidad_destinos: 1,
-    fecha_salida: "",
+    fecha_hora_salida: "",
     estado: "programado" as EstadoViaje,
   });
 
@@ -71,9 +73,10 @@ export default function Viaje() {
         tractor_id: selectedViaje.tractor_id,
         semirremolque_id: selectedViaje.semirremolque_id,
         servicio_id: selectedViaje.servicio_id,
+        alcance: selectedViaje.alcance,
         origen: selectedViaje.origen,
         cantidad_destinos: selectedViaje.cantidad_destinos,
-        fecha_salida: selectedViaje.fecha_salida ? new Date(selectedViaje.fecha_salida).toISOString().slice(0, 16) : "",
+        fecha_hora_salida: selectedViaje.fecha_hora_salida ? new Date(selectedViaje.fecha_hora_salida).toISOString().slice(0, 16) : "",
         estado: selectedViaje.estado,
       });
     }
@@ -115,10 +118,10 @@ export default function Viaje() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleDelete = async () => {
-    if (!id) return;
+    if (parsedId === null) return;
     
     try {
-      await removeViaje(id);
+      await removeViaje(parsedId);
       toast.success("Viaje eliminado correctamente");
       setShowDeleteModal(false);
       navigate("/viajes");
@@ -138,7 +141,7 @@ export default function Viaje() {
         toast.error('El origen es obligatorio');
         return;
       }
-      if (!formData.fecha_salida) {
+      if (!formData.fecha_hora_salida) {
         toast.error('La fecha de salida es obligatoria');
         return;
       }
@@ -163,8 +166,8 @@ export default function Viaje() {
         return;
       }
 
-      if (isEditing && id) {
-        await editViaje(id, formData);
+      if (isEditing && parsedId !== null) {
+        await editViaje(parsedId, formData);
         toast.success("Viaje actualizado correctamente");
         navigate("/viajes");
       } else {
@@ -316,6 +319,19 @@ export default function Viaje() {
                   </FormSelect>
                 </FormField>
 
+                {/* Alcance */}
+                <FormField label="Alcance" name="alcance" required>
+                  <FormSelect
+                    name="alcance"
+                    value={formData.alcance}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="nacional">Nacional</option>
+                    <option value="internacional">Internacional</option>
+                  </FormSelect>
+                </FormField>
+
                 {/* Cantidad de destinos */}
                 <FormField label="Cantidad de destinos" name="cantidad_destinos" required>
                   <FormInput
@@ -350,11 +366,11 @@ export default function Viaje() {
                 </FormField>
 
                 {/* Fecha de salida */}
-                <FormField label="Fecha y hora de salida" name="fecha_salida" required>
+                <FormField label="Fecha y hora de salida" name="fecha_hora_salida" required>
                   <FormInput
                     type="datetime-local"
-                    name="fecha_salida"
-                    value={formData.fecha_salida}
+                    name="fecha_hora_salida"
+                    value={formData.fecha_hora_salida}
                     onChange={handleChange}
                     required
                   />

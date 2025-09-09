@@ -12,9 +12,8 @@ import {
   getViajesByEstado,
   getViajesByFechas,
   cambiarEstadoViaje,
-  Viaje
 } from '../services/viajesService';
-import type { EstadoViaje } from '../types';
+import type { Viaje, EstadoViaje } from '@/types/viaje';
 
 interface ViajesState {
   // Estado
@@ -25,17 +24,17 @@ interface ViajesState {
   
   // Acciones
   fetchViajes: () => Promise<void>;
-  fetchViajeById: (id: string) => Promise<void>;
+  fetchViajeById: (id: number) => Promise<void>;
   addViaje: (viaje: Omit<Viaje, 'id'>) => Promise<void>;
-  editViaje: (id: string, viaje: Partial<Omit<Viaje, 'id'>>) => Promise<void>;
-  removeViaje: (id: string) => Promise<void>;
+  editViaje: (id: number, viaje: Partial<Omit<Viaje, 'id'>>) => Promise<void>;
+  removeViaje: (id: number) => Promise<void>;
   searchViaje: (query: string) => Promise<void>;
-  fetchViajesByChofer: (choferId: string) => Promise<void>;
-  fetchViajesByTractor: (tractorId: string) => Promise<void>;
-  fetchViajesBySemirremolque: (semirremolqueId: string) => Promise<void>;
+  fetchViajesByChofer: (choferId: number) => Promise<void>;
+  fetchViajesByTractor: (tractorId: number) => Promise<void>;
+  fetchViajesBySemirremolque: (semirremolqueId: number) => Promise<void>;
   fetchViajesByEstado: (estado: EstadoViaje) => Promise<void>;
   fetchViajesByFechas: (fechaInicio: string, fechaFin: string) => Promise<void>;
-  cambiarEstado: (id: string, estado: EstadoViaje) => Promise<void>;
+  cambiarEstado: (id: number, estado: EstadoViaje) => Promise<void>;
   clearSelectedViaje: () => void;
   clearError: () => void;
 }
@@ -61,10 +60,10 @@ export const useViajesStore = create<ViajesState>((set) => ({
     }
   },
   
-  fetchViajeById: async (id: string) => {
+  fetchViajeById: async (id: number) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await getViajeById(id);
+      const data = await getViajeById(String(id));
       set({ selectedViaje: data, isLoading: false });
     } catch (error) {
       set({ 
@@ -94,11 +93,11 @@ export const useViajesStore = create<ViajesState>((set) => ({
   editViaje: async (id, viaje) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedViaje = await updateViaje(id, viaje);
+      const updatedViaje = await updateViaje(String(id), viaje);
       if (updatedViaje) {
         set(state => ({ 
           viajes: state.viajes.map(item => 
-            item.id === Number(id) ? updatedViaje : item
+            item.id === id ? updatedViaje : item
           ),
           selectedViaje: updatedViaje,
           isLoading: false 
@@ -117,11 +116,11 @@ export const useViajesStore = create<ViajesState>((set) => ({
   removeViaje: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const success = await deleteViaje(id);
+      const success = await deleteViaje(String(id));
       if (success) {
         set(state => ({ 
-          viajes: state.viajes.filter(item => item.id !== Number(id)),
-          selectedViaje: state.selectedViaje?.id === Number(id) ? null : state.selectedViaje,
+          viajes: state.viajes.filter(item => item.id !== id),
+          selectedViaje: state.selectedViaje?.id === id ? null : state.selectedViaje,
           isLoading: false 
         }));
       } else {
@@ -156,7 +155,7 @@ export const useViajesStore = create<ViajesState>((set) => ({
   fetchViajesByChofer: async (choferId) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await getViajesByChofer(choferId);
+      const data = await getViajesByChofer(String(choferId));
       set({ viajes: data, isLoading: false });
     } catch (error) {
       set({ 
@@ -169,7 +168,7 @@ export const useViajesStore = create<ViajesState>((set) => ({
   fetchViajesByTractor: async (tractorId) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await getViajesByTractor(tractorId);
+      const data = await getViajesByTractor(String(tractorId));
       set({ viajes: data, isLoading: false });
     } catch (error) {
       set({ 
@@ -182,7 +181,7 @@ export const useViajesStore = create<ViajesState>((set) => ({
   fetchViajesBySemirremolque: async (semirremolqueId) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await getViajesBySemirremolque(semirremolqueId);
+      const data = await getViajesBySemirremolque(String(semirremolqueId));
       set({ viajes: data, isLoading: false });
     } catch (error) {
       set({ 
@@ -221,13 +220,13 @@ export const useViajesStore = create<ViajesState>((set) => ({
   cambiarEstado: async (id, estado) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedViaje = await cambiarEstadoViaje(id, estado);
+      const updatedViaje = await cambiarEstadoViaje(String(id), estado);
       if (updatedViaje) {
         set(state => ({ 
           viajes: state.viajes.map(item => 
-            item.id === Number(id) ? updatedViaje : item
+            item.id === id ? updatedViaje : item
           ),
-          selectedViaje: state.selectedViaje?.id === Number(id) ? updatedViaje : state.selectedViaje,
+          selectedViaje: state.selectedViaje?.id === id ? updatedViaje : state.selectedViaje,
           isLoading: false 
         }));
       } else {

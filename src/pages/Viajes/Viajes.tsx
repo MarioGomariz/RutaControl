@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useViajesStore } from "@/stores/viajesStore";
 import { Link } from "react-router-dom";
-import { FaMapMarkerAlt, FaCalendarAlt, FaClock, FaTruck, FaRoute, FaPlus } from "react-icons/fa";
+import { FaMapMarkerAlt, FaCalendarAlt, FaTruck, FaRoute, FaPlus } from "react-icons/fa";
 
 export default function Viajes() {
     const { viajes, isLoading, error, fetchViajes } = useViajesStore();
@@ -15,19 +15,17 @@ export default function Viajes() {
     // Filtrar viajes por estado
     const viajesFiltrados = filtroEstado === 'todos'
         ? viajes
-        : viajes.filter(viaje => viaje.estado_viaje === filtroEstado);
+        : viajes.filter(viaje => viaje.estado === filtroEstado.toLowerCase());
 
     // Función para obtener una clase de color según el estado del viaje
     const getEstadoClass = (estado: string) => {
         switch (estado) {
-            case 'Programado':
+            case 'programado':
                 return 'bg-blue-100 text-blue-800';
-            case 'En curso':
+            case 'en curso':
                 return 'bg-yellow-100 text-yellow-800';
-            case 'Finalizado':
+            case 'finalizado':
                 return 'bg-green-100 text-green-800';
-            case 'Cancelado':
-                return 'bg-red-100 text-red-800';
             default:
                 return 'bg-gray-100 text-gray-800';
         }
@@ -60,28 +58,22 @@ export default function Viajes() {
                         Todos
                     </button>
                     <button 
-                        onClick={() => setFiltroEstado('Programado')}
+                        onClick={() => setFiltroEstado('programado')}
                         className={`px-6 py-2 rounded-full transition-all duration-200 font-medium ${filtroEstado === 'Programado' ? 'bg-primary text-white shadow-md' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}
                     >
                         Programados
                     </button>
                     <button 
-                        onClick={() => setFiltroEstado('En curso')}
+                        onClick={() => setFiltroEstado('en curso')}
                         className={`px-6 py-2 rounded-full transition-all duration-200 font-medium ${filtroEstado === 'En curso' ? 'bg-primary text-white shadow-md' : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'}`}
                     >
                         En curso
                     </button>
                     <button 
-                        onClick={() => setFiltroEstado('Finalizado')}
+                        onClick={() => setFiltroEstado('finalizado')}
                         className={`px-6 py-2 rounded-full transition-all duration-200 font-medium ${filtroEstado === 'Finalizado' ? 'bg-primary text-white shadow-md' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
                     >
                         Finalizados
-                    </button>
-                    <button 
-                        onClick={() => setFiltroEstado('Cancelado')}
-                        className={`px-6 py-2 rounded-full transition-all duration-200 font-medium ${filtroEstado === 'Cancelado' ? 'bg-primary text-white shadow-md' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
-                    >
-                        Cancelados
                     </button>
                 </div>
             </div>
@@ -121,45 +113,31 @@ export default function Viajes() {
                                             <div className="flex-1">
                                                 <div className="flex items-center mb-2">
                                                     <FaMapMarkerAlt className="text-primary mr-2" />
-                                                    <h3 className="text-lg font-semibold">
-                                                        <span className="text-gray-800">{viaje.origen}</span>
-                                                        <span className="mx-2 text-gray-400">→</span>
-                                                        <span className="text-gray-800">{viaje.destino}</span>
+                                                    <h3 className="text-lg font-semibold text-gray-800">
+                                                        {viaje.origen} ({viaje.alcance})
                                                     </h3>
                                                 </div>
                                                 <div className="flex flex-wrap gap-y-1 gap-x-4 text-sm text-gray-600">
                                                     <div className="flex items-center">
                                                         <FaCalendarAlt className="mr-1 text-gray-500" />
-                                                        <span>Salida: {formatearFecha(viaje.fecha_salida)}</span>
+                                                        <span>Salida: {formatearFecha(viaje.fecha_hora_salida)}</span>
                                                     </div>
-                                                    {viaje.fecha_llegada && (
-                                                        <div className="flex items-center">
-                                                            <FaCalendarAlt className="mr-1 text-gray-500" />
-                                                            <span>Llegada: {formatearFecha(viaje.fecha_llegada)}</span>
-                                                        </div>
-                                                    )}
                                                 </div>
                                             </div>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getEstadoClass(viaje.estado_viaje)}`}>
-                                                {viaje.estado_viaje}
+                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getEstadoClass(viaje.estado)}`}>
+                                                {viaje.estado}
                                             </span>
                                         </div>
                                         
-                                        <div className="flex flex-wrap gap-x-4 gap-y-2 mb-4 text-sm">
+                                        <div className="flex flex-wrap gap-x-4 gap-y-2 mb-4 text-sm text-gray-600">
                                             <div className="flex items-center">
                                                 <FaTruck className="mr-1 text-gray-500" />
-                                                <span>{viaje.tipo_servicio}</span>
+                                                <span>Servicio ID: {viaje.servicio_id}</span>
                                             </div>
                                             <div className="flex items-center">
                                                 <FaRoute className="mr-1 text-gray-500" />
-                                                <span>{viaje.alcance_servicio}</span>
+                                                <span>Alcance: {viaje.alcance}</span>
                                             </div>
-                                            {viaje.kilometros_recorridos && (
-                                                <div className="flex items-center">
-                                                    <FaClock className="mr-1 text-gray-500" />
-                                                    <span>{viaje.kilometros_recorridos} km</span>
-                                                </div>
-                                            )}
                                         </div>
                                         
                                         <div className="flex justify-end">

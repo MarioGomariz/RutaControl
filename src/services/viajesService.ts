@@ -1,5 +1,4 @@
-import { Viaje, EstadoViaje } from '../types';
-export type { Viaje };
+import type { Viaje, EstadoViaje } from '@/types/viaje';
 import api from '../utils/api';
 
 /**
@@ -44,7 +43,9 @@ export const createViaje = async (viaje: Omit<Viaje, 'id'>): Promise<Viaje> => {
     // Preparar los datos para la creación
     const createData: Omit<Viaje, 'id'> = {
       ...viaje,
-      fecha_salida: viaje.fecha_salida ? new Date(viaje.fecha_salida).toISOString() : ''
+      fecha_hora_salida: viaje.fecha_hora_salida
+        ? new Date(viaje.fecha_hora_salida).toISOString()
+        : new Date().toISOString()
     };
     
     // Crear el viaje
@@ -77,8 +78,8 @@ export const updateViaje = async (
     const updateData: Partial<Omit<Viaje, 'id'>> = { ...viajeData };
 
     // Convertir fechas a formato ISO si existen
-    if (updateData.fecha_salida) {
-      updateData.fecha_salida = new Date(updateData.fecha_salida).toISOString();
+    if (updateData.fecha_hora_salida) {
+      updateData.fecha_hora_salida = new Date(updateData.fecha_hora_salida).toISOString();
     }
     
     // Actualizar el viaje
