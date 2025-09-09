@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useSemirremolquesStore } from "@/stores";
-import { Semirremolque as SemirremolqueType } from "@/types";
+import { useSemirremolquesStore } from "@/stores/semirremolquesStore";
+import type { Semirremolque as SemirremolqueType } from "@/types/semirremolque";
 import { useServiciosStore } from "@/stores/serviciosStore";
 import { toast } from "react-toastify";
 import ConfirmModal from '@/components/ConfirmModal';
@@ -11,6 +11,7 @@ import { FaTruck, FaCalendarAlt, FaGlobeAmericas } from 'react-icons/fa';
 export default function Semirremolque() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const parsedId = id && id !== 'new' ? Number(id) : null;
   
   const { 
     selectedSemirremolque: semirremolque, 
@@ -26,13 +27,13 @@ export default function Semirremolque() {
   const { servicios, fetchServicios } = useServiciosStore();
   
   useEffect(() => {
-    if (id) {
-      fetchSemirremolqueById(id);
+    if (parsedId !== null && !Number.isNaN(parsedId)) {
+      fetchSemirremolqueById(parsedId);
     }
     
     // Cargar la lista de servicios disponibles
     fetchServicios();
-  }, [id, fetchSemirremolqueById, fetchServicios]);
+  }, [parsedId, fetchSemirremolqueById, fetchServicios]);
 
   // Actualizar el formulario cuando se carga un semirremolque existente
   useEffect(() => {
@@ -83,11 +84,11 @@ export default function Semirremolque() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      if (semirremolque && id) {
-        await editSemirremolque(id, formData);
+      if (semirremolque && parsedId !== null) {
+        await editSemirremolque(parsedId, formData);
         toast.success("Semirremolque actualizado correctamente");
       } else {
-        await addSemirremolque(formData as Omit<SemirremolqueType, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>);
+        await addSemirremolque(formData as Omit<SemirremolqueType, 'id'>);
         toast.success("Semirremolque agregado correctamente");
       }
       navigate("/semirremolques");
@@ -100,10 +101,10 @@ export default function Semirremolque() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleDelete = async () => {
-    if (!id) return;
+    if (parsedId === null) return;
     
     try {
-      await removeSemirremolque(id);
+      await removeSemirremolque(parsedId);
       toast.success('Semirremolque eliminado correctamente');
       setShowDeleteModal(false);
       navigate('/semirremolques');

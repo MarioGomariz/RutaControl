@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useSemirremolquesStore } from "@/stores/semirremolquesStore";
 import { FaTruckMoving, FaSearch, FaPlus, FaIdCard, FaWeightHanging, FaCalendar } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { Semirremolque } from "@/types";
+import type { Semirremolque } from "@/types/semirremolque";
 
 export default function Semirremolques() {
     const { semirremolques, isLoading, error, fetchSemirremolques } = useSemirremolquesStore();

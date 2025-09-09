@@ -1,4 +1,4 @@
-import { Semirremolque } from '../types';
+import type { Semirremolque } from '@/types/semirremolque';
 import api from '../utils/api';
 
 /**
@@ -38,7 +38,7 @@ export const getSemirremolqueById = async (id: string): Promise<Semirremolque | 
  * @param semirremolque Datos del semirremolque (sin ID)
  * @returns Promise con el semirremolque creado
  */
-export const createSemirremolque = async (semirremolque: Omit<Semirremolque, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>): Promise<Semirremolque> => {
+export const createSemirremolque = async (semirremolque: Omit<Semirremolque, 'id'>): Promise<Semirremolque> => {
   try {
     // Preparar los datos para la creación
     const createData = { ...semirremolque };
@@ -46,12 +46,12 @@ export const createSemirremolque = async (semirremolque: Omit<Semirremolque, 'id
     // Convertir las fechas a formato ISO si existen
     const fechasCampos = [
       'vencimiento_rto',
-      'vencimiento_visual_ext',
-      'vencimiento_visual_int',
+      'vencimiento_visual_externa',
+      'vencimiento_visual_interna',
       'vencimiento_espesores',
       'vencimiento_prueba_hidraulica',
       'vencimiento_mangueras',
-      'vencimiento_valvula_five'
+      'vencimiento_valvula_flujo'
     ] as const;
     
     fechasCampos.forEach(campo => {
@@ -81,7 +81,7 @@ export const createSemirremolque = async (semirremolque: Omit<Semirremolque, 'id
  */
 export const updateSemirremolque = async (
   id: string, 
-  semirremolqueData: Partial<Omit<Semirremolque, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>>
+  semirremolqueData: Partial<Omit<Semirremolque, 'id'>>
 ): Promise<Semirremolque | null> => {
   try {
     // Verificar si el semirremolque existe

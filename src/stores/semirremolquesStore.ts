@@ -9,7 +9,7 @@ import {
   getSemirremolquesVencimientoProximo,
   getSemirremolquesVencimientoExpirado
 } from '../services/semirremolquesService';
-import { Semirremolque } from '../types';
+import type { Semirremolque } from '@/types/semirremolque';
 
 interface SemirremolquesState {
   // Estado
@@ -20,10 +20,10 @@ interface SemirremolquesState {
   
   // Acciones
   fetchSemirremolques: () => Promise<void>;
-  fetchSemirremolqueById: (id: string) => Promise<void>;
-  addSemirremolque: (semirremolque: Omit<Semirremolque, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>) => Promise<void>;
-  editSemirremolque: (id: string, semirremolque: Partial<Omit<Semirremolque, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>>) => Promise<void>;
-  removeSemirremolque: (id: string) => Promise<void>;
+  fetchSemirremolqueById: (id: number) => Promise<void>;
+  addSemirremolque: (semirremolque: Omit<Semirremolque, 'id'>) => Promise<void>;
+  editSemirremolque: (id: number, semirremolque: Partial<Omit<Semirremolque, 'id'>>) => Promise<void>;
+  removeSemirremolque: (id: number) => Promise<void>;
   searchSemirremolque: (query: string) => Promise<void>;
   fetchVencimientosProximos: (campo: 'vencimiento_rto' | 'vencimiento_visual_ext' | 'vencimiento_visual_int' | 'vencimiento_espesores' | 'vencimiento_prueba_hidraulica' | 'vencimiento_mangueras' | 'vencimiento_valvula_five', dias?: number) => Promise<void>;
   fetchVencimientosExpirados: (campo: 'vencimiento_rto' | 'vencimiento_visual_ext' | 'vencimiento_visual_int' | 'vencimiento_espesores' | 'vencimiento_prueba_hidraulica' | 'vencimiento_mangueras' | 'vencimiento_valvula_five') => Promise<void>;
@@ -52,10 +52,10 @@ export const useSemirremolquesStore = create<SemirremolquesState>((set) => ({
     }
   },
   
-  fetchSemirremolqueById: async (id: string) => {
+  fetchSemirremolqueById: async (id: number) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await getSemirremolqueById(id);
+      const data = await getSemirremolqueById(String(id));
       set({ selectedSemirremolque: data, isLoading: false });
     } catch (error) {
       set({ 
@@ -85,7 +85,7 @@ export const useSemirremolquesStore = create<SemirremolquesState>((set) => ({
   editSemirremolque: async (id, semirremolque) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedSemirremolque = await updateSemirremolque(id, semirremolque);
+      const updatedSemirremolque = await updateSemirremolque(String(id), semirremolque);
       if (updatedSemirremolque) {
         set(state => ({ 
           semirremolques: state.semirremolques.map(item => 
@@ -108,7 +108,7 @@ export const useSemirremolquesStore = create<SemirremolquesState>((set) => ({
   removeSemirremolque: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const success = await deleteSemirremolque(id);
+      const success = await deleteSemirremolque(String(id));
       if (success) {
         set(state => ({ 
           semirremolques: state.semirremolques.filter(item => item.id !== id),
