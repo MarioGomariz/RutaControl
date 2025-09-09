@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import ConfirmModal from '@/components/ConfirmModal';
 import { FormSection, FormField, FormInput, FormSelect, FormButton } from '@/components/FormComponents';
 import { FaTruck, FaCalendarAlt, FaGlobeAmericas } from 'react-icons/fa';
+import { toDateInput, toSqlDate } from '@/helpers/dateFormater';
 
 export default function Tractor() {
   const { id } = useParams();
@@ -58,7 +59,7 @@ export default function Tractor() {
         modelo: selectedTractor.modelo,
         dominio: selectedTractor.dominio,
         anio: selectedTractor.anio,
-        vencimiento_rto: selectedTractor.vencimiento_rto,
+        vencimiento_rto: toDateInput(selectedTractor.vencimiento_rto),
         estado: selectedTractor.estado,
         tipo_servicio: selectedTractor.tipo_servicio,
         alcance_servicio: selectedTractor.alcance_servicio,
@@ -77,13 +78,20 @@ export default function Tractor() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const payload = {
+      ...formData,
+      vencimiento_rto: toSqlDate(formData.vencimiento_rto),
+    };
+
+    console.log(payload);
     
     try {
       if (isEditing && parsedId !== null) {
-        await editTractor(parsedId, formData);
+        await editTractor(parsedId, payload);
         toast.success("Tractor actualizado correctamente");
       } else {
-        await addTractor(formData as Omit<TractorType, 'id'>);
+        await addTractor(payload as Omit<TractorType, 'id'>);
         toast.success("Tractor agregado correctamente");
       }
       navigate("/tractores");

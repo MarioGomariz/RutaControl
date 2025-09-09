@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import ConfirmModal from "@/components/ConfirmModal";
 import { FormSection, FormField, FormInput, FormCheckbox, FormButton } from '@/components/FormComponents';
 import { FaUserTie, FaIdCard, FaAddressCard } from 'react-icons/fa';
+import { toDateInput, toSqlDate } from '@/helpers/dateFormater';
 
 export default function ChoferForm() {
   const { id } = useParams();
@@ -55,7 +56,7 @@ export default function ChoferForm() {
         telefono: selectedChofer.telefono,
         email: selectedChofer.email,
         licencia: selectedChofer.licencia,
-        fecha_vencimiento_licencia: selectedChofer.fecha_vencimiento_licencia,
+        fecha_vencimiento_licencia: toDateInput(selectedChofer.fecha_vencimiento_licencia),
         activo: selectedChofer.activo
       });
     }
@@ -95,14 +96,18 @@ export default function ChoferForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
+    const payload = {
+      ...formData,
+      fecha_vencimiento_licencia: toSqlDate(formData.fecha_vencimiento_licencia),
+    };
 
     try {
       if (isEditing && parsedId !== null) {
-        await editChofer(parsedId, formData);
+        await editChofer(parsedId, payload);
         toast.success("Chofer actualizado correctamente");
         navigate("/choferes");
       } else {
-        await addChofer(formData);
+        await addChofer(payload as Omit<Chofer, 'id'>);
         toast.success("Chofer creado correctamente");
 
         if (formData.email) {

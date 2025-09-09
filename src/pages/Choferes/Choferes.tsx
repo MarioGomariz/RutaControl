@@ -9,11 +9,9 @@ export default function Choferes() {
     const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
-        // Load choferes data when component mounts
         fetchChoferes();
     }, [fetchChoferes]);
 
-    // Filtrar choferes según el término de búsqueda
     const filteredChoferes = choferes.filter(chofer => 
         chofer.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
         chofer.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||

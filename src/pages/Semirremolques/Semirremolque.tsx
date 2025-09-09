@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import ConfirmModal from '@/components/ConfirmModal';
 import { FormSection, FormField, FormInput, FormSelect, FormButton } from '@/components/FormComponents';
 import { FaTruck, FaCalendarAlt, FaGlobeAmericas } from 'react-icons/fa';
+import { toDateInput, toSqlDate } from '@/helpers/dateFormater';
 
 export default function Semirremolque() {
   const { id } = useParams();
@@ -45,13 +46,13 @@ export default function Semirremolque() {
         estado: semirremolque.estado || "disponible",
         tipo_servicio: semirremolque.tipo_servicio || "",
         alcance_servicio: semirremolque.alcance_servicio || "nacional",
-        vencimiento_rto: semirremolque.vencimiento_rto || "",
-        vencimiento_visual_externa: semirremolque.vencimiento_visual_externa || "",
-        vencimiento_visual_interna: semirremolque.vencimiento_visual_interna || "",
-        vencimiento_espesores: semirremolque.vencimiento_espesores || "",
-        vencimiento_prueba_hidraulica: semirremolque.vencimiento_prueba_hidraulica || "",
-        vencimiento_mangueras: semirremolque.vencimiento_mangueras || "",
-        vencimiento_valvula_flujo: semirremolque.vencimiento_valvula_flujo || "",
+        vencimiento_rto: toDateInput(semirremolque.vencimiento_rto),
+        vencimiento_visual_externa: toDateInput(semirremolque.vencimiento_visual_externa),
+        vencimiento_visual_interna: toDateInput(semirremolque.vencimiento_visual_interna),
+        vencimiento_espesores: toDateInput(semirremolque.vencimiento_espesores),
+        vencimiento_prueba_hidraulica: toDateInput(semirremolque.vencimiento_prueba_hidraulica),
+        vencimiento_mangueras: toDateInput(semirremolque.vencimiento_mangueras),
+        vencimiento_valvula_flujo: toDateInput(semirremolque.vencimiento_valvula_flujo),
       });
     }
   }, [semirremolque]);
@@ -83,12 +84,22 @@ export default function Semirremolque() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const payload = {
+      ...formData,
+      vencimiento_rto: toSqlDate(formData.vencimiento_rto),
+      vencimiento_visual_externa: toSqlDate(formData.vencimiento_visual_externa),
+      vencimiento_visual_interna: toSqlDate(formData.vencimiento_visual_interna),
+      vencimiento_espesores: toSqlDate(formData.vencimiento_espesores),
+      vencimiento_prueba_hidraulica: toSqlDate(formData.vencimiento_prueba_hidraulica),
+      vencimiento_mangueras: toSqlDate(formData.vencimiento_mangueras),
+      vencimiento_valvula_flujo: toSqlDate(formData.vencimiento_valvula_flujo),
+    };
     try {
       if (semirremolque && parsedId !== null) {
-        await editSemirremolque(parsedId, formData);
+        await editSemirremolque(parsedId, payload);
         toast.success("Semirremolque actualizado correctamente");
       } else {
-        await addSemirremolque(formData as Omit<SemirremolqueType, 'id'>);
+        await addSemirremolque(payload as Omit<SemirremolqueType, 'id'>);
         toast.success("Semirremolque agregado correctamente");
       }
       navigate("/semirremolques");

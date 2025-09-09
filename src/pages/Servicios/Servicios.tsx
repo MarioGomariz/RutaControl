@@ -25,19 +25,19 @@ function ServicioCard({ servicio }: { servicio: Servicio }) {
                 </div>
                 
                 <div className="mt-4 flex flex-wrap gap-2">
-                    {servicio.requiere_prueba_hidraulica && (
+                    {!!servicio.requiere_prueba_hidraulica && (
                         <div className="flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                             <FaClipboardCheck size={12} />
                             <span>Prueba Hidráulica</span>
                         </div>
                     )}
-                    {servicio.requiere_visuales && (
+                    {!!servicio.requiere_visuales && (
                         <div className="flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
                             <FaInfoCircle size={12} />
                             <span>Visuales</span>
                         </div>
                     )}
-                    {servicio.requiere_valvula_y_mangueras && (
+                    {!!servicio.requiere_valvula_y_mangueras && (
                         <div className="flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">
                             <FaWrench size={12} />
                             <span>Válvulas y Mangueras</span>
