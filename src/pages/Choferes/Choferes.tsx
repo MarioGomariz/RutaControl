@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useChoferesStore } from "@/stores/choferesStore";
 import { FaUserTie, FaSearch, FaPlus, FaIdCard, FaPhone, FaEnvelope } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { Chofer } from "@/types";
+import type { Chofer } from "@/types/chofer";
 
 export default function Choferes() {
     const { choferes, isLoading, error, fetchChoferes } = useChoferesStore();

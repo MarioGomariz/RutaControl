@@ -1,4 +1,4 @@
-import { Chofer } from '../types';
+import type { Chofer } from '@/types/chofer';
 import { getUsuarioByEmail, deleteUsuario } from './usuariosService';
 import api from '../utils/api';
 
@@ -36,7 +36,7 @@ export const getChoferById = async (id: string): Promise<Chofer | null> => {
  * @param chofer Datos del chofer (sin ID)
  * @returns Promise con el chofer creado
  */
-export const createChofer = async (chofer: Omit<Chofer, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>): Promise<Chofer> => {
+export const createChofer = async (chofer: Omit<Chofer, 'id' | 'usuario_id'>): Promise<Chofer> => {
   try {
     const response = await api.post('/choferes', chofer);
     return response.data;
@@ -62,8 +62,8 @@ export const createChofer = async (chofer: Omit<Chofer, 'id' | 'fecha_creacion' 
  * @returns Promise con el chofer actualizado o null si no existe
  */
 export const updateChofer = async (
-  id: string, 
-  choferData: Partial<Omit<Chofer, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>>
+  id: string,
+  choferData: Partial<Omit<Chofer, 'id' | 'usuario_id'>>
 ): Promise<Chofer | null> => {
   try {
     const updateData = { ...choferData };
@@ -108,7 +108,7 @@ export const deleteChofer = async (id: string): Promise<boolean> => {
       // Si existe un usuario asociado, eliminarlo
       if (usuarioAsociado) {
         try {
-          await deleteUsuario(usuarioAsociado.id);
+          await deleteUsuario(String(usuarioAsociado.id));
           console.log('Usuario asociado eliminado correctamente');
         } catch (error) {
           console.error('Error al eliminar usuario asociado:', error);
