@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useServiciosStore } from "@/stores/serviciosStore";
 import { Link } from "react-router-dom";
 import { FaSearch, FaPlus, FaTools, FaClipboardCheck, FaWrench, FaInfoCircle } from "react-icons/fa";
-import { Servicio } from "@/types";
+import type { Servicio } from "@/types/servicio";
 
 // Componente para mostrar una tarjeta de servicio
 function ServicioCard({ servicio }: { servicio: Servicio }) {
@@ -45,11 +45,7 @@ function ServicioCard({ servicio }: { servicio: Servicio }) {
                     )}
                 </div>
                 
-                {servicio.observaciones && (
-                    <div className="mt-3 text-xs text-gray-500 italic line-clamp-2">
-                        {servicio.observaciones}
-                    </div>
-                )}
+                {/* Campo 'observaciones' no existe en el nuevo tipo Servicio */}
                 
                 <div className="mt-4 pt-4 border-t border-gray-100">
                     <Link 
@@ -76,8 +72,7 @@ export default function Servicios() {
     // Filtrar servicios según el término de búsqueda
     const filteredServicios = servicios.filter(servicio => 
         servicio.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        servicio.descripcion?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (servicio.observaciones && servicio.observaciones.toLowerCase().includes(searchTerm.toLowerCase()))
+        servicio.descripcion?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (

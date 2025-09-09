@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import ConfirmModal from '@/components/ConfirmModal';
 import { FormSection, FormField, FormInput, FormCheckbox, FormButton, FormTextarea } from '@/components/FormComponents';
 import { FaTools, FaClipboardList } from 'react-icons/fa';
+import type { Servicio } from '@/types/servicio';
 
 export default function Servicio() {
   const { id } = useParams();
@@ -21,9 +22,10 @@ export default function Servicio() {
   } = useServiciosStore();
   
   const isEditing = id !== 'new';
+  const parsedId = isEditing && id ? Number(id) : null;
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Omit<Servicio, 'id'>>({
     nombre: "",
     descripcion: "",
     requiere_prueba_hidraulica: false,
@@ -32,12 +34,12 @@ export default function Servicio() {
   });
   
   useEffect(() => {
-    if (isEditing && id) {
-      fetchServicioById(id);
+    if (isEditing && parsedId !== null && !Number.isNaN(parsedId)) {
+      fetchServicioById(parsedId);
     }
     
     return () => clearSelectedServicio();
-  }, [id, isEditing, fetchServicioById, clearSelectedServicio]);
+  }, [parsedId, isEditing, fetchServicioById, clearSelectedServicio]);
   
   useEffect(() => {
     if (selectedServicio) {
@@ -63,11 +65,11 @@ export default function Servicio() {
     e.preventDefault();
     
     try {
-      if (isEditing && id) {
-        await editServicio(id, formData);
+      if (isEditing && parsedId !== null) {
+        await editServicio(parsedId, formData);
         toast.success('Servicio actualizado correctamente');
       } else {
-        await addServicio(formData as any);
+        await addServicio(formData);
         toast.success('Servicio creado correctamente');
       }
       navigate("/servicios");
@@ -79,10 +81,10 @@ export default function Servicio() {
   };
 
   const handleDelete = async () => {
-    if (!id) return;
+    if (parsedId === null) return;
     
     try {
-      await removeServicio(id);
+      await removeServicio(parsedId);
       toast.success('Servicio eliminado correctamente');
       setShowDeleteModal(false);
       navigate('/servicios');

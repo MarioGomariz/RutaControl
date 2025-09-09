@@ -1,4 +1,4 @@
-import { Servicio } from '../types';
+import type { Servicio } from '@/types/servicio';
 import api from '../utils/api';
 
 /**
@@ -38,7 +38,7 @@ export const getServicioById = async (id: string): Promise<Servicio | null> => {
  * @param servicio Datos del servicio (sin ID)
  * @returns Promise con el servicio creado
  */
-export const createServicio = async (servicio: Omit<Servicio, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>): Promise<Servicio> => {
+export const createServicio = async (servicio: Omit<Servicio, 'id'>): Promise<Servicio> => {
   try {
     // Preparar los datos para la creación
     const createData = { ...servicio };
@@ -60,7 +60,7 @@ export const createServicio = async (servicio: Omit<Servicio, 'id' | 'fecha_crea
  */
 export const updateServicio = async (
   id: string, 
-  servicioData: Partial<Omit<Servicio, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>>
+  servicioData: Partial<Omit<Servicio, 'id'>>
 ): Promise<Servicio | null> => {
   try {
     // Verificar si el servicio existe
@@ -70,7 +70,7 @@ export const updateServicio = async (
     }
     
     // Preparar los datos para la actualización
-    const updateData: Partial<Omit<Servicio, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>> = { ...servicioData };
+    const updateData: Partial<Omit<Servicio, 'id'>> = { ...servicioData };
     
     // Actualizar el servicio
     const response = await api.put(`/servicios/${id}`, updateData);

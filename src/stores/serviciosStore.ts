@@ -11,9 +11,8 @@ import {
   getServiciosPorRequerimiento,
   getServiciosPorVisual,
   getServiciosPorValvula,
-  
 } from '../services/serviciosService';
-import { Servicio } from '../types';
+import type { Servicio } from '@/types/servicio';
 
 interface ServiciosState {
   // Estado
@@ -24,10 +23,10 @@ interface ServiciosState {
   
   // Acciones
   fetchServicios: () => Promise<void>;
-  fetchServicioById: (id: string) => Promise<void>;
-  addServicio: (servicio: Omit<Servicio, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>) => Promise<void>;
-  editServicio: (id: string, servicio: Partial<Omit<Servicio, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>>) => Promise<void>;
-  removeServicio: (id: string) => Promise<void>;
+  fetchServicioById: (id: number) => Promise<void>;
+  addServicio: (servicio: Omit<Servicio, 'id'>) => Promise<void>;
+  editServicio: (id: number, servicio: Partial<Omit<Servicio, 'id'>>) => Promise<void>;
+  removeServicio: (id: number) => Promise<void>;
   searchServicio: (query: string) => Promise<void>;
   fetchPorFechaCreacion: (fechaInicio: Date, fechaFin: Date) => Promise<void>;
   fetchPorTipo: (tipo: string) => Promise<void>;
@@ -59,10 +58,10 @@ export const useServiciosStore = create<ServiciosState>((set) => ({
     }
   },
   
-  fetchServicioById: async (id: string) => {
+  fetchServicioById: async (id: number) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await getServicioById(id);
+      const data = await getServicioById(String(id));
       set({ selectedServicio: data, isLoading: false });
     } catch (error) {
       set({ 
@@ -92,11 +91,11 @@ export const useServiciosStore = create<ServiciosState>((set) => ({
   editServicio: async (id, servicio) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedServicio = await updateServicio(id, servicio);
+      const updatedServicio = await updateServicio(String(id), servicio);
       if (updatedServicio) {
         set(state => ({ 
           servicios: state.servicios.map(item => 
-            item.id === Number(id) ? updatedServicio : item
+            item.id === id ? updatedServicio : item
           ),
           selectedServicio: updatedServicio,
           isLoading: false 
@@ -115,11 +114,11 @@ export const useServiciosStore = create<ServiciosState>((set) => ({
   removeServicio: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const success = await deleteServicio(id);
+      const success = await deleteServicio(String(id));
       if (success) {
         set(state => ({ 
-          servicios: state.servicios.filter(item => item.id !== Number(id)),
-          selectedServicio: state.selectedServicio?.id === Number(id) ? null : state.selectedServicio,
+          servicios: state.servicios.filter(item => item.id !== id),
+          selectedServicio: state.selectedServicio?.id === id ? null : state.selectedServicio,
           isLoading: false 
         }));
       } else {
