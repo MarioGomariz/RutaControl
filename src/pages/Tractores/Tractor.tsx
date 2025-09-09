@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTractoresStore } from "@/stores/tractoresStore";
-import { Tractor as TractorType } from "@/types";
+import type { Tractor as TractorType } from "@/types/tractor";
 
 import { useServiciosStore } from "@/stores/serviciosStore";
 import { toast } from "react-toastify";
@@ -26,17 +26,18 @@ export default function Tractor() {
   const { servicios, fetchServicios } = useServiciosStore();
   
   const isEditing = id !== 'new';
+  const parsedId = isEditing && id ? Number(id) : null;
 
   useEffect(() => {
-    if (isEditing && id) {
-      fetchTractorById(id);
+    if (isEditing && parsedId !== null && !Number.isNaN(parsedId)) {
+      fetchTractorById(parsedId);
     }
     
     // Cargar la lista de servicios disponibles
     fetchServicios();
     
     return () => clearSelectedTractor();
-  }, [id, isEditing, fetchTractorById, fetchServicios, clearSelectedTractor]);
+  }, [parsedId, isEditing, fetchTractorById, fetchServicios, clearSelectedTractor]);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [formData, setFormData] = useState<Partial<TractorType>>({
@@ -78,11 +79,11 @@ export default function Tractor() {
     e.preventDefault();
     
     try {
-      if (isEditing && id) {
-        await editTractor(id, formData);
+      if (isEditing && parsedId !== null) {
+        await editTractor(parsedId, formData);
         toast.success("Tractor actualizado correctamente");
       } else {
-        await addTractor(formData as Omit<TractorType, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>);
+        await addTractor(formData as Omit<TractorType, 'id'>);
         toast.success("Tractor agregado correctamente");
       }
       navigate("/tractores");
@@ -94,10 +95,10 @@ export default function Tractor() {
   };
   
   const handleDelete = async () => {
-    if (!id) return;
+    if (parsedId === null) return;
     
     try {
-      await removeTractor(id);
+      await removeTractor(parsedId);
       toast.success('Tractor eliminado correctamente');
       setShowDeleteModal(false);
       navigate('/tractores');

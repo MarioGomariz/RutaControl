@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTractoresStore } from "@/stores/tractoresStore";
 import { FaTruck, FaSearch, FaPlus, FaIdCard, FaCalendar, FaCogs } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { Tractor } from "@/types";
+import type { Tractor } from "@/types/tractor";
 
 export default function Tractores() {
     const { tractores, isLoading, error, fetchTractores } = useTractoresStore();

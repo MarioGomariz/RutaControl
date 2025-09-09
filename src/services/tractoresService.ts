@@ -1,4 +1,4 @@
-import { Tractor } from '../types';
+import type { Tractor } from '@/types/tractor';
 import api from '../utils/api';
 
 /**
@@ -38,7 +38,7 @@ export const getTractorById = async (id: string): Promise<Tractor | null> => {
  * @param tractor Datos del tractor (sin ID)
  * @returns Promise con el tractor creado
  */
-export const createTractor = async (tractor: Omit<Tractor, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>): Promise<Tractor> => {
+export const createTractor = async (tractor: Omit<Tractor, 'id'>): Promise<Tractor> => {
   try {
     // Preparar los datos para la creación
     const createData = { ...tractor };
@@ -68,7 +68,7 @@ export const createTractor = async (tractor: Omit<Tractor, 'id' | 'fecha_creacio
  */
 export const updateTractor = async (
   id: string, 
-  tractorData: Partial<Omit<Tractor, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>>
+  tractorData: Partial<Omit<Tractor, 'id'>>
 ): Promise<Tractor | null> => {
   try {
     // Verificar si el tractor existe
