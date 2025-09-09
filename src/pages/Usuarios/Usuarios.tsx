@@ -3,7 +3,7 @@ import { FaUserPlus, FaSearch, FaEdit, FaTrash, FaUserSlash, FaUserCheck } from 
 import { useNavigate } from 'react-router-dom';
 import { useUsuariosStore } from '@/stores/usuariosStore';
 import ConfirmModal from '@/components/ConfirmModal';
-import { User } from '@/utils/supabase';
+import { User } from '@/types';
 
 const Usuarios: React.FC = () => {
   const { 

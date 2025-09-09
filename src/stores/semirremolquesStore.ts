@@ -9,7 +9,7 @@ import {
   getSemirremolquesVencimientoProximo,
   getSemirremolquesVencimientoExpirado
 } from '../services/semirremolquesService';
-import { Semirremolque } from '../utils/supabase';
+import { Semirremolque } from '../types';
 
 interface SemirremolquesState {
   // Estado

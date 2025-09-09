@@ -7,7 +7,7 @@ import {
   deleteUsuario, 
   searchUsuarios
 } from '../services/usuariosService';
-import { User, UserWithPassword } from '../utils/supabase';
+import { User, UserWithPassword } from '../types';
 
 interface UsuariosState {
   // Estado

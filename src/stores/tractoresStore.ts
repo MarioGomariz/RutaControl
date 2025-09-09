@@ -11,7 +11,7 @@ import {
   getTractoresPorEstado,
   getTractoresPorTipoServicio
 } from '../services/tractoresService';
-import { Tractor } from '../utils/supabase';
+import { Tractor } from '../types';
 
 interface TractoresState {
   // Estado

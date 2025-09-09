@@ -10,7 +10,7 @@ import {
   getChoferesLicenciaVencida,
   toggleChoferStatus
 } from '../services/choferesService';
-import { Chofer } from '../utils/supabase';
+import { Chofer } from '../types';
 
 interface ChoferesState {
   // Estado

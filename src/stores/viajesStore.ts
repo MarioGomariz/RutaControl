@@ -14,6 +14,7 @@ import {
   cambiarEstadoViaje,
   Viaje
 } from '../services/viajesService';
+import type { EstadoViaje } from '../types';
 
 interface ViajesState {
   // Estado
@@ -25,16 +26,16 @@ interface ViajesState {
   // Acciones
   fetchViajes: () => Promise<void>;
   fetchViajeById: (id: string) => Promise<void>;
-  addViaje: (viaje: Omit<Viaje, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>) => Promise<void>;
-  editViaje: (id: string, viaje: Partial<Omit<Viaje, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>>) => Promise<void>;
+  addViaje: (viaje: Omit<Viaje, 'id'>) => Promise<void>;
+  editViaje: (id: string, viaje: Partial<Omit<Viaje, 'id'>>) => Promise<void>;
   removeViaje: (id: string) => Promise<void>;
   searchViaje: (query: string) => Promise<void>;
   fetchViajesByChofer: (choferId: string) => Promise<void>;
   fetchViajesByTractor: (tractorId: string) => Promise<void>;
   fetchViajesBySemirremolque: (semirremolqueId: string) => Promise<void>;
-  fetchViajesByEstado: (estado: 'Programado' | 'En curso' | 'Finalizado' | 'Cancelado') => Promise<void>;
+  fetchViajesByEstado: (estado: EstadoViaje) => Promise<void>;
   fetchViajesByFechas: (fechaInicio: string, fechaFin: string) => Promise<void>;
-  cambiarEstado: (id: string, estado: 'Programado' | 'En curso' | 'Finalizado' | 'Cancelado') => Promise<void>;
+  cambiarEstado: (id: string, estado: EstadoViaje) => Promise<void>;
   clearSelectedViaje: () => void;
   clearError: () => void;
 }
@@ -97,7 +98,7 @@ export const useViajesStore = create<ViajesState>((set) => ({
       if (updatedViaje) {
         set(state => ({ 
           viajes: state.viajes.map(item => 
-            item.id === id ? updatedViaje : item
+            item.id === Number(id) ? updatedViaje : item
           ),
           selectedViaje: updatedViaje,
           isLoading: false 
@@ -119,8 +120,8 @@ export const useViajesStore = create<ViajesState>((set) => ({
       const success = await deleteViaje(id);
       if (success) {
         set(state => ({ 
-          viajes: state.viajes.filter(item => item.id !== id),
-          selectedViaje: state.selectedViaje?.id === id ? null : state.selectedViaje,
+          viajes: state.viajes.filter(item => item.id !== Number(id)),
+          selectedViaje: state.selectedViaje?.id === Number(id) ? null : state.selectedViaje,
           isLoading: false 
         }));
       } else {
@@ -224,9 +225,9 @@ export const useViajesStore = create<ViajesState>((set) => ({
       if (updatedViaje) {
         set(state => ({ 
           viajes: state.viajes.map(item => 
-            item.id === id ? updatedViaje : item
+            item.id === Number(id) ? updatedViaje : item
           ),
-          selectedViaje: state.selectedViaje?.id === id ? updatedViaje : state.selectedViaje,
+          selectedViaje: state.selectedViaje?.id === Number(id) ? updatedViaje : state.selectedViaje,
           isLoading: false 
         }));
       } else {

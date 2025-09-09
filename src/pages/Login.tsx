@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../utils/auth';
+import { useAuth } from '@/stores/authStore';
 import bg from "/bg.png"
 
 const Login: React.FC = () => {
@@ -9,6 +10,7 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const setUser = useAuth((state) => state.setUser);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,10 +24,10 @@ const Login: React.FC = () => {
         return;
       }
       
-      // Use the loginUser function from auth utils
-      await loginUser(emailOrUsername, password);
-      console.log('Login successful for:', emailOrUsername);
-      
+      // Use the loginUser function from auth utils and update the auth store
+      const user = await loginUser(emailOrUsername, password);
+      setUser(user);
+ 
       // Navigate to inicio after successful login
       navigate('/');
     } catch (err) {

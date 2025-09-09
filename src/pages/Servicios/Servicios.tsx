@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useServiciosStore } from "@/stores/serviciosStore";
 import { Link } from "react-router-dom";
 import { FaSearch, FaPlus, FaTools, FaClipboardCheck, FaWrench, FaInfoCircle } from "react-icons/fa";
-import { Servicio } from "@/utils/supabase";
+import { Servicio } from "@/types";
 
 // Componente para mostrar una tarjeta de servicio
 function ServicioCard({ servicio }: { servicio: Servicio }) {

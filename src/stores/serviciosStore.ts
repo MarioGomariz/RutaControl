@@ -11,11 +11,9 @@ import {
   getServiciosPorRequerimiento,
   getServiciosPorVisual,
   getServiciosPorValvula,
-  updateObservacionesServicio,
-  actualizarServicio,
-  agregarObservacionServicio
+  
 } from '../services/serviciosService';
-import { Servicio } from '../utils/supabase';
+import { Servicio } from '../types';
 
 interface ServiciosState {
   // Estado
@@ -36,9 +34,6 @@ interface ServiciosState {
   fetchPorRequerimiento: (requiere: boolean) => Promise<void>;
   fetchPorVisual: (requiere: boolean) => Promise<void>;
   fetchPorValvula: (requiere: boolean) => Promise<void>;
-  updateObservaciones: (id: string, observaciones: string) => Promise<void>;
-  actualizarServicio: (id: string, descripcion: string, observaciones?: string) => Promise<void>;
-  agregarObservacion: (id: string, observacion: string) => Promise<void>;
   clearSelectedServicio: () => void;
   clearError: () => void;
 }
@@ -101,7 +96,7 @@ export const useServiciosStore = create<ServiciosState>((set) => ({
       if (updatedServicio) {
         set(state => ({ 
           servicios: state.servicios.map(item => 
-            item.id === id ? updatedServicio : item
+            item.id === Number(id) ? updatedServicio : item
           ),
           selectedServicio: updatedServicio,
           isLoading: false 
@@ -123,8 +118,8 @@ export const useServiciosStore = create<ServiciosState>((set) => ({
       const success = await deleteServicio(id);
       if (success) {
         set(state => ({ 
-          servicios: state.servicios.filter(item => item.id !== id),
-          selectedServicio: state.selectedServicio?.id === id ? null : state.selectedServicio,
+          servicios: state.servicios.filter(item => item.id !== Number(id)),
+          selectedServicio: state.selectedServicio?.id === Number(id) ? null : state.selectedServicio,
           isLoading: false 
         }));
       } else {
@@ -216,75 +211,6 @@ export const useServiciosStore = create<ServiciosState>((set) => ({
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Error al cargar servicios por requerimiento de válvulas y mangueras', 
-        isLoading: false 
-      });
-    }
-  },
-  
-  updateObservaciones: async (id, observaciones) => {
-    set({ isLoading: true, error: null });
-    try {
-      const updatedServicio = await updateObservacionesServicio(id, observaciones);
-      if (updatedServicio) {
-        set(state => ({ 
-          servicios: state.servicios.map(item => 
-            item.id === id ? updatedServicio : item
-          ),
-          selectedServicio: state.selectedServicio?.id === id ? updatedServicio : state.selectedServicio,
-          isLoading: false 
-        }));
-      } else {
-        throw new Error('No se encontró el servicio');
-      }
-    } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Error al actualizar las observaciones del servicio', 
-        isLoading: false 
-      });
-    }
-  },
-  
-  actualizarServicio: async (id, descripcion, observaciones) => {
-    set({ isLoading: true, error: null });
-    try {
-      const updatedServicio = await actualizarServicio(id, descripcion, observaciones);
-      if (updatedServicio) {
-        set(state => ({ 
-          servicios: state.servicios.map(item => 
-            item.id === id ? updatedServicio : item
-          ),
-          selectedServicio: state.selectedServicio?.id === id ? updatedServicio : state.selectedServicio,
-          isLoading: false 
-        }));
-      } else {
-        throw new Error('No se encontró el servicio');
-      }
-    } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Error al actualizar el servicio', 
-        isLoading: false 
-      });
-    }
-  },
-  
-  agregarObservacion: async (id, observacion) => {
-    set({ isLoading: true, error: null });
-    try {
-      const updatedServicio = await agregarObservacionServicio(id, observacion);
-      if (updatedServicio) {
-        set(state => ({ 
-          servicios: state.servicios.map(item => 
-            item.id === id ? updatedServicio : item
-          ),
-          selectedServicio: state.selectedServicio?.id === id ? updatedServicio : state.selectedServicio,
-          isLoading: false 
-        }));
-      } else {
-        throw new Error('No se encontró el servicio');
-      }
-    } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Error al agregar observación al servicio', 
         isLoading: false 
       });
     }

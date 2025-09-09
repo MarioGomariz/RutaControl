@@ -1,21 +1,18 @@
-import { supabase, User, UserWithPassword } from '../utils/supabase';
+import { User, UserWithPassword } from '../types';
+import api from '../utils/api';
 
 /**
  * Obtener todos los usuarios
  * @returns Promise con array de usuarios
  */
 export const getAllUsuarios = async (): Promise<User[]> => {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*, roles:rol_id(name)')
-    .order('apellido', { ascending: true });
-  
-  if (error) {
+  try {
+    const response = await api.get('/usuarios');
+    return response.data || [];
+  } catch (error) {
     console.error('Error al obtener usuarios:', error);
     throw error;
   }
-  
-  return data || [];
 };
 
 /**
@@ -24,18 +21,16 @@ export const getAllUsuarios = async (): Promise<User[]> => {
  * @returns Promise con el usuario o null si no existe
  */
 export const getUsuarioById = async (id: string): Promise<User | null> => {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*, roles:rol_id(name)')
-    .eq('id', id)
-    .single();
-  
-  if (error) {
+  try {
+    const response = await api.get(`/usuarios/${id}`);
+    return response.data;
+  } catch (error: any) {
     console.error('Error al obtener usuario por ID:', error);
-    return null;
+    if (error.response && error.response.status === 404) {
+      return null;
+    }
+    throw error;
   }
-  
-  return data;
 };
 
 /**
@@ -44,18 +39,18 @@ export const getUsuarioById = async (id: string): Promise<User | null> => {
  * @returns Promise con el usuario o null si no existe
  */
 export const getUsuarioByEmail = async (email: string): Promise<User | null> => {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*, roles:rol_id(name)')
-    .eq('email', email)
-    .single();
-  
-  if (error) {
+  try {
+    const response = await api.get('/usuarios/email', {
+      params: { email }
+    });
+    return response.data;
+  } catch (error: any) {
     console.error('Error al obtener usuario por email:', error);
-    return null;
+    if (error.response && error.response.status === 404) {
+      return null;
+    }
+    throw error;
   }
-  
-  return data;
 };
 
 /**
@@ -64,18 +59,18 @@ export const getUsuarioByEmail = async (email: string): Promise<User | null> => 
  * @returns Promise con el usuario o null si no existe
  */
 export const getUsuarioByUsername = async (username: string): Promise<User | null> => {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*, roles:rol_id(name)')
-    .eq('usuario', username)
-    .single();
-  
-  if (error) {
+  try {
+    const response = await api.get('/usuarios/username', {
+      params: { username }
+    });
+    return response.data;
+  } catch (error: any) {
     console.error('Error al obtener usuario por nombre de usuario:', error);
-    return null;
+    if (error.response && error.response.status === 404) {
+      return null;
+    }
+    throw error;
   }
-  
-  return data;
 };
 
 /**
@@ -84,58 +79,33 @@ export const getUsuarioByUsername = async (username: string): Promise<User | nul
  * @returns Promise con el usuario creado
  */
 export const createUsuario = async (usuario: UserWithPassword): Promise<User> => {
-  // Verificar si el email ya existe
-  const existingEmail = await getUsuarioByEmail(usuario.email);
-  if (existingEmail) {
-    throw new Error('El correo electrónico ya está en uso');
-  }
-  
-  // Verificar si el nombre de usuario ya existe
-  const existingUsername = await getUsuarioByUsername(usuario.usuario);
-  if (existingUsername) {
-    throw new Error('El nombre de usuario ya está en uso');
-  }
-  
-  // Registrar el usuario en la autenticación de Supabase
-  const { data: authData, error: authError } = await supabase.auth.signUp({
-    email: usuario.email,
-    password: usuario.contraseña, // En una aplicación real, esto debería ser manejado de forma más segura
-  });
-  
-  if (authError) {
-    console.error('Error al registrar usuario en autenticación:', authError);
-    throw authError;
-  }
-  
-  if (!authData.user) {
-    throw new Error('Error al crear usuario en autenticación');
-  }
-  
-  // Crear el usuario en la tabla users
-  const { data, error } = await supabase
-    .from('users')
-    .insert({
-      id: authData.user.id,
-      nombre: usuario.nombre,
-      apellido: usuario.apellido,
-      email: usuario.email,
-      usuario: usuario.usuario,
-      rol_id: usuario.rol_id,
-      estado: usuario.estado,
-      observaciones: usuario.observaciones,
+  try {
+    // Verificar si el email ya existe
+    const existingEmail = await getUsuarioByEmail(usuario.email);
+    if (existingEmail) {
+      throw new Error('El correo electrónico ya está en uso');
+    }
+    
+    // Verificar si el nombre de usuario ya existe
+    const existingUsername = await getUsuarioByUsername(usuario.usuario);
+    if (existingUsername) {
+      throw new Error('El nombre de usuario ya está en uso');
+    }
+    
+    // Crear el usuario a través de la API
+    const response = await api.post('/usuarios', {
+      ...usuario,
       ultima_conexion: new Date().toISOString()
-    })
-    .select()
-    .single();
-  
-  if (error) {
-    console.error('Error al crear usuario en base de datos:', error);
-    // Intentar eliminar el usuario de autenticación si falla la creación en la base de datos
-    await supabase.auth.admin.deleteUser(authData.user.id);
+    });
+    
+    return response.data;
+  } catch (error: any) {
+    console.error('Error al crear usuario:', error);
+    if (error.response && error.response.data && error.response.data.message) {
+      throw new Error(error.response.data.message);
+    }
     throw error;
   }
-  
-  return data;
 };
 
 /**
@@ -148,47 +118,45 @@ export const updateUsuario = async (
   id: string, 
   usuarioData: Partial<Omit<User, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>>
 ): Promise<User | null> => {
-  // Verificar si el usuario existe
-  const existingUser = await getUsuarioById(id);
-  if (!existingUser) {
-    return null;
-  }
-  
-  // Verificar si el email está siendo actualizado y ya existe
-  if (usuarioData.email && 
-      usuarioData.email !== existingUser.email) {
-    const existingEmail = await getUsuarioByEmail(usuarioData.email);
-    if (existingEmail && existingEmail.id !== id) {
-      throw new Error('El correo electrónico ya está en uso');
+  try {
+    // Verificar si el usuario existe
+    const existingUser = await getUsuarioById(id);
+    if (!existingUser) {
+      return null;
     }
-  }
-  
-  // Verificar si el nombre de usuario está siendo actualizado y ya existe
-  if (usuarioData.usuario && 
-      usuarioData.usuario !== existingUser.usuario) {
-    const existingUsername = await getUsuarioByUsername(usuarioData.usuario);
-    if (existingUsername && existingUsername.id !== id) {
-      throw new Error('El nombre de usuario ya está en uso');
+    
+    // Verificar si el email está siendo actualizado y ya existe
+    if (usuarioData.email && 
+        usuarioData.email !== existingUser.email) {
+      const existingEmail = await getUsuarioByEmail(usuarioData.email);
+      if (existingEmail && existingEmail.id !== id) {
+        throw new Error('El correo electrónico ya está en uso');
+      }
     }
-  }
-  
-  // Actualizar el usuario
-  const { data, error } = await supabase
-    .from('users')
-    .update({
+    
+    // Verificar si el nombre de usuario está siendo actualizado y ya existe
+    if (usuarioData.usuario && 
+        usuarioData.usuario !== existingUser.usuario) {
+      const existingUsername = await getUsuarioByUsername(usuarioData.usuario);
+      if (existingUsername && existingUsername.id !== id) {
+        throw new Error('El nombre de usuario ya está en uso');
+      }
+    }
+    
+    // Actualizar el usuario a través de la API
+    const response = await api.put(`/usuarios/${id}`, {
       ...usuarioData,
       fecha_actualizacion: new Date().toISOString()
-    })
-    .eq('id', id)
-    .select()
-    .single();
-  
-  if (error) {
+    });
+    
+    return response.data;
+  } catch (error: any) {
     console.error('Error al actualizar usuario:', error);
+    if (error.response && error.response.status === 404) {
+      return null;
+    }
     throw error;
   }
-  
-  return data;
 };
 
 /**
@@ -197,32 +165,23 @@ export const updateUsuario = async (
  * @returns Promise con true si se eliminó correctamente, false si no existe
  */
 export const deleteUsuario = async (id: string): Promise<boolean> => {
-  // Verificar si el usuario existe
-  const existingUser = await getUsuarioById(id);
-  if (!existingUser) {
-    return false;
-  }
-  
-  // Eliminar el usuario de la tabla users
-  const { error } = await supabase
-    .from('users')
-    .delete()
-    .eq('id', id);
-  
-  if (error) {
-    console.error('Error al eliminar usuario de la base de datos:', error);
+  try {
+    // Verificar si el usuario existe
+    const existingUser = await getUsuarioById(id);
+    if (!existingUser) {
+      return false;
+    }
+    
+    // Eliminar el usuario a través de la API
+    await api.delete(`/usuarios/${id}`);
+    return true;
+  } catch (error: any) {
+    console.error('Error al eliminar usuario:', error);
+    if (error.response && error.response.status === 404) {
+      return false;
+    }
     throw error;
   }
-  
-  // Eliminar el usuario de la autenticación de Supabase
-  const { error: authError } = await supabase.auth.admin.deleteUser(id);
-  
-  if (authError) {
-    console.error('Error al eliminar usuario de autenticación:', authError);
-    // No lanzamos error aquí porque el usuario ya fue eliminado de la base de datos
-  }
-  
-  return true;
 };
 
 /**
@@ -250,19 +209,15 @@ export const updateUltimaConexion = async (id: string): Promise<User | null> => 
  * @returns Promise con array de usuarios que coinciden con la búsqueda
  */
 export const searchUsuarios = async (query: string): Promise<User[]> => {
-  const searchTerm = `%${query.toLowerCase()}%`;
-  
-  const { data, error } = await supabase
-    .from('users')
-    .select('*, roles:rol_id(name)')
-    .or(`nombre.ilike.${searchTerm},apellido.ilike.${searchTerm},email.ilike.${searchTerm},usuario.ilike.${searchTerm}`);
-  
-  if (error) {
+  try {
+    const response = await api.get('/usuarios/search', {
+      params: { query }
+    });
+    return response.data || [];
+  } catch (error) {
     console.error('Error al buscar usuarios:', error);
     throw error;
   }
-  
-  return data || [];
 };
 
 /**
@@ -273,38 +228,24 @@ export const searchUsuarios = async (query: string): Promise<User[]> => {
  */
 export const authenticateUsuario = async (usernameOrEmail: string, password: string): Promise<User | null> => {
   try {
-    // Intentar autenticar directamente con email
-    if (usernameOrEmail.includes('@')) {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: usernameOrEmail,
-        password,
-      });
-      
-      if (error || !data.user) {
-        return null;
+    const response = await api.post('/auth/login', {
+      usernameOrEmail,
+      password
+    });
+    
+    if (response.data && response.data.user) {
+      // Si la API devuelve un token, podríamos guardarlo aquí para futuras peticiones
+      if (response.data.token) {
+        localStorage.setItem('authToken', response.data.token);
       }
       
-      return getUsuarioById(data.user.id);
-    } else {
-      // Buscar el usuario por nombre de usuario
-      const usuario = await getUsuarioByUsername(usernameOrEmail);
+      // Actualizar la última conexión del usuario
+      await updateUltimaConexion(response.data.user.id);
       
-      if (!usuario) {
-        return null;
-      }
-      
-      // Intentar autenticar con el email del usuario
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: usuario.email,
-        password,
-      });
-      
-      if (error || !data.user) {
-        return null;
-      }
-      
-      return usuario;
+      return response.data.user;
     }
+    
+    return null;
   } catch (error) {
     console.error('Error al autenticar usuario:', error);
     return null;
@@ -368,10 +309,9 @@ export const createUsuarioFromChofer = async (
     });
     
     // Actualizar el chofer con el ID del usuario
-    await supabase
-      .from('choferes')
-      .update({ user_id: newUser.id })
-      .eq('id', chofer.id);
+    await api.patch(`/choferes/${chofer.id}/usuario`, {
+      user_id: newUser.id
+    });
     
     return newUser;
   } catch (error) {

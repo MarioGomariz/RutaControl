@@ -1,7 +1,7 @@
-import { supabase } from './supabase';
+import api from './api';
 
 /**
- * Registra un nuevo usuario en Supabase Auth y en la tabla users
+ * Registra un nuevo usuario a través de la API
  * @param email Email del usuario
  * @param password Contraseña del usuario
  * @param userData Datos adicionales del usuario (nombre, apellido, etc.)
@@ -20,42 +20,24 @@ export async function registerUser(
   }
 ) {
   try {
-    // 1. Registrar el usuario en Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // Registrar el usuario a través de la API
+    const response = await api.post('/auth/register', {
       email,
       password,
+      nombre: userData.nombre,
+      apellido: userData.apellido,
+      usuario: userData.usuario,
+      rol_id: userData.rol_id,
+      estado: userData.estado,
+      observaciones: userData.observaciones,
+      ultima_conexion: new Date().toISOString()
     });
     
-    if (authError || !authData.user) {
-      console.error('Error al registrar usuario en Auth:', authError);
-      return null;
+    if (response.data && response.data.user) {
+      return response.data.user;
     }
     
-    // 2. Insertar el usuario en la tabla users
-    const { data, error } = await supabase
-      .from('users')
-      .insert({
-        id: authData.user.id,
-        email,
-        nombre: userData.nombre,
-        apellido: userData.apellido,
-        usuario: userData.usuario,
-        rol_id: userData.rol_id,
-        estado: userData.estado,
-        observaciones: userData.observaciones,
-        ultima_conexion: new Date().toISOString()
-      })
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error al crear usuario en la tabla users:', error);
-      // Intentar eliminar el usuario de Auth si falla la creación en la tabla
-      await supabase.auth.admin.deleteUser(authData.user.id);
-      return null;
-    }
-    
-    return data;
+    return null;
   } catch (error) {
     console.error('Error al registrar usuario:', error);
     return null;
@@ -74,13 +56,14 @@ export async function setupAdminUser(
 ) {
   try {
     // Verificar si ya existe algún usuario administrador
-    const { data: existingAdmins } = await supabase
-      .from('users')
-      .select('id')
-      .eq('rol_id', 1) // Asumiendo que 1 es el ID del rol administrador
-      .limit(1);
+    const response = await api.get('/usuarios', {
+      params: {
+        rol_id: 1,
+        limit: 1
+      }
+    });
     
-    if (existingAdmins && existingAdmins.length > 0) {
+    if (response.data && response.data.length > 0) {
       console.log('Ya existe un usuario administrador');
       return true;
     }

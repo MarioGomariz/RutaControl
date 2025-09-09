@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSemirremolquesStore } from "@/stores";
+import { Semirremolque as SemirremolqueType } from "@/types";
 import { useServiciosStore } from "@/stores/serviciosStore";
-import { Semirremolque as SemirremolqueType } from "@/utils/supabase";
 import { toast } from "react-toastify";
 import ConfirmModal from '@/components/ConfirmModal';
 import { FormSection, FormField, FormInput, FormSelect, FormButton } from '@/components/FormComponents';
@@ -40,51 +40,44 @@ export default function Semirremolque() {
       setFormData({
         nombre: semirremolque.nombre || "",
         dominio: semirremolque.dominio || "",
-        año: semirremolque.año || new Date().getFullYear(),
-        estado: semirremolque.estado || "Disponible",
+        anio: semirremolque.anio || new Date().getFullYear(),
+        estado: semirremolque.estado || "disponible",
         tipo_servicio: semirremolque.tipo_servicio || "",
-        alcance_servicio: semirremolque.alcance_servicio || false,
+        alcance_servicio: semirremolque.alcance_servicio || "nacional",
         vencimiento_rto: semirremolque.vencimiento_rto || "",
-        vencimiento_visual_ext: semirremolque.vencimiento_visual_ext || "",
-        vencimiento_visual_int: semirremolque.vencimiento_visual_int || "",
+        vencimiento_visual_externa: semirremolque.vencimiento_visual_externa || "",
+        vencimiento_visual_interna: semirremolque.vencimiento_visual_interna || "",
         vencimiento_espesores: semirremolque.vencimiento_espesores || "",
         vencimiento_prueba_hidraulica: semirremolque.vencimiento_prueba_hidraulica || "",
         vencimiento_mangueras: semirremolque.vencimiento_mangueras || "",
-        vencimiento_valvula_five: semirremolque.vencimiento_valvula_five || "",
+        vencimiento_valvula_flujo: semirremolque.vencimiento_valvula_flujo || "",
       });
     }
   }, [semirremolque]);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Partial<SemirremolqueType>>({
     nombre: "",
     dominio: "",
-    año: new Date().getFullYear(),
-    estado: "Disponible",
+    anio: new Date().getFullYear(),
+    estado: "disponible",
     tipo_servicio: "",
-    alcance_servicio: false,
+    alcance_servicio: "nacional",
     vencimiento_rto: "",
-    vencimiento_visual_ext: "",
-    vencimiento_visual_int: "",
+    vencimiento_visual_externa: "",
+    vencimiento_visual_interna: "",
     vencimiento_espesores: "",
     vencimiento_prueba_hidraulica: "",
     vencimiento_mangueras: "",
-    vencimiento_valvula_five: "",
+    vencimiento_valvula_flujo: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
     
-    if (name === "alcance_servicio") {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value === "true",
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: type === "number" ? parseFloat(value) || 0 : value,
-      }));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "number" ? parseFloat(value) || 0 : value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -94,7 +87,7 @@ export default function Semirremolque() {
         await editSemirremolque(id, formData);
         toast.success("Semirremolque actualizado correctamente");
       } else {
-        await addSemirremolque(formData as unknown as Omit<SemirremolqueType, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>);
+        await addSemirremolque(formData as Omit<SemirremolqueType, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>);
         toast.success("Semirremolque agregado correctamente");
       }
       navigate("/semirremolques");
@@ -190,11 +183,11 @@ export default function Semirremolque() {
                 />
               </FormField>
 
-              <FormField label="Año" name="año" required>
+              <FormField label="Año" name="anio" required>
                 <FormInput
                   type="number"
-                  name="año"
-                  value={formData.año}
+                  name="anio"
+                  value={formData.anio}
                   onChange={handleChange}
                   min="1990"
                   max={new Date().getFullYear() + 1}
@@ -209,10 +202,10 @@ export default function Semirremolque() {
                   onChange={handleChange}
                   required
                 >
-                  <option value="Disponible">Disponible</option>
-                  <option value="En uso">En uso</option>
-                  <option value="En reparación">En reparación</option>
-                  <option value="Fuera de servicio">Fuera de servicio</option>
+                  <option value="disponible">Disponible</option>
+                  <option value="en uso">En uso</option>
+                  <option value="en reparacion">En reparación</option>
+                  <option value="fuera de servicio">Fuera de servicio</option>
                 </FormSelect>
               </FormField>
             </div>
@@ -243,12 +236,12 @@ export default function Semirremolque() {
               <FormField label="Alcance del Servicio" name="alcance_servicio" required>
                 <FormSelect
                   name="alcance_servicio"
-                  value={formData.alcance_servicio.toString()}
+                  value={formData.alcance_servicio}
                   onChange={handleChange}
                   required
                 >
-                  <option value="false">Nacional</option>
-                  <option value="true">Internacional</option>
+                  <option value="nacional">Nacional</option>
+                  <option value="internacional">Internacional</option>
                 </FormSelect>
               </FormField>
             </div>
@@ -270,20 +263,20 @@ export default function Semirremolque() {
                 />
               </FormField>
 
-              <FormField label="Vencimiento Visual Externa" name="vencimiento_visual_ext">
+              <FormField label="Vencimiento Visual Externa" name="vencimiento_visual_externa">
                 <FormInput
                   type="date"
-                  name="vencimiento_visual_ext"
-                  value={formData.vencimiento_visual_ext}
+                  name="vencimiento_visual_externa"
+                  value={formData.vencimiento_visual_externa}
                   onChange={handleChange}
                 />
               </FormField>
 
-              <FormField label="Vencimiento Visual Interna" name="vencimiento_visual_int">
+              <FormField label="Vencimiento Visual Interna" name="vencimiento_visual_interna">
                 <FormInput
                   type="date"
-                  name="vencimiento_visual_int"
-                  value={formData.vencimiento_visual_int}
+                  name="vencimiento_visual_interna"
+                  value={formData.vencimiento_visual_interna}
                   onChange={handleChange}
                 />
               </FormField>
@@ -315,11 +308,11 @@ export default function Semirremolque() {
                 />
               </FormField>
 
-              <FormField label="Vencimiento Válvula Five" name="vencimiento_valvula_five">
+              <FormField label="Vencimiento Válvula Five" name="vencimiento_valvula_flujo">
                 <FormInput
                   type="date"
-                  name="vencimiento_valvula_five"
-                  value={formData.vencimiento_valvula_five}
+                  name="vencimiento_valvula_flujo"
+                  value={formData.vencimiento_valvula_flujo}
                   onChange={handleChange}
                 />
               </FormField>

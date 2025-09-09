@@ -4,7 +4,7 @@ import { useServiciosStore } from "@/stores/serviciosStore";
 import { toast } from "react-toastify";
 import ConfirmModal from '@/components/ConfirmModal';
 import { FormSection, FormField, FormInput, FormCheckbox, FormButton, FormTextarea } from '@/components/FormComponents';
-import { FaTools, FaClipboardList, FaInfoCircle } from 'react-icons/fa';
+import { FaTools, FaClipboardList } from 'react-icons/fa';
 
 export default function Servicio() {
   const { id } = useParams();
@@ -29,7 +29,6 @@ export default function Servicio() {
     requiere_prueba_hidraulica: false,
     requiere_visuales: false,
     requiere_valvula_y_mangueras: false,
-    observaciones: "",
   });
   
   useEffect(() => {
@@ -44,11 +43,10 @@ export default function Servicio() {
     if (selectedServicio) {
       setFormData({
         nombre: selectedServicio.nombre,
-        descripcion: selectedServicio.descripcion,
+        descripcion: selectedServicio.descripcion || "", 
         requiere_prueba_hidraulica: selectedServicio.requiere_prueba_hidraulica,
-        requiere_visuales: selectedServicio.requiere_visuales,
+        requiere_visuales: selectedServicio.requiere_visuales,  
         requiere_valvula_y_mangueras: selectedServicio.requiere_valvula_y_mangueras,
-        observaciones: selectedServicio.observaciones || "",
       });
     }
   }, [selectedServicio]);
@@ -94,6 +92,7 @@ export default function Servicio() {
       setShowDeleteModal(false);
     }
   };
+
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -190,21 +189,7 @@ export default function Servicio() {
               </div>
             </FormSection>
 
-            <FormSection
-              title="Observaciones"
-              icon={<FaInfoCircle />}
-              color="green"
-            >
-              <FormField label="Observaciones adicionales" name="observaciones">
-                <FormTextarea
-                  name="observaciones"
-                  value={formData.observaciones}
-                  onChange={handleChange}
-                  placeholder="Observaciones adicionales sobre el servicio"
-                  rows={3}
-                />
-              </FormField>
-            </FormSection>
+           
 
             <div className="flex justify-end gap-4 pt-4">
               <FormButton

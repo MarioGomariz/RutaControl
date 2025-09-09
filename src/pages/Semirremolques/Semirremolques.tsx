@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useSemirremolquesStore } from "@/stores/semirremolquesStore";
 import { FaTruckMoving, FaSearch, FaPlus, FaIdCard, FaWeightHanging, FaCalendar } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { Semirremolque } from "@/utils/supabase";
+import { Semirremolque } from "@/types";
 
 export default function Semirremolques() {
     const { semirremolques, isLoading, error, fetchSemirremolques } = useSemirremolquesStore();
@@ -19,7 +19,7 @@ export default function Semirremolques() {
         semirremolque.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         semirremolque.dominio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         semirremolque.tipo_servicio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        String(semirremolque.año || '').includes(searchTerm)
+        String(semirremolque.anio || '').includes(searchTerm)
     );
 
     return (
@@ -100,7 +100,7 @@ export default function Semirremolques() {
 // Componente de tarjeta de semirremolque mejorado
 function SemirremolqueCard({ semirremolque }: { semirremolque: Semirremolque }) {
     // Determinar si el semirremolque está activo basado en su estado
-    const isActive = semirremolque.estado === "Activo";
+    const isActive = semirremolque.estado === 'disponible';
     
     // Calcular si el RTO está próximo a vencer (30 días) si existe
     const rtoDate = semirremolque.vencimiento_rto ? new Date(semirremolque.vencimiento_rto) : null;
@@ -130,10 +130,10 @@ function SemirremolqueCard({ semirremolque }: { semirremolque: Semirremolque }) 
                             <span>{semirremolque.dominio || 'Sin dominio'}</span>
                         </div>
                         
-                        {semirremolque.año && (
+                        {semirremolque.anio && (
                             <div className="flex items-center text-gray-600">
                                 <FaCalendar className="mr-2 text-gray-500" />
-                                <span>Año: {semirremolque.año}</span>
+                                <span>Año: {semirremolque.anio}</span>
                             </div>
                         )}
                         
@@ -150,7 +150,7 @@ function SemirremolqueCard({ semirremolque }: { semirremolque: Semirremolque }) 
                             <div className="flex items-center">
                                 <div className="flex-1">
                                     <p className="text-xs text-gray-500">RTO</p>
-                                    <p className="font-medium">{new Date(semirremolque.vencimiento_rto).toLocaleDateString()}</p>
+                                    <p className="font-medium">{new Date(semirremolque.vencimiento_rto || '').toLocaleDateString()}</p>
                                 </div>
                                 <div className={`px-3 py-1 rounded-full text-xs font-medium ${isRtoExpired ? 'bg-red-100 text-red-800' : isRtoExpiringSoon ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
                                     {isRtoExpired ? 'Vencida' : isRtoExpiringSoon ? `${daysUntilRto} días` : 'Vigente'}

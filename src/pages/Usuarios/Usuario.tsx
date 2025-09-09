@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { FaSave, FaTimes, FaUser, FaKey, FaIdCard, FaClipboardList } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUsuariosStore } from '@/stores/usuariosStore';
-import { User, UserWithPassword } from '@/utils/supabase';
+import { Usuario } from '@/types';
 import { FormSection, FormField, FormInput, FormSelect, FormTextarea, FormButton } from '@/components/FormComponents';
 
 // Extender el tipo User para incluir el campo contraseña para el formulario
-interface FormUser extends Omit<User, 'id' | 'fecha_creacion' | 'fecha_actualizacion'> {
+interface FormUser extends Omit<Usuario, 'id'> {
   contraseña?: string;
 }
 
@@ -17,15 +17,10 @@ const Usuario: React.FC = () => {
   const isEditing = id !== 'new';
 
   const [formData, setFormData] = useState<FormUser>({
-    nombre: '',
-    apellido: '',
-    email: '',
     usuario: '',
     contraseña: '', // Campo temporal para el formulario, no se almacena en Supabase
     rol_id: 2, // 1=admin, 2=chofer
-    estado: 'Activo',
-    observaciones: '',
-    ultima_conexion: ''
+    activo: true,
   });
   
   const [error, setError] = useState<string>('');
@@ -52,7 +47,7 @@ const Usuario: React.FC = () => {
         contraseña: '', // No mostrar la contraseña por seguridad
         rol_id: selectedUsuario.rol_id,
         estado: selectedUsuario.estado,
-        observaciones: selectedUsuario.observaciones || '',
+        observaciones: selectedUsuario.observaciones || undefined,
         ultima_conexion: selectedUsuario.ultima_conexion
       });
     }

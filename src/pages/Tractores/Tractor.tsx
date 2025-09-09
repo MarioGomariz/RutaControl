@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTractoresStore } from "@/stores/tractoresStore";
+import { Tractor as TractorType } from "@/types";
+
 import { useServiciosStore } from "@/stores/serviciosStore";
 import { toast } from "react-toastify";
 import ConfirmModal from '@/components/ConfirmModal';
-import { FormSection, FormField, FormInput, FormSelect, FormCheckbox, FormButton } from '@/components/FormComponents';
+import { FormSection, FormField, FormInput, FormSelect, FormButton } from '@/components/FormComponents';
 import { FaTruck, FaCalendarAlt, FaGlobeAmericas } from 'react-icons/fa';
 
 export default function Tractor() {
@@ -37,15 +39,15 @@ export default function Tractor() {
   }, [id, isEditing, fetchTractorById, fetchServicios, clearSelectedTractor]);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Partial<TractorType>>({
     marca: "",
     modelo: "",
     dominio: "",
-    año: new Date().getFullYear(),
+    anio: new Date().getFullYear(),
     vencimiento_rto: "",
-    estado: "Disponible",
+    estado: "disponible",
     tipo_servicio: "",
-    alcance_servicio: false,
+    alcance_servicio: "nacional",
   });
   
   useEffect(() => {
@@ -54,7 +56,7 @@ export default function Tractor() {
         marca: selectedTractor.marca,
         modelo: selectedTractor.modelo,
         dominio: selectedTractor.dominio,
-        año: selectedTractor.año,
+        anio: selectedTractor.anio,
         vencimiento_rto: selectedTractor.vencimiento_rto,
         estado: selectedTractor.estado,
         tipo_servicio: selectedTractor.tipo_servicio,
@@ -80,7 +82,7 @@ export default function Tractor() {
         await editTractor(id, formData);
         toast.success("Tractor actualizado correctamente");
       } else {
-        await addTractor(formData);
+        await addTractor(formData as Omit<TractorType, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>);
         toast.success("Tractor agregado correctamente");
       }
       navigate("/tractores");
@@ -178,11 +180,11 @@ export default function Tractor() {
                   />
                 </FormField>
 
-                <FormField label="Año" name="año" required>
+                <FormField label="Año" name="anio" required>
                   <FormInput
                     type="number"
-                    name="año"
-                    value={formData.año}
+                    name="anio"
+                    value={formData.anio}
                     onChange={handleChange}
                     min="1990"
                     max={new Date().getFullYear() + 1}
@@ -215,10 +217,10 @@ export default function Tractor() {
                     onChange={handleChange}
                     required
                   >
-                    <option value="Disponible">Disponible</option>
-                    <option value="En reparación">En reparación</option>
-                    <option value="En viaje">En viaje</option>
-                    <option value="Fuera de servicio">Fuera de servicio</option>
+                    <option value="disponible">Disponible</option>
+                    <option value="en reparacion">En reparación</option>
+                    <option value="en uso">En viaje</option>
+                    <option value="fuera de servicio">Fuera de servicio</option>
                   </FormSelect>
                 </FormField>
               </div>
@@ -247,12 +249,15 @@ export default function Tractor() {
                 </FormField>
 
                 <FormField label="Alcance del Servicio" name="alcance_servicio">
-                  <FormCheckbox
+                  <FormSelect
                     name="alcance_servicio"
-                    checked={formData.alcance_servicio}
+                    value={formData.alcance_servicio}
                     onChange={handleChange}
-                    label="Alcance Internacional"
-                  />
+                    required
+                  >
+                    <option value="nacional">Nacional</option>
+                    <option value="internacional">Internacional</option>
+                  </FormSelect>
                 </FormField>
               </div>
             </FormSection>
