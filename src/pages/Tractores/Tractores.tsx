@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTractoresStore } from "@/stores/tractoresStore";
 import { FaTruck, FaSearch, FaPlus, FaIdCard, FaCalendar, FaCogs } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { Tractor } from "@/utils/supabase";
+import type { Tractor } from "@/types/tractor";
 
 export default function Tractores() {
     const { tractores, isLoading, error, fetchTractores } = useTractoresStore();
@@ -96,7 +96,7 @@ export default function Tractores() {
 // Componente de tarjeta de tractor mejorado
 function TractorCard({ tractor }: { tractor: Tractor }) {
     // Determinar si el tractor está activo basado en su estado
-    const isActive = tractor.estado === "Activo";
+    const isActive = tractor.estado === 'disponible';
     
     // Calcular si el RTO está próximo a vencer (30 días) si existe
     const rtoDate = tractor.vencimiento_rto ? new Date(tractor.vencimiento_rto) : null;
@@ -126,10 +126,10 @@ function TractorCard({ tractor }: { tractor: Tractor }) {
                             <span>{tractor.dominio || 'Sin dominio'}</span>
                         </div>
                         
-                        {tractor.año && (
+                        {tractor.anio && (
                             <div className="flex items-center text-gray-600">
                                 <FaCalendar className="mr-2 text-gray-500" />
-                                <span>Año: {tractor.año}</span>
+                                <span>Año: {tractor.anio}</span>
                             </div>
                         )}
                         
@@ -146,7 +146,7 @@ function TractorCard({ tractor }: { tractor: Tractor }) {
                             <div className="flex items-center">
                                 <div className="flex-1">
                                     <p className="text-xs text-gray-500">RTO</p>
-                                    <p className="font-medium">{new Date(tractor.vencimiento_rto).toLocaleDateString()}</p>
+                                    <p className="font-medium">{new Date(tractor.vencimiento_rto || '').toLocaleDateString()}</p>
                                 </div>
                                 <div className={`px-3 py-1 rounded-full text-xs font-medium ${isRtoExpired ? 'bg-red-100 text-red-800' : isRtoExpiringSoon ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
                                     {isRtoExpired ? 'Vencida' : isRtoExpiringSoon ? `${daysUntilRto} días` : 'Vigente'}

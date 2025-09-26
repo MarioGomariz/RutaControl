@@ -1,21 +1,18 @@
-import { supabase, Tractor } from '../utils/supabase';
+import type { Tractor } from '@/types/tractor';
+import api from '../utils/api';
 
 /**
  * Obtener todos los tractores
  * @returns Promise con array de tractores
  */
 export const getAllTractores = async (): Promise<Tractor[]> => {
-  const { data, error } = await supabase
-    .from('tractores')
-    .select('*')
-    .order('marca', { ascending: true });
-  
-  if (error) {
+  try {
+    const response = await api.get('/tractores');
+    return response.data || [];
+  } catch (error) {
     console.error('Error al obtener tractores:', error);
     throw error;
   }
-  
-  return data || [];
 };
 
 /**
@@ -24,18 +21,16 @@ export const getAllTractores = async (): Promise<Tractor[]> => {
  * @returns Promise con el tractor o null si no existe
  */
 export const getTractorById = async (id: string): Promise<Tractor | null> => {
-  const { data, error } = await supabase
-    .from('tractores')
-    .select('*')
-    .eq('id', id)
-    .single();
-  
-  if (error) {
+  try {
+    const response = await api.get(`/tractores/${id}`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.status === 404) {
+      return null;
+    }
     console.error('Error al obtener tractor por ID:', error);
-    return null;
+    throw error;
   }
-  
-  return data;
 };
 
 /**
@@ -43,39 +38,26 @@ export const getTractorById = async (id: string): Promise<Tractor | null> => {
  * @param tractor Datos del tractor (sin ID)
  * @returns Promise con el tractor creado
  */
-export const createTractor = async (tractor: Omit<Tractor, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>): Promise<Tractor> => {
-  // Verificar si el dominio ya existe
-  const { data: existingDominio } = await supabase
-    .from('tractores')
-    .select('id')
-    .eq('dominio', tractor.dominio)
-    .single();
-  
-  if (existingDominio) {
-    throw new Error('Ya existe un tractor con ese dominio');
-  }
-  
-  // Preparar los datos para la creación
-  const createData = { ...tractor };
-  
-  // Convertir la fecha de vencimiento RTO a formato ISO si existe
-  if (createData.vencimiento_rto && (typeof createData.vencimiento_rto === 'string' || typeof createData.vencimiento_rto === 'number')) {
-    createData.vencimiento_rto = new Date(createData.vencimiento_rto).toISOString();
-  }
-  
-  // Crear el tractor
-  const { data, error } = await supabase
-    .from('tractores')
-    .insert(createData)
-    .select()
-    .single();
-  
-  if (error) {
+export const createTractor = async (tractor: Omit<Tractor, 'id'>): Promise<Tractor> => {
+  try {
+    // Preparar los datos para la creación
+    const createData = { ...tractor };
+    
+    // Convertir la fecha de vencimiento RTO a formato ISO si existe
+    if (createData.vencimiento_rto && (typeof createData.vencimiento_rto === 'string' || typeof createData.vencimiento_rto === 'number')) {
+      createData.vencimiento_rto = new Date(createData.vencimiento_rto).toISOString();
+    }
+    
+    // Crear el tractor
+    const response = await api.post('/tractores', createData);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.status === 409) {
+      throw new Error('Ya existe un tractor con ese dominio');
+    }
     console.error('Error al crear tractor:', error);
     throw error;
   }
-  
-  return data;
 };
 
 /**
@@ -86,54 +68,36 @@ export const createTractor = async (tractor: Omit<Tractor, 'id' | 'fecha_creacio
  */
 export const updateTractor = async (
   id: string, 
-  tractorData: Partial<Omit<Tractor, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>>
+  tractorData: Partial<Omit<Tractor, 'id'>>
 ): Promise<Tractor | null> => {
-  // Verificar si el tractor existe
-  const { data: existingTractor } = await supabase
-    .from('tractores')
-    .select('*')
-    .eq('id', id)
-    .single();
-  
-  if (!existingTractor) {
-    return null;
-  }
-  
-  // Verificar si el dominio está siendo actualizado y ya existe
-  if (tractorData.dominio && tractorData.dominio !== existingTractor.dominio) {
-    const { data: existingDominio } = await supabase
-      .from('tractores')
-      .select('id')
-      .eq('dominio', tractorData.dominio)
-      .single();
+  try {
+    // Verificar si el tractor existe
+    const existingTractor = await getTractorById(id);
+    if (!existingTractor) {
+      return null;
+    }
     
-    if (existingDominio && existingDominio.id !== id) {
+    // Preparar los datos para la actualización
+    const updateData = { ...tractorData };
+    
+    // Convertir la fecha de vencimiento RTO a formato ISO si existe
+    if (updateData.vencimiento_rto && (typeof updateData.vencimiento_rto === 'string' || typeof updateData.vencimiento_rto === 'number')) {
+      updateData.vencimiento_rto = new Date(updateData.vencimiento_rto).toISOString();
+    }
+    
+    // Actualizar el tractor
+    const response = await api.put(`/tractores/${id}`, updateData);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.status === 404) {
+      return null;
+    }
+    if (error.response && error.response.status === 409) {
       throw new Error('Ya existe un tractor con ese dominio');
     }
-  }
-  
-  // Preparar los datos para la actualización
-  const updateData = { ...tractorData };
-  
-  // Convertir la fecha de vencimiento RTO a formato ISO si existe
-  if (updateData.vencimiento_rto && (typeof updateData.vencimiento_rto === 'string' || typeof updateData.vencimiento_rto === 'number')) {
-    updateData.vencimiento_rto = new Date(updateData.vencimiento_rto).toISOString();
-  }
-  
-  // Actualizar el tractor
-  const { data, error } = await supabase
-    .from('tractores')
-    .update(updateData)
-    .eq('id', id)
-    .select()
-    .single();
-  
-  if (error) {
     console.error('Error al actualizar tractor:', error);
     throw error;
   }
-  
-  return data;
 };
 
 /**
@@ -142,29 +106,23 @@ export const updateTractor = async (
  * @returns Promise con true si se eliminó correctamente, false si no existe
  */
 export const deleteTractor = async (id: string): Promise<boolean> => {
-  // Verificar si el tractor existe
-  const { data: existingTractor } = await supabase
-    .from('tractores')
-    .select('*')
-    .eq('id', id)
-    .single();
-  
-  if (!existingTractor) {
-    return false;
-  }
-  
-  // Eliminar el tractor
-  const { error } = await supabase
-    .from('tractores')
-    .delete()
-    .eq('id', id);
-  
-  if (error) {
+  try {
+    // Verificar si el tractor existe
+    const existingTractor = await getTractorById(id);
+    if (!existingTractor) {
+      return false;
+    }
+    
+    // Eliminar el tractor
+    await api.delete(`/tractores/${id}`);
+    return true;
+  } catch (error: any) {
+    if (error.response && error.response.status === 404) {
+      return false;
+    }
     console.error('Error al eliminar tractor:', error);
     throw error;
   }
-  
-  return true;
 };
 
 /**
@@ -173,19 +131,13 @@ export const deleteTractor = async (id: string): Promise<boolean> => {
  * @returns Promise con array de tractores que coinciden con la búsqueda
  */
 export const searchTractores = async (query: string): Promise<Tractor[]> => {
-  const searchTerm = `%${query.toLowerCase()}%`;
-  
-  const { data, error } = await supabase
-    .from('tractores')
-    .select('*')
-    .or(`marca.ilike.${searchTerm},modelo.ilike.${searchTerm},dominio.ilike.${searchTerm}`);
-  
-  if (error) {
+  try {
+    const response = await api.get(`/tractores/search?query=${encodeURIComponent(query)}`);
+    return response.data || [];
+  } catch (error) {
     console.error('Error al buscar tractores:', error);
     throw error;
   }
-  
-  return data || [];
 };
 
 /**
@@ -194,22 +146,13 @@ export const searchTractores = async (query: string): Promise<Tractor[]> => {
  * @returns Promise con array de tractores con vencimiento RTO próximo
  */
 export const getTractoresRTOProximo = async (diasLimite: number = 30): Promise<Tractor[]> => {
-  const fechaLimite = new Date();
-  fechaLimite.setDate(fechaLimite.getDate() + diasLimite);
-  
-  const { data, error } = await supabase
-    .from('tractores')
-    .select('*')
-    .lt('vencimiento_rto', fechaLimite.toISOString())
-    .gt('vencimiento_rto', new Date().toISOString())
-    .order('vencimiento_rto', { ascending: true });
-  
-  if (error) {
-    console.error('Error al obtener tractores con RTO próximo a vencer:', error);
+  try {
+    const response = await api.get(`/tractores/rto-proximo?dias=${diasLimite}`);
+    return response.data || [];
+  } catch (error) {
+    console.error('Error al obtener tractores con RTO próximo:', error);
     throw error;
   }
-  
-  return data || [];
 };
 
 /**
@@ -217,18 +160,13 @@ export const getTractoresRTOProximo = async (diasLimite: number = 30): Promise<T
  * @returns Promise con array de tractores con vencimiento RTO expirado
  */
 export const getTractoresRTOExpirado = async (): Promise<Tractor[]> => {
-  const { data, error } = await supabase
-    .from('tractores')
-    .select('*')
-    .lt('vencimiento_rto', new Date().toISOString())
-    .order('vencimiento_rto', { ascending: false });
-  
-  if (error) {
+  try {
+    const response = await api.get('/tractores/rto-expirado');
+    return response.data || [];
+  } catch (error) {
     console.error('Error al obtener tractores con RTO vencido:', error);
     throw error;
   }
-  
-  return data || [];
 };
 
 /**
@@ -237,18 +175,13 @@ export const getTractoresRTOExpirado = async (): Promise<Tractor[]> => {
  * @returns Promise con array de tractores con el estado especificado
  */
 export const getTractoresPorEstado = async (estado: string): Promise<Tractor[]> => {
-  const { data, error } = await supabase
-    .from('tractores')
-    .select('*')
-    .eq('estado', estado)
-    .order('marca', { ascending: true });
-  
-  if (error) {
+  try {
+    const response = await api.get(`/tractores/estado/${encodeURIComponent(estado)}`);
+    return response.data || [];
+  } catch (error) {
     console.error(`Error al obtener tractores con estado ${estado}:`, error);
     throw error;
   }
-  
-  return data || [];
 };
 
 /**
@@ -257,16 +190,11 @@ export const getTractoresPorEstado = async (estado: string): Promise<Tractor[]> 
  * @returns Promise con array de tractores con el tipo de servicio especificado
  */
 export const getTractoresPorTipoServicio = async (tipoServicio: string): Promise<Tractor[]> => {
-  const { data, error } = await supabase
-    .from('tractores')
-    .select('*')
-    .eq('tipo_servicio', tipoServicio)
-    .order('marca', { ascending: true });
-  
-  if (error) {
+  try {
+    const response = await api.get(`/tractores/tipo-servicio/${encodeURIComponent(tipoServicio)}`);
+    return response.data || [];
+  } catch (error) {
     console.error(`Error al obtener tractores con tipo de servicio ${tipoServicio}:`, error);
     throw error;
   }
-  
-  return data || [];
 };

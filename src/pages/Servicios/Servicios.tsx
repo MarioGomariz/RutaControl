@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useServiciosStore } from "@/stores/serviciosStore";
 import { Link } from "react-router-dom";
 import { FaSearch, FaPlus, FaTools, FaClipboardCheck, FaWrench, FaInfoCircle } from "react-icons/fa";
-import { Servicio } from "@/utils/supabase";
+import type { Servicio } from "@/types/servicio";
 
 // Componente para mostrar una tarjeta de servicio
 function ServicioCard({ servicio }: { servicio: Servicio }) {
@@ -25,19 +25,19 @@ function ServicioCard({ servicio }: { servicio: Servicio }) {
                 </div>
                 
                 <div className="mt-4 flex flex-wrap gap-2">
-                    {servicio.requiere_prueba_hidraulica && (
+                    {!!servicio.requiere_prueba_hidraulica && (
                         <div className="flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                             <FaClipboardCheck size={12} />
                             <span>Prueba Hidráulica</span>
                         </div>
                     )}
-                    {servicio.requiere_visuales && (
+                    {!!servicio.requiere_visuales && (
                         <div className="flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
                             <FaInfoCircle size={12} />
                             <span>Visuales</span>
                         </div>
                     )}
-                    {servicio.requiere_valvula_y_mangueras && (
+                    {!!servicio.requiere_valvula_y_mangueras && (
                         <div className="flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">
                             <FaWrench size={12} />
                             <span>Válvulas y Mangueras</span>
@@ -45,11 +45,7 @@ function ServicioCard({ servicio }: { servicio: Servicio }) {
                     )}
                 </div>
                 
-                {servicio.observaciones && (
-                    <div className="mt-3 text-xs text-gray-500 italic line-clamp-2">
-                        {servicio.observaciones}
-                    </div>
-                )}
+                {/* Campo 'observaciones' no existe en el nuevo tipo Servicio */}
                 
                 <div className="mt-4 pt-4 border-t border-gray-100">
                     <Link 
@@ -76,8 +72,7 @@ export default function Servicios() {
     // Filtrar servicios según el término de búsqueda
     const filteredServicios = servicios.filter(servicio => 
         servicio.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        servicio.descripcion?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (servicio.observaciones && servicio.observaciones.toLowerCase().includes(searchTerm.toLowerCase()))
+        servicio.descripcion?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (

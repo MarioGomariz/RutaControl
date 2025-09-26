@@ -1,27 +1,14 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { clearUserSession } from "../utils/auth";
+import { logout } from "../utils/auth";
 import { LogOut, Menu, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { getUserSession, User as AuthUser } from "@/utils/auth";
+import { useState } from "react";
+import { useAuth } from "@/stores/authStore";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<AuthUser | null>(null);
-
-  useEffect(() => {
-    async function loadUser() {
-      try {
-        const userData = await getUserSession();
-        setUser(userData);
-      } catch (error) {
-        console.error("Error loading user:", error);
-      }
-    }
-    
-    loadUser();
-  }, []);
+  const { user } = useAuth();
 
   const isAdmin = user?.role === "admin" || user?.role === "administrador";
   // We only need to check for admin role since non-admins (including choferes) only see Viajes
@@ -32,7 +19,7 @@ export default function Navbar() {
   };
 
   const handleLogout = () => {
-    clearUserSession();
+    logout();
     navigate("/login");
   };
 

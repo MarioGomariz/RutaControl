@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useChoferesStore } from "@/stores/choferesStore";
 import { useUsuariosStore } from "@/stores/usuariosStore";
-import { Chofer, UserWithPassword } from "@/utils/supabase";
+import type { Chofer } from "@/types/chofer";
 import { toast } from "react-toastify";
 import ConfirmModal from "@/components/ConfirmModal";
 import { FormSection, FormField, FormInput, FormCheckbox, FormButton } from '@/components/FormComponents';
 import { FaUserTie, FaIdCard, FaAddressCard } from 'react-icons/fa';
+import { toDateInput, toSqlDate } from '@/helpers/dateFormater';
 
 export default function ChoferForm() {
   const { id } = useParams();
@@ -24,17 +25,16 @@ export default function ChoferForm() {
   const { addUsuario } = useUsuariosStore();
 
   const isEditing = id !== 'new';
+  const parsedId = isEditing && id ? Number(id) : null;
 
   useEffect(() => {
-    if (isEditing && id) {
-      fetchChoferById(id);
+    if (isEditing && parsedId !== null && !Number.isNaN(parsedId)) {
+      fetchChoferById(parsedId);
     }
     return () => clearSelectedChofer();
-  }, [id, isEditing, fetchChoferById, clearSelectedChofer]);
+  }, [parsedId, isEditing, fetchChoferById, clearSelectedChofer]);
 
-  interface ChoferForm extends Omit<Chofer, 'id' | 'fecha_creacion' | 'fecha_actualizacion'> {
-    fecha_vencimiento_licencia: string;
-  }
+  interface ChoferForm extends Omit<Chofer, 'id' | 'usuario_id'> {}
 
   const [formData, setFormData] = useState<ChoferForm>({
     nombre: "",
@@ -56,8 +56,8 @@ export default function ChoferForm() {
         telefono: selectedChofer.telefono,
         email: selectedChofer.email,
         licencia: selectedChofer.licencia,
-        fecha_vencimiento_licencia: selectedChofer.fecha_vencimiento_licencia,
-        activo: selectedChofer.activo,
+        fecha_vencimiento_licencia: toDateInput(selectedChofer.fecha_vencimiento_licencia),
+        activo: selectedChofer.activo
       });
     }
   }, [selectedChofer]);
@@ -76,14 +76,14 @@ export default function ChoferForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [newChoferId, setNewChoferId] = useState<string | null>(null);
+  const [newChoferId, setNewChoferId] = useState<number | null>(null);
 
   const handleDelete = async () => {
-    if (!id) return;
+    if (parsedId === null) return;
     
     try {
       // Eliminar el chofer (el servicio se encarga de eliminar también el usuario asociado)
-      await removeChofer(id);
+      await removeChofer(parsedId);
       toast.success("Chofer eliminado correctamente");
       setShowDeleteModal(false);
       navigate("/choferes");
@@ -96,14 +96,18 @@ export default function ChoferForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
+    const payload = {
+      ...formData,
+      fecha_vencimiento_licencia: toSqlDate(formData.fecha_vencimiento_licencia),
+    };
 
     try {
-      if (isEditing && id) {
-        await editChofer(id, formData);
+      if (isEditing && parsedId !== null) {
+        await editChofer(parsedId, payload);
         toast.success("Chofer actualizado correctamente");
         navigate("/choferes");
       } else {
-        await addChofer(formData);
+        await addChofer(payload as Omit<Chofer, 'id'>);
         toast.success("Chofer creado correctamente");
 
         if (formData.email) {
@@ -134,17 +138,12 @@ export default function ChoferForm() {
 
     try {
       if (newChoferId) {
-        const nuevoUsuario: UserWithPassword = {
-          nombre: formData.nombre,
-          apellido: formData.apellido,
-          email: formData.email,
-          usuario: formData.email.split('@')[0],
-          contraseña: password,
+        const nuevoUsuario = {
+          usuario: formData.email,
+          contrasena: password,
           rol_id: 2,
-          estado: 'Activo',
-          ultima_conexion: new Date().toISOString(),
-          observaciones: `Usuario creado automáticamente para el chofer ID: ${newChoferId}`
-        };
+          activo: true,
+        } as Omit<import('@/types/usuario').Usuario, 'id'>;
         await addUsuario(nuevoUsuario);
         toast.success("Usuario creado correctamente");
       }
@@ -262,7 +261,7 @@ export default function ChoferForm() {
                   <FormInput
                     type="date"
                     name="fecha_vencimiento_licencia"
-                    value={formData.fecha_vencimiento_licencia}
+                    value={formData.fecha_vencimiento_licencia || ''}
                     onChange={handleChange}
                     required
                   />

@@ -11,7 +11,7 @@ import {
   getTractoresPorEstado,
   getTractoresPorTipoServicio
 } from '../services/tractoresService';
-import { Tractor } from '../utils/supabase';
+import type { Tractor } from '@/types/tractor';
 
 interface TractoresState {
   // Estado
@@ -22,10 +22,10 @@ interface TractoresState {
   
   // Acciones
   fetchTractores: () => Promise<void>;
-  fetchTractorById: (id: string) => Promise<void>;
-  addTractor: (tractor: Omit<Tractor, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>) => Promise<void>;
-  editTractor: (id: string, tractor: Partial<Omit<Tractor, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>>) => Promise<void>;
-  removeTractor: (id: string) => Promise<void>;
+  fetchTractorById: (id: number) => Promise<void>;
+  addTractor: (tractor: Omit<Tractor, 'id'>) => Promise<void>;
+  editTractor: (id: number, tractor: Partial<Omit<Tractor, 'id'>>) => Promise<void>;
+  removeTractor: (id: number) => Promise<void>;
   searchTractor: (query: string) => Promise<void>;
   fetchRTOProximos: (dias?: number) => Promise<void>;
   fetchRTOExpirados: () => Promise<void>;
@@ -56,10 +56,10 @@ export const useTractoresStore = create<TractoresState>((set) => ({
     }
   },
   
-  fetchTractorById: async (id: string) => {
+  fetchTractorById: async (id: number) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await getTractorById(id);
+      const data = await getTractorById(String(id));
       set({ selectedTractor: data, isLoading: false });
     } catch (error) {
       set({ 
@@ -89,7 +89,7 @@ export const useTractoresStore = create<TractoresState>((set) => ({
   editTractor: async (id, tractor) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedTractor = await updateTractor(id, tractor);
+      const updatedTractor = await updateTractor(String(id), tractor);
       if (updatedTractor) {
         set(state => ({ 
           tractores: state.tractores.map(item => 
@@ -112,7 +112,7 @@ export const useTractoresStore = create<TractoresState>((set) => ({
   removeTractor: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const success = await deleteTractor(id);
+      const success = await deleteTractor(String(id));
       if (success) {
         set(state => ({ 
           tractores: state.tractores.filter(item => item.id !== id),

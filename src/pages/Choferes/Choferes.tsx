@@ -2,18 +2,16 @@ import { useEffect, useState } from "react";
 import { useChoferesStore } from "@/stores/choferesStore";
 import { FaUserTie, FaSearch, FaPlus, FaIdCard, FaPhone, FaEnvelope } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { Chofer } from "@/utils/supabase";
+import type { Chofer } from "@/types/chofer";
 
 export default function Choferes() {
     const { choferes, isLoading, error, fetchChoferes } = useChoferesStore();
     const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
-        // Load choferes data when component mounts
         fetchChoferes();
     }, [fetchChoferes]);
 
-    // Filtrar choferes según el término de búsqueda
     const filteredChoferes = choferes.filter(chofer => 
         chofer.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
         chofer.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||

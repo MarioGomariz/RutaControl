@@ -10,7 +10,7 @@ import {
   getChoferesLicenciaVencida,
   toggleChoferStatus
 } from '../services/choferesService';
-import { Chofer } from '../utils/supabase';
+import type { Chofer } from '@/types/chofer';
 
 interface ChoferesState {
   // Estado
@@ -21,14 +21,14 @@ interface ChoferesState {
   
   // Acciones
   fetchChoferes: () => Promise<void>;
-  fetchChoferById: (id: string) => Promise<void>;
-  addChofer: (chofer: Omit<Chofer, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>) => Promise<void>;
-  editChofer: (id: string, chofer: Partial<Omit<Chofer, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>>) => Promise<void>;
-  removeChofer: (id: string) => Promise<void>;
+  fetchChoferById: (id: number) => Promise<void>;
+  addChofer: (chofer: Omit<Chofer, 'id' | 'usuario_id'>) => Promise<void>;
+  editChofer: (id: number, chofer: Partial<Omit<Chofer, 'id' | 'usuario_id'>>) => Promise<void>;
+  removeChofer: (id: number) => Promise<void>;
   searchChofer: (query: string) => Promise<void>;
   fetchLicenciasProximasVencer: (dias?: number) => Promise<void>;
   fetchLicenciasVencidas: () => Promise<void>;
-  toggleActivo: (id: string) => Promise<void>;
+  toggleActivo: (id: number) => Promise<void>;
   clearSelectedChofer: () => void;
   clearError: () => void;
 }
@@ -54,10 +54,10 @@ export const useChoferesStore = create<ChoferesState>((set) => ({
     }
   },
   
-  fetchChoferById: async (id: string) => {
+  fetchChoferById: async (id: number) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await getChoferById(id);
+      const data = await getChoferById(String(id));
       set({ selectedChofer: data, isLoading: false });
     } catch (error) {
       set({ 
@@ -87,7 +87,7 @@ export const useChoferesStore = create<ChoferesState>((set) => ({
   editChofer: async (id, chofer) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedChofer = await updateChofer(id, chofer);
+      const updatedChofer = await updateChofer(String(id), chofer);
       if (updatedChofer) {
         set(state => ({ 
           choferes: state.choferes.map(item => 
@@ -110,7 +110,7 @@ export const useChoferesStore = create<ChoferesState>((set) => ({
   removeChofer: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const success = await deleteChofer(id);
+      const success = await deleteChofer(String(id));
       if (success) {
         set(state => ({ 
           choferes: state.choferes.filter(item => item.id !== id),
@@ -175,7 +175,7 @@ export const useChoferesStore = create<ChoferesState>((set) => ({
   toggleActivo: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedChofer = await toggleChoferStatus(id);
+      const updatedChofer = await toggleChoferStatus(String(id));
       if (updatedChofer) {
         set(state => ({ 
           choferes: state.choferes.map(item => 

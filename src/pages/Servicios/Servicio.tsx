@@ -4,7 +4,8 @@ import { useServiciosStore } from "@/stores/serviciosStore";
 import { toast } from "react-toastify";
 import ConfirmModal from '@/components/ConfirmModal';
 import { FormSection, FormField, FormInput, FormCheckbox, FormButton, FormTextarea } from '@/components/FormComponents';
-import { FaTools, FaClipboardList, FaInfoCircle } from 'react-icons/fa';
+import { FaTools, FaClipboardList } from 'react-icons/fa';
+import type { Servicio } from '@/types/servicio';
 
 export default function Servicio() {
   const { id } = useParams();
@@ -21,34 +22,33 @@ export default function Servicio() {
   } = useServiciosStore();
   
   const isEditing = id !== 'new';
+  const parsedId = isEditing && id ? Number(id) : null;
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Omit<Servicio, 'id'>>({
     nombre: "",
     descripcion: "",
     requiere_prueba_hidraulica: false,
     requiere_visuales: false,
     requiere_valvula_y_mangueras: false,
-    observaciones: "",
   });
   
   useEffect(() => {
-    if (isEditing && id) {
-      fetchServicioById(id);
+    if (isEditing && parsedId !== null && !Number.isNaN(parsedId)) {
+      fetchServicioById(parsedId);
     }
     
     return () => clearSelectedServicio();
-  }, [id, isEditing, fetchServicioById, clearSelectedServicio]);
+  }, [parsedId, isEditing, fetchServicioById, clearSelectedServicio]);
   
   useEffect(() => {
     if (selectedServicio) {
       setFormData({
         nombre: selectedServicio.nombre,
-        descripcion: selectedServicio.descripcion,
+        descripcion: selectedServicio.descripcion || "", 
         requiere_prueba_hidraulica: selectedServicio.requiere_prueba_hidraulica,
-        requiere_visuales: selectedServicio.requiere_visuales,
+        requiere_visuales: selectedServicio.requiere_visuales,  
         requiere_valvula_y_mangueras: selectedServicio.requiere_valvula_y_mangueras,
-        observaciones: selectedServicio.observaciones || "",
       });
     }
   }, [selectedServicio]);
@@ -65,11 +65,11 @@ export default function Servicio() {
     e.preventDefault();
     
     try {
-      if (isEditing && id) {
-        await editServicio(id, formData);
+      if (isEditing && parsedId !== null) {
+        await editServicio(parsedId, formData);
         toast.success('Servicio actualizado correctamente');
       } else {
-        await addServicio(formData as any);
+        await addServicio(formData);
         toast.success('Servicio creado correctamente');
       }
       navigate("/servicios");
@@ -81,10 +81,10 @@ export default function Servicio() {
   };
 
   const handleDelete = async () => {
-    if (!id) return;
+    if (parsedId === null) return;
     
     try {
-      await removeServicio(id);
+      await removeServicio(parsedId);
       toast.success('Servicio eliminado correctamente');
       setShowDeleteModal(false);
       navigate('/servicios');
@@ -94,6 +94,7 @@ export default function Servicio() {
       setShowDeleteModal(false);
     }
   };
+
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -190,21 +191,7 @@ export default function Servicio() {
               </div>
             </FormSection>
 
-            <FormSection
-              title="Observaciones"
-              icon={<FaInfoCircle />}
-              color="green"
-            >
-              <FormField label="Observaciones adicionales" name="observaciones">
-                <FormTextarea
-                  name="observaciones"
-                  value={formData.observaciones}
-                  onChange={handleChange}
-                  placeholder="Observaciones adicionales sobre el servicio"
-                  rows={3}
-                />
-              </FormField>
-            </FormSection>
+           
 
             <div className="flex justify-end gap-4 pt-4">
               <FormButton

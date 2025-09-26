@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { FaSave, FaTimes, FaUser, FaKey, FaIdCard, FaClipboardList } from 'react-icons/fa';
+import { FaSave, FaTimes, FaUser, FaKey, FaIdCard } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUsuariosStore } from '@/stores/usuariosStore';
-import { User, UserWithPassword } from '@/utils/supabase';
-import { FormSection, FormField, FormInput, FormSelect, FormTextarea, FormButton } from '@/components/FormComponents';
+import type { Usuario as UsuarioType } from '@/types/usuario';
+import { FormSection, FormField, FormInput, FormSelect, FormCheckbox, FormButton } from '@/components/FormComponents';
 
-// Extender el tipo User para incluir el campo contraseña para el formulario
-interface FormUser extends Omit<User, 'id' | 'fecha_creacion' | 'fecha_actualizacion'> {
-  contraseña?: string;
+// Tipo de formulario: permite contrasena opcional cuando se edita
+interface FormUser extends Omit<UsuarioType, 'id' | 'contrasena'> {
+  contrasena?: string;
 }
 
 const Usuario: React.FC = () => {
@@ -16,16 +16,13 @@ const Usuario: React.FC = () => {
   const { selectedUsuario, isLoading, error: storeError, fetchUsuarioById, addUsuario, editUsuario, clearSelectedUsuario } = useUsuariosStore();
   const isEditing = id !== 'new';
 
+  const parsedId = isEditing && id ? Number(id) : null;
+
   const [formData, setFormData] = useState<FormUser>({
-    nombre: '',
-    apellido: '',
-    email: '',
     usuario: '',
-    contraseña: '', // Campo temporal para el formulario, no se almacena en Supabase
+    contrasena: '', // Campo temporal para el formulario, no se envía si está vacío en edición
     rol_id: 2, // 1=admin, 2=chofer
-    estado: 'Activo',
-    observaciones: '',
-    ultima_conexion: ''
+    activo: true,
   });
   
   const [error, setError] = useState<string>('');
@@ -33,66 +30,53 @@ const Usuario: React.FC = () => {
   
   // Cargar usuario si estamos editando
   useEffect(() => {
-    if (isEditing && id) {
-      fetchUsuarioById(id);
+    if (isEditing && parsedId !== null && !Number.isNaN(parsedId)) {
+      fetchUsuarioById(parsedId);
     }
-    
     // Limpiar el usuario seleccionado al desmontar el componente
     return () => clearSelectedUsuario();
-  }, [id, isEditing, fetchUsuarioById, clearSelectedUsuario]);
+  }, [parsedId, isEditing, fetchUsuarioById, clearSelectedUsuario]);
 
   // Actualizar formulario cuando se carga el usuario
   useEffect(() => {
     if (selectedUsuario) {
       setFormData({
-        nombre: selectedUsuario.nombre,
-        apellido: selectedUsuario.apellido,
-        email: selectedUsuario.email,
         usuario: selectedUsuario.usuario,
-        contraseña: '', // No mostrar la contraseña por seguridad
+        contrasena: '', // No mostrar la contraseña por seguridad
         rol_id: selectedUsuario.rol_id,
-        estado: selectedUsuario.estado,
-        observaciones: selectedUsuario.observaciones || '',
-        ultima_conexion: selectedUsuario.ultima_conexion
+        activo: selectedUsuario.activo,
       });
     }
   }, [selectedUsuario]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type, checked } = e.target as HTMLInputElement;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
   const validateForm = (): boolean => {
     // Validar campos requeridos
-    if (!formData.nombre || !formData.apellido || !formData.email || !formData.usuario) {
-      setError('Todos los campos marcados con * son obligatorios');
-      return false;
-    }
-
-    // Validar formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError('El formato del email no es válido');
+    if (!formData.usuario) {
+      setError('El usuario es obligatorio');
       return false;
     }
 
     // Validar contraseña solo para nuevos usuarios o si se está cambiando
-    if (!isEditing || formData.contraseña) {
-      if (!isEditing && !formData.contraseña) {
+    if (!isEditing || formData.contrasena) {
+      if (!isEditing && !formData.contrasena) {
         setError('La contraseña es obligatoria para nuevos usuarios');
         return false;
       }
 
-      if (formData.contraseña && formData.contraseña.length < 6) {
+      if (formData.contrasena && formData.contrasena.length < 6) {
         setError('La contraseña debe tener al menos 6 caracteres');
         return false;
       }
 
-      if (formData.contraseña !== confirmPassword) {
+      if (formData.contrasena !== confirmPassword) {
         setError('Las contraseñas no coinciden');
         return false;
       }
@@ -108,36 +92,29 @@ const Usuario: React.FC = () => {
     if (!validateForm()) return;
 
     try {
-      if (isEditing && id && selectedUsuario) {
+      if (isEditing && parsedId !== null && selectedUsuario) {
         // Si estamos editando y no se proporciona contraseña, no la actualizamos
         const dataToUpdate: FormUser = { ...formData };
-        if (!dataToUpdate.contraseña) {
-          const { contraseña, ...rest } = dataToUpdate;
-          await editUsuario(id, rest);
+        if (!dataToUpdate.contrasena) {
+          const { contrasena, ...rest } = dataToUpdate;
+          await editUsuario(parsedId, rest);
         } else {
           // Si hay contraseña, la incluimos en la actualización
-          await editUsuario(id, dataToUpdate);
+          await editUsuario(parsedId, dataToUpdate);
         }
       } else {
         // Para crear un nuevo usuario, la contraseña es obligatoria
-        if (!formData.contraseña) {
+        if (!formData.contrasena) {
           setError('La contraseña es obligatoria para crear un usuario');
           return;
         }
-        
-        // Crear un objeto UserWithPassword con la contraseña obligatoria
-        const nuevoUsuario: UserWithPassword = {
-          nombre: formData.nombre,
-          apellido: formData.apellido,
-          email: formData.email,
+        // Crear el objeto a enviar (sin id)
+        const nuevoUsuario: Omit<UsuarioType, 'id'> = {
           usuario: formData.usuario,
-          contraseña: formData.contraseña,
+          contrasena: formData.contrasena,
           rol_id: formData.rol_id,
-          estado: formData.estado as 'Activo' | 'Inactivo' | 'Suspendido',
-          ultima_conexion: formData.ultima_conexion || new Date().toISOString(),
-          observaciones: formData.observaciones
+          activo: formData.activo,
         };
-        
         await addUsuario(nuevoUsuario);
       }
       navigate('/usuarios');
@@ -174,51 +151,18 @@ const Usuario: React.FC = () => {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             <FormSection
-              title="Información personal"
+              title="Información de acceso"
               icon={<FaUser />}
               color="blue"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField label="Nombre" name="nombre" required>
-                  <FormInput
-                    type="text"
-                    name="nombre"
-                    value={formData.nombre}
-                    onChange={handleChange}
-                    placeholder="Nombre del usuario"
-                    required
-                  />
-                </FormField>
-                
-                <FormField label="Apellido" name="apellido" required>
-                  <FormInput
-                    type="text"
-                    name="apellido"
-                    value={formData.apellido}
-                    onChange={handleChange}
-                    placeholder="Apellido del usuario"
-                    required
-                  />
-                </FormField>
-
-                <FormField label="Email" name="email" required>
-                  <FormInput
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="correo@ejemplo.com"
-                    required
-                  />
-                </FormField>
-
-                <FormField label="Nombre de Usuario" name="usuario" required>
+                <FormField label="Correo electronico del usuario" name="usuario" required>
                   <FormInput
                     type="text"
                     name="usuario"
                     value={formData.usuario}
                     onChange={handleChange}
-                    placeholder="Nombre de usuario para acceso"
+                    placeholder="Correo electronico del usuario"
                     required
                   />
                 </FormField>
@@ -232,13 +176,13 @@ const Usuario: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField 
                   label={isEditing ? 'Contraseña (dejar en blanco para no cambiar)' : 'Contraseña'} 
-                  name="contraseña" 
+                  name="contrasena" 
                   required={!isEditing}
                 >
                   <FormInput
                     type="password"
-                    name="contraseña"
-                    value={formData.contraseña}
+                    name="contrasena"
+                    value={formData.contrasena || ''}
                     onChange={handleChange}
                     placeholder="Mínimo 6 caracteres"
                     required={!isEditing}
@@ -280,35 +224,14 @@ const Usuario: React.FC = () => {
                   </FormSelect>
                 </FormField>
 
-                <FormField label="Estado" name="estado" required>
-                  <FormSelect
-                    name="estado"
-                    value={formData.estado}
+                <FormField label="Activo" name="activo">
+                  <FormCheckbox
+                    name="activo"
+                    checked={formData.activo}
                     onChange={handleChange}
-                    required
-                  >
-                    <option value="Activo">Activo</option>
-                    <option value="Inactivo">Inactivo</option>
-                    <option value="Suspendido">Suspendido</option>
-                  </FormSelect>
+                  />
                 </FormField>
               </div>
-            </FormSection>
-
-            <FormSection
-              title="Información adicional"
-              icon={<FaClipboardList />}
-              color="amber"
-            >
-              <FormField label="Observaciones" name="observaciones">
-                <FormTextarea
-                  name="observaciones"
-                  value={formData.observaciones}
-                  onChange={handleChange}
-                  placeholder="Notas adicionales sobre el usuario"
-                  rows={4}
-                />
-              </FormField>
             </FormSection>
 
             <div className="flex justify-end space-x-4">

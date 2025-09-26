@@ -1,29 +1,29 @@
 import { create } from 'zustand';
-import { 
-  getAllUsuarios, 
-  getUsuarioById, 
-  createUsuario, 
-  updateUsuario, 
-  deleteUsuario, 
+import {
+  getAllUsuarios,
+  getUsuarioById,
+  createUsuario,
+  updateUsuario,
+  deleteUsuario,
   searchUsuarios
 } from '../services/usuariosService';
-import { User, UserWithPassword } from '../utils/supabase';
+import { Usuario } from '@/types/usuario';
 
 interface UsuariosState {
   // Estado
-  usuarios: User[];
-  selectedUsuario: User | null;
+  usuarios: Usuario[];
+  selectedUsuario: Usuario | null;
   isLoading: boolean;
   error: string | null;
   
   // Acciones
   fetchUsuarios: () => Promise<void>;
-  fetchUsuarioById: (id: string) => Promise<void>;
-  addUsuario: (usuario: UserWithPassword) => Promise<void>;
-  editUsuario: (id: string, usuario: Partial<Omit<User, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>>) => Promise<void>;
-  removeUsuario: (id: string) => Promise<void>;
+  fetchUsuarioById: (id: number) => Promise<void>;
+  addUsuario: (usuario: Omit<Usuario, 'id'>) => Promise<void>;
+  editUsuario: (id: number, usuario: Partial<Omit<Usuario, 'id'>>) => Promise<void>;
+  removeUsuario: (id: number) => Promise<void>;
   searchUsuario: (query: string) => Promise<void>;
-  cambiarEstado: (id: string, estado: 'Activo' | 'Inactivo' | 'Suspendido') => Promise<void>;
+  cambiarEstado: (id: number, activo: boolean) => Promise<void>;
   clearSelectedUsuario: () => void;
   clearError: () => void;
 }
@@ -49,10 +49,10 @@ export const useUsuariosStore = create<UsuariosState>((set) => ({
     }
   },
   
-  fetchUsuarioById: async (id: string) => {
+  fetchUsuarioById: async (id: number) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await getUsuarioById(id);
+      const data = await getUsuarioById(String(id));
       set({ selectedUsuario: data, isLoading: false });
     } catch (error) {
       set({ 
@@ -82,7 +82,7 @@ export const useUsuariosStore = create<UsuariosState>((set) => ({
   editUsuario: async (id, usuario) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedUsuario = await updateUsuario(id, usuario);
+      const updatedUsuario = await updateUsuario(String(id), usuario);
       if (updatedUsuario) {
         set(state => ({ 
           usuarios: state.usuarios.map(item => 
@@ -105,7 +105,7 @@ export const useUsuariosStore = create<UsuariosState>((set) => ({
   removeUsuario: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const success = await deleteUsuario(id);
+      const success = await deleteUsuario(String(id));
       if (success) {
         set(state => ({ 
           usuarios: state.usuarios.filter(item => item.id !== id),
@@ -141,10 +141,10 @@ export const useUsuariosStore = create<UsuariosState>((set) => ({
     }
   },
   
-  cambiarEstado: async (id, estado) => {
+  cambiarEstado: async (id, activo) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedUsuario = await updateUsuario(id, { estado });
+      const updatedUsuario = await updateUsuario(String(id), { activo });
       if (updatedUsuario) {
         set(state => ({ 
           usuarios: state.usuarios.map(item => 
@@ -158,7 +158,7 @@ export const useUsuariosStore = create<UsuariosState>((set) => ({
       }
     } catch (error) {
       set({ 
-        error: error instanceof Error ? error.message : 'Error al cambiar el estado del usuario', 
+        error: error instanceof Error ? error.message : 'Error al cambiar activo del usuario', 
         isLoading: false 
       });
     }

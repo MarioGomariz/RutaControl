@@ -1,16 +1,18 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useSemirremolquesStore } from "@/stores";
+import { useSemirremolquesStore } from "@/stores/semirremolquesStore";
+import type { Semirremolque as SemirremolqueType } from "@/types/semirremolque";
 import { useServiciosStore } from "@/stores/serviciosStore";
-import { Semirremolque as SemirremolqueType } from "@/utils/supabase";
 import { toast } from "react-toastify";
 import ConfirmModal from '@/components/ConfirmModal';
 import { FormSection, FormField, FormInput, FormSelect, FormButton } from '@/components/FormComponents';
 import { FaTruck, FaCalendarAlt, FaGlobeAmericas } from 'react-icons/fa';
+import { toDateInput, toSqlDate } from '@/helpers/dateFormater';
 
 export default function Semirremolque() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const parsedId = id && id !== 'new' ? Number(id) : null;
   
   const { 
     selectedSemirremolque: semirremolque, 
@@ -26,13 +28,13 @@ export default function Semirremolque() {
   const { servicios, fetchServicios } = useServiciosStore();
   
   useEffect(() => {
-    if (id) {
-      fetchSemirremolqueById(id);
+    if (parsedId !== null && !Number.isNaN(parsedId)) {
+      fetchSemirremolqueById(parsedId);
     }
     
     // Cargar la lista de servicios disponibles
     fetchServicios();
-  }, [id, fetchSemirremolqueById, fetchServicios]);
+  }, [parsedId, fetchSemirremolqueById, fetchServicios]);
 
   // Actualizar el formulario cuando se carga un semirremolque existente
   useEffect(() => {
@@ -40,61 +42,64 @@ export default function Semirremolque() {
       setFormData({
         nombre: semirremolque.nombre || "",
         dominio: semirremolque.dominio || "",
-        año: semirremolque.año || new Date().getFullYear(),
-        estado: semirremolque.estado || "Disponible",
+        anio: semirremolque.anio || new Date().getFullYear(),
+        estado: semirremolque.estado || "disponible",
         tipo_servicio: semirremolque.tipo_servicio || "",
-        alcance_servicio: semirremolque.alcance_servicio || false,
-        vencimiento_rto: semirremolque.vencimiento_rto || "",
-        vencimiento_visual_ext: semirremolque.vencimiento_visual_ext || "",
-        vencimiento_visual_int: semirremolque.vencimiento_visual_int || "",
-        vencimiento_espesores: semirremolque.vencimiento_espesores || "",
-        vencimiento_prueba_hidraulica: semirremolque.vencimiento_prueba_hidraulica || "",
-        vencimiento_mangueras: semirremolque.vencimiento_mangueras || "",
-        vencimiento_valvula_five: semirremolque.vencimiento_valvula_five || "",
+        alcance_servicio: semirremolque.alcance_servicio || "nacional",
+        vencimiento_rto: toDateInput(semirremolque.vencimiento_rto),
+        vencimiento_visual_externa: toDateInput(semirremolque.vencimiento_visual_externa),
+        vencimiento_visual_interna: toDateInput(semirremolque.vencimiento_visual_interna),
+        vencimiento_espesores: toDateInput(semirremolque.vencimiento_espesores),
+        vencimiento_prueba_hidraulica: toDateInput(semirremolque.vencimiento_prueba_hidraulica),
+        vencimiento_mangueras: toDateInput(semirremolque.vencimiento_mangueras),
+        vencimiento_valvula_flujo: toDateInput(semirremolque.vencimiento_valvula_flujo),
       });
     }
   }, [semirremolque]);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Partial<SemirremolqueType>>({
     nombre: "",
     dominio: "",
-    año: new Date().getFullYear(),
-    estado: "Disponible",
+    anio: new Date().getFullYear(),
+    estado: "disponible",
     tipo_servicio: "",
-    alcance_servicio: false,
+    alcance_servicio: "nacional",
     vencimiento_rto: "",
-    vencimiento_visual_ext: "",
-    vencimiento_visual_int: "",
+    vencimiento_visual_externa: "",
+    vencimiento_visual_interna: "",
     vencimiento_espesores: "",
     vencimiento_prueba_hidraulica: "",
     vencimiento_mangueras: "",
-    vencimiento_valvula_five: "",
+    vencimiento_valvula_flujo: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
     
-    if (name === "alcance_servicio") {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value === "true",
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: type === "number" ? parseFloat(value) || 0 : value,
-      }));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "number" ? parseFloat(value) || 0 : value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const payload = {
+      ...formData,
+      vencimiento_rto: toSqlDate(formData.vencimiento_rto),
+      vencimiento_visual_externa: toSqlDate(formData.vencimiento_visual_externa),
+      vencimiento_visual_interna: toSqlDate(formData.vencimiento_visual_interna),
+      vencimiento_espesores: toSqlDate(formData.vencimiento_espesores),
+      vencimiento_prueba_hidraulica: toSqlDate(formData.vencimiento_prueba_hidraulica),
+      vencimiento_mangueras: toSqlDate(formData.vencimiento_mangueras),
+      vencimiento_valvula_flujo: toSqlDate(formData.vencimiento_valvula_flujo),
+    };
     try {
-      if (semirremolque && id) {
-        await editSemirremolque(id, formData);
+      if (semirremolque && parsedId !== null) {
+        await editSemirremolque(parsedId, payload);
         toast.success("Semirremolque actualizado correctamente");
       } else {
-        await addSemirremolque(formData as unknown as Omit<SemirremolqueType, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>);
+        await addSemirremolque(payload as Omit<SemirremolqueType, 'id'>);
         toast.success("Semirremolque agregado correctamente");
       }
       navigate("/semirremolques");
@@ -107,10 +112,10 @@ export default function Semirremolque() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleDelete = async () => {
-    if (!id) return;
+    if (parsedId === null) return;
     
     try {
-      await removeSemirremolque(id);
+      await removeSemirremolque(parsedId);
       toast.success('Semirremolque eliminado correctamente');
       setShowDeleteModal(false);
       navigate('/semirremolques');
@@ -190,11 +195,11 @@ export default function Semirremolque() {
                 />
               </FormField>
 
-              <FormField label="Año" name="año" required>
+              <FormField label="Año" name="anio" required>
                 <FormInput
                   type="number"
-                  name="año"
-                  value={formData.año}
+                  name="anio"
+                  value={formData.anio}
                   onChange={handleChange}
                   min="1990"
                   max={new Date().getFullYear() + 1}
@@ -209,10 +214,10 @@ export default function Semirremolque() {
                   onChange={handleChange}
                   required
                 >
-                  <option value="Disponible">Disponible</option>
-                  <option value="En uso">En uso</option>
-                  <option value="En reparación">En reparación</option>
-                  <option value="Fuera de servicio">Fuera de servicio</option>
+                  <option value="disponible">Disponible</option>
+                  <option value="en uso">En uso</option>
+                  <option value="en reparacion">En reparación</option>
+                  <option value="fuera de servicio">Fuera de servicio</option>
                 </FormSelect>
               </FormField>
             </div>
@@ -243,12 +248,12 @@ export default function Semirremolque() {
               <FormField label="Alcance del Servicio" name="alcance_servicio" required>
                 <FormSelect
                   name="alcance_servicio"
-                  value={formData.alcance_servicio.toString()}
+                  value={formData.alcance_servicio}
                   onChange={handleChange}
                   required
                 >
-                  <option value="false">Nacional</option>
-                  <option value="true">Internacional</option>
+                  <option value="nacional">Nacional</option>
+                  <option value="internacional">Internacional</option>
                 </FormSelect>
               </FormField>
             </div>
@@ -270,20 +275,20 @@ export default function Semirremolque() {
                 />
               </FormField>
 
-              <FormField label="Vencimiento Visual Externa" name="vencimiento_visual_ext">
+              <FormField label="Vencimiento Visual Externa" name="vencimiento_visual_externa">
                 <FormInput
                   type="date"
-                  name="vencimiento_visual_ext"
-                  value={formData.vencimiento_visual_ext}
+                  name="vencimiento_visual_externa"
+                  value={formData.vencimiento_visual_externa}
                   onChange={handleChange}
                 />
               </FormField>
 
-              <FormField label="Vencimiento Visual Interna" name="vencimiento_visual_int">
+              <FormField label="Vencimiento Visual Interna" name="vencimiento_visual_interna">
                 <FormInput
                   type="date"
-                  name="vencimiento_visual_int"
-                  value={formData.vencimiento_visual_int}
+                  name="vencimiento_visual_interna"
+                  value={formData.vencimiento_visual_interna}
                   onChange={handleChange}
                 />
               </FormField>
@@ -315,11 +320,11 @@ export default function Semirremolque() {
                 />
               </FormField>
 
-              <FormField label="Vencimiento Válvula Five" name="vencimiento_valvula_five">
+              <FormField label="Vencimiento Válvula Five" name="vencimiento_valvula_flujo">
                 <FormInput
                   type="date"
-                  name="vencimiento_valvula_five"
-                  value={formData.vencimiento_valvula_five}
+                  name="vencimiento_valvula_flujo"
+                  value={formData.vencimiento_valvula_flujo}
                   onChange={handleChange}
                 />
               </FormField>

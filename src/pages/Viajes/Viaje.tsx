@@ -5,7 +5,7 @@ import { useChoferesStore } from "@/stores/choferesStore";
 import { useTractoresStore } from "@/stores/tractoresStore";
 import { useSemirremolquesStore } from "@/stores/semirremolquesStore";
 import { useServiciosStore } from "@/stores/serviciosStore";
-import type { Viaje as ViajeType } from "@/services/viajesService";
+import type { Viaje as ViajeType, EstadoViaje } from "@/types/viaje";
 import { toast } from "react-toastify";
 import ConfirmModal from "@/components/ConfirmModal";
 import { FaArrowLeft, FaTruck, FaRoute, FaClipboardList, FaTrash, FaSave, FaMapMarked } from "react-icons/fa";
@@ -14,7 +14,6 @@ import {
   FormField, 
   FormInput, 
   FormSelect, 
-  FormTextarea, 
   FormButton 
 } from "@/components/FormComponents";
 
@@ -38,6 +37,7 @@ export default function Viaje() {
   const { servicios, fetchServicios } = useServiciosStore();
 
   const isEditing = id !== 'new';
+  const parsedId = isEditing && id ? Number(id) : null;
 
   useEffect(() => {
     // Cargar datos necesarios
@@ -46,68 +46,56 @@ export default function Viaje() {
     fetchSemirremolques();
     fetchServicios();
 
-    if (isEditing && id) {
-      fetchViajeById(id);
+    if (isEditing && parsedId !== null && !Number.isNaN(parsedId)) {
+      fetchViajeById(parsedId);
     }
     return () => clearSelectedViaje();
-  }, [id, isEditing, fetchViajeById, clearSelectedViaje, fetchChoferes, fetchTractores, fetchSemirremolques, fetchServicios]);
+  }, [parsedId, isEditing, fetchViajeById, clearSelectedViaje, fetchChoferes, fetchTractores, fetchSemirremolques, fetchServicios]);
 
-  interface ViajeForm extends Omit<ViajeType, 'id' | 'fecha_creacion' | 'fecha_actualizacion'> {
-    fecha_salida: string;
-    fecha_llegada: string;
-  }
+  interface ViajeForm extends Omit<ViajeType, 'id'> {}
 
   const [formData, setFormData] = useState<ViajeForm>({
-    chofer_id: "",
-    tractor_id: "",
-    semirremolque_id: "",
-    tipo_servicio: "",
-    fecha_salida: "",
-    fecha_llegada: "",
+    chofer_id: 0,
+    tractor_id: 0,
+    semirremolque_id: 0,
+    servicio_id: 0,
+    alcance: 'nacional',
     origen: "",
-    destino: "",
-    kilometros_recorridos: null,
-    alcance_servicio: "Nacional",
-    estado_viaje: "Programado",
-    observaciones: "",
-    duracion_horas: 0
+    cantidad_destinos: 1,
+    fecha_hora_salida: "",
+    estado: "programado" as EstadoViaje,
   });
 
   useEffect(() => {
     if (selectedViaje) {
-      // Formatear fechas para inputs de tipo datetime-local
-      const formatearFechaParaInput = (fechaStr: string | null) => {
-        if (!fechaStr) return "";
-        const fecha = new Date(fechaStr);
-        return fecha.toISOString().slice(0, 16); // Formato YYYY-MM-DDThh:mm
-      };
-
       setFormData({
         chofer_id: selectedViaje.chofer_id,
         tractor_id: selectedViaje.tractor_id,
         semirremolque_id: selectedViaje.semirremolque_id,
-        tipo_servicio: selectedViaje.tipo_servicio,
-        fecha_salida: formatearFechaParaInput(selectedViaje.fecha_salida),
-        fecha_llegada: formatearFechaParaInput(selectedViaje.fecha_llegada),
+        servicio_id: selectedViaje.servicio_id,
+        alcance: selectedViaje.alcance,
         origen: selectedViaje.origen,
-        destino: selectedViaje.destino,
-        kilometros_recorridos: selectedViaje.kilometros_recorridos,
-        alcance_servicio: selectedViaje.alcance_servicio,
-        estado_viaje: selectedViaje.estado_viaje,
-        observaciones: selectedViaje.observaciones || "",
-        duracion_horas: selectedViaje.duracion_horas
+        cantidad_destinos: selectedViaje.cantidad_destinos,
+        fecha_hora_salida: selectedViaje.fecha_hora_salida ? new Date(selectedViaje.fecha_hora_salida).toISOString().slice(0, 16) : "",
+        estado: selectedViaje.estado,
       });
     }
   }, [selectedViaje]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    
+    const numericFields = new Set([
+      'chofer_id',
+      'tractor_id',
+      'semirremolque_id',
+      'servicio_id',
+      'cantidad_destinos',
+    ]);
     // Para campos numéricos
-    if (type === "number") {
+    if (type === "number" || numericFields.has(name)) {
       setFormData((prev) => ({
         ...prev,
-        [name]: value === "" ? null : Number(value)
+        [name]: value === "" ? 0 : Number(value)
       }));
     } else {
       setFormData((prev) => ({
@@ -122,7 +110,7 @@ export default function Viaje() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value === "" ? null : Number(value)
+      [name]: value === "" ? 0 : Number(value)
     }));
   };
 
@@ -130,10 +118,10 @@ export default function Viaje() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleDelete = async () => {
-    if (!id) return;
+    if (parsedId === null) return;
     
     try {
-      await removeViaje(id);
+      await removeViaje(parsedId);
       toast.success("Viaje eliminado correctamente");
       setShowDeleteModal(false);
       navigate("/viajes");
@@ -143,13 +131,43 @@ export default function Viaje() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     try {
-      if (isEditing && id) {
-        await editViaje(id, formData);
+      // Validaciones básicas
+      if (!formData.origen.trim()) {
+        toast.error('El origen es obligatorio');
+        return;
+      }
+      if (!formData.fecha_hora_salida) {
+        toast.error('La fecha de salida es obligatoria');
+        return;
+      }
+      if (!formData.chofer_id || formData.chofer_id <= 0) {
+        toast.error('Debes seleccionar un chofer');
+        return;
+      }
+      if (!formData.tractor_id || formData.tractor_id <= 0) {
+        toast.error('Debes seleccionar un tractor');
+        return;
+      }
+      if (!formData.semirremolque_id || formData.semirremolque_id <= 0) {
+        toast.error('Debes seleccionar un semirremolque');
+        return;
+      }
+      if (!formData.servicio_id || formData.servicio_id <= 0) {
+        toast.error('Debes seleccionar un servicio');
+        return;
+      }
+      if (!formData.cantidad_destinos || formData.cantidad_destinos <= 0) {
+        toast.error('La cantidad de destinos debe ser mayor a 0');
+        return;
+      }
+
+      if (isEditing && parsedId !== null) {
+        await editViaje(parsedId, formData);
         toast.success("Viaje actualizado correctamente");
         navigate("/viajes");
       } else {
@@ -158,18 +176,18 @@ export default function Viaje() {
         navigate("/viajes");
       }
     } catch (err: any) {
-      setError(err.message || 'Ha ocurrido un error');
+      console.error(err);
+      setError(err.message || 'Ocurrió un error al guardar el viaje');
+      toast.error('No se pudo guardar el viaje');
     }
   };
 
   // Filtrar choferes activos
   const choferesActivos = choferes.filter(chofer => chofer.activo);
   // Filtrar tractores con estado activo
-  const tractoresActivos = tractores.filter(tractor => tractor.estado === 'Disponible');
+  const tractoresActivos = tractores.filter(tractor => tractor.estado === 'disponible');
   // Filtrar semirremolques con estado activo
-  const semirremolquesActivos = semirremolques.filter(semirremolque => semirremolque.estado === 'Disponible');
-
-  console.log(tractores);
+  const semirremolquesActivos = semirremolques.filter(semirremolque => semirremolque.estado === 'disponible');
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -282,40 +300,53 @@ export default function Viaje() {
               color="green"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Tipo de servicio */}
-                <FormField label="Tipo de servicio" name="tipo_servicio" required>
+                {/* Servicio */}
+                <FormField label="Servicio" name="servicio_id" required>
                   <FormSelect
-                    name="tipo_servicio"
-                    value={formData.tipo_servicio}
+                    name="servicio_id"
+                    value={formData.servicio_id}
                     onChange={handleChange}
                     required
                   >
-                    <option value="">Seleccionar tipo de servicio</option>
+                    <option value={0}>Seleccionar servicio</option>
                     {servicios.map(servicio => (
-                      <option key={servicio.id} value={servicio.nombre}>
+                      <option key={servicio.id} value={servicio.id}>
                         {servicio.nombre}
                       </option>
                     ))}
                   </FormSelect>
                 </FormField>
 
-                {/* Alcance del servicio */}
-                <FormField label="Alcance del servicio" name="alcance_servicio" required>
+                {/* Alcance */}
+                <FormField label="Alcance" name="alcance" required>
                   <FormSelect
-                    name="alcance_servicio"
-                    value={formData.alcance_servicio}
+                    name="alcance"
+                    value={formData.alcance}
                     onChange={handleChange}
                     required
                   >
-                    <option value="Nacional">Nacional</option>
-                    <option value="Internacional">Internacional</option>
+                    <option value="nacional">Nacional</option>
+                    <option value="internacional">Internacional</option>
                   </FormSelect>
+                </FormField>
+
+                {/* Cantidad de destinos */}
+                <FormField label="Cantidad de destinos" name="cantidad_destinos" required>
+                  <FormInput
+                    type="number"
+                    name="cantidad_destinos"
+                    value={formData.cantidad_destinos}
+                    onChange={handleNumericChange}
+                    min="1"
+                    step="1"
+                    required
+                  />
                 </FormField>
               </div>
             </FormSection>
 
             <FormSection
-              title="Origen, destino y fechas"
+              title="Origen y fecha"
               icon={<FaMapMarked />}
               color="amber"
             >
@@ -332,100 +363,37 @@ export default function Viaje() {
                   />
                 </FormField>
 
-                {/* Destino */}
-                <FormField label="Destino" name="destino" required>
-                  <FormInput
-                    type="text"
-                    name="destino"
-                    value={formData.destino}
-                    onChange={handleChange}
-                    placeholder="Ciudad o lugar de destino"
-                    required
-                  />
-                </FormField>
-
                 {/* Fecha de salida */}
-                <FormField label="Fecha y hora de salida" name="fecha_salida" required>
+                <FormField label="Fecha y hora de salida" name="fecha_hora_salida" required>
                   <FormInput
                     type="datetime-local"
-                    name="fecha_salida"
-                    value={formData.fecha_salida}
+                    name="fecha_hora_salida"
+                    value={formData.fecha_hora_salida}
                     onChange={handleChange}
                     required
-                  />
-                </FormField>
-
-                {/* Fecha de llegada */}
-                <FormField label="Fecha y hora de llegada" name="fecha_llegada">
-                  <FormInput
-                    type="datetime-local"
-                    name="fecha_llegada"
-                    value={formData.fecha_llegada || ''}
-                    onChange={handleChange}
-                    min={formData.fecha_salida} // No permitir fechas anteriores a la salida
-                  />
-                </FormField>
-
-                {/* Kilómetros recorridos */}
-                <FormField label="Kilómetros recorridos" name="kilometros_recorridos">
-                  <FormInput
-                    type="number"
-                    name="kilometros_recorridos"
-                    value={formData.kilometros_recorridos || ''}
-                    onChange={handleNumericChange}
-                    min="0"
-                    step="1"
-                    placeholder="Distancia total en km"
-                  />
-                </FormField>
-                
-                {/* Duración en horas */}
-                <FormField label="Duración estimada (horas)" name="duracion_horas">
-                  <FormInput
-                    type="number"
-                    name="duracion_horas"
-                    value={formData.duracion_horas || ''}
-                    onChange={handleNumericChange}
-                    min="0"
-                    step="0.5"
-                    placeholder="Tiempo estimado de viaje"
                   />
                 </FormField>
               </div>
             </FormSection>
 
             <FormSection
-              title="Estado y observaciones"
+              title="Estado"
               icon={<FaClipboardList />}
               color="purple"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                 {/* Estado del viaje */}
-                <FormField label="Estado del viaje" name="estado_viaje" required>
+                <FormField label="Estado del viaje" name="estado" required>
                   <FormSelect
-                    name="estado_viaje"
-                    value={formData.estado_viaje}
+                    name="estado"
+                    value={formData.estado}
                     onChange={handleChange}
                     required
                   >
-                    <option value="Programado">Programado</option>
-                    <option value="En curso">En curso</option>
-                    <option value="Finalizado">Finalizado</option>
-                    <option value="Cancelado">Cancelado</option>
+                    <option value="programado">Programado</option>
+                    <option value="en curso">En curso</option>
+                    <option value="finalizado">Finalizado</option>
                   </FormSelect>
-                </FormField>
-              </div>
-
-              {/* Observaciones */}
-              <div className="col-span-1 md:col-span-2">
-                <FormField label="Observaciones" name="observaciones">
-                  <FormTextarea
-                    name="observaciones"
-                    value={formData.observaciones || ''}
-                    onChange={handleChange}
-                    rows={4}
-                    placeholder="Ingrese cualquier información adicional relevante para este viaje..."
-                  />
                 </FormField>
               </div>
             </FormSection>

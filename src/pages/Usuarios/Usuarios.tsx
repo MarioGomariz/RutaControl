@@ -3,7 +3,7 @@ import { FaUserPlus, FaSearch, FaEdit, FaTrash, FaUserSlash, FaUserCheck } from 
 import { useNavigate } from 'react-router-dom';
 import { useUsuariosStore } from '@/stores/usuariosStore';
 import ConfirmModal from '@/components/ConfirmModal';
-import { User } from '@/utils/supabase';
+import type { Usuario } from '@/types/usuario';
 
 const Usuarios: React.FC = () => {
   const { 
@@ -17,7 +17,7 @@ const Usuarios: React.FC = () => {
   } = useUsuariosStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<string | null>(null);
+  const [userToDelete, setUserToDelete] = useState<number | null>(null);
   const navigate = useNavigate();
 
   // Cargar usuarios al iniciar
@@ -42,19 +42,19 @@ const Usuarios: React.FC = () => {
   };
 
   // Abrir formulario para editar
-  const handleEdit = (usuario: User) => {
+  const handleEdit = (usuario: Usuario) => {
     navigate(`/usuario/${usuario.id}`);
   };
 
   // Manejar eliminación de usuario
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     setUserToDelete(id);
     setShowDeleteModal(true);
   };
 
   // Confirmar eliminación de usuario
   const confirmDelete = async () => {
-    if (userToDelete) {
+    if (userToDelete !== null) {
       await removeUsuario(userToDelete);
       setShowDeleteModal(false);
       setUserToDelete(null);
@@ -62,22 +62,8 @@ const Usuarios: React.FC = () => {
   };
 
   // Manejar cambio de estado de usuario
-  const handleToggleStatus = async (usuario: User) => {
-    const nuevoEstado = usuario.estado === 'Activo' ? 'Inactivo' : 'Activo';
-    await cambiarEstado(usuario.id, nuevoEstado as 'Activo' | 'Inactivo' | 'Suspendido');
-  };
-
-  // Formatear fecha
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const handleToggleStatus = async (usuario: Usuario) => {
+    await cambiarEstado(usuario.id, !usuario.activo);
   };
 
   return (
@@ -120,45 +106,32 @@ const Usuarios: React.FC = () => {
           <div 
             key={usuario.id}
             className={`border rounded-lg shadow-md p-5 bg-white ${
-              usuario.estado === 'Activo' 
-                ? 'border-green-300' 
-                : usuario.estado === 'Suspendido' 
-                  ? 'border-yellow-300' 
-                  : 'border-red-300'
+              usuario.activo ? 'border-green-300' : 'border-red-300'
             } hover:shadow-lg transition-shadow`}
           >
             <div className="flex justify-between items-start mb-3">
-              <h3 className="text-xl font-semibold text-gray-800">{usuario.nombre} {usuario.apellido}</h3>
+              <h3 className="text-xl font-semibold text-gray-800">{usuario.usuario}</h3>
               <span 
                 className={`text-sm px-3 py-1 rounded-full font-medium ${
-                  usuario.estado === 'Activo' 
-                    ? 'bg-green-100 text-green-800' 
-                    : usuario.estado === 'Suspendido' 
-                      ? 'bg-yellow-100 text-yellow-800' 
-                      : 'bg-red-100 text-red-800'
+                  usuario.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                 }`}
               >
-                {usuario.estado}
+                {usuario.activo ? 'Activo' : 'Inactivo'}
               </span>
             </div>
             
             <div className="text-sm text-gray-700 mb-4 space-y-1">
               <p className="text-sm text-gray-600">Usuario: {usuario.usuario}</p>
-              <p className="text-sm text-gray-600">Email: {usuario.email}</p>
               <p className="text-sm text-gray-600">Rol: {usuario.rol_id === 1 ? 'Administrador' : 'Chofer'}</p>
-              <p className="text-sm text-gray-600">Última conexión: {formatDate(usuario.ultima_conexion)}</p>
-              {usuario.observaciones && (
-                <p><span className="font-semibold">Observaciones:</span> {usuario.observaciones}</p>
-              )}
             </div>
             
             <div className="flex justify-end gap-2 mt-3">
               <button 
                 onClick={() => handleToggleStatus(usuario)}
                 className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                title={usuario.estado === 'Activo' ? 'Desactivar usuario' : 'Activar usuario'}
+                title={usuario.activo ? 'Desactivar usuario' : 'Activar usuario'}
               >
-                {usuario.estado === 'Activo' ? <FaUserSlash className="text-red-500" /> : <FaUserCheck className="text-green-500" />}
+                {usuario.activo ? <FaUserSlash className="text-red-500" /> : <FaUserCheck className="text-green-500" />}
               </button>
               <button 
                 onClick={() => handleEdit(usuario)}

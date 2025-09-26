@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTractoresStore } from "@/stores/tractoresStore";
+import type { Tractor as TractorType } from "@/types/tractor";
+
 import { useServiciosStore } from "@/stores/serviciosStore";
 import { toast } from "react-toastify";
 import ConfirmModal from '@/components/ConfirmModal';
-import { FormSection, FormField, FormInput, FormSelect, FormCheckbox, FormButton } from '@/components/FormComponents';
+import { FormSection, FormField, FormInput, FormSelect, FormButton } from '@/components/FormComponents';
 import { FaTruck, FaCalendarAlt, FaGlobeAmericas } from 'react-icons/fa';
+import { toDateInput, toSqlDate } from '@/helpers/dateFormater';
 
 export default function Tractor() {
   const { id } = useParams();
@@ -24,28 +27,29 @@ export default function Tractor() {
   const { servicios, fetchServicios } = useServiciosStore();
   
   const isEditing = id !== 'new';
+  const parsedId = isEditing && id ? Number(id) : null;
 
   useEffect(() => {
-    if (isEditing && id) {
-      fetchTractorById(id);
+    if (isEditing && parsedId !== null && !Number.isNaN(parsedId)) {
+      fetchTractorById(parsedId);
     }
     
     // Cargar la lista de servicios disponibles
     fetchServicios();
     
     return () => clearSelectedTractor();
-  }, [id, isEditing, fetchTractorById, fetchServicios, clearSelectedTractor]);
+  }, [parsedId, isEditing, fetchTractorById, fetchServicios, clearSelectedTractor]);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Partial<TractorType>>({
     marca: "",
     modelo: "",
     dominio: "",
-    año: new Date().getFullYear(),
+    anio: new Date().getFullYear(),
     vencimiento_rto: "",
-    estado: "Disponible",
+    estado: "disponible",
     tipo_servicio: "",
-    alcance_servicio: false,
+    alcance_servicio: "nacional",
   });
   
   useEffect(() => {
@@ -54,8 +58,8 @@ export default function Tractor() {
         marca: selectedTractor.marca,
         modelo: selectedTractor.modelo,
         dominio: selectedTractor.dominio,
-        año: selectedTractor.año,
-        vencimiento_rto: selectedTractor.vencimiento_rto,
+        anio: selectedTractor.anio,
+        vencimiento_rto: toDateInput(selectedTractor.vencimiento_rto),
         estado: selectedTractor.estado,
         tipo_servicio: selectedTractor.tipo_servicio,
         alcance_servicio: selectedTractor.alcance_servicio,
@@ -74,13 +78,20 @@ export default function Tractor() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const payload = {
+      ...formData,
+      vencimiento_rto: toSqlDate(formData.vencimiento_rto),
+    };
+
+    console.log(payload);
     
     try {
-      if (isEditing && id) {
-        await editTractor(id, formData);
+      if (isEditing && parsedId !== null) {
+        await editTractor(parsedId, payload);
         toast.success("Tractor actualizado correctamente");
       } else {
-        await addTractor(formData);
+        await addTractor(payload as Omit<TractorType, 'id'>);
         toast.success("Tractor agregado correctamente");
       }
       navigate("/tractores");
@@ -92,10 +103,10 @@ export default function Tractor() {
   };
   
   const handleDelete = async () => {
-    if (!id) return;
+    if (parsedId === null) return;
     
     try {
-      await removeTractor(id);
+      await removeTractor(parsedId);
       toast.success('Tractor eliminado correctamente');
       setShowDeleteModal(false);
       navigate('/tractores');
@@ -178,11 +189,11 @@ export default function Tractor() {
                   />
                 </FormField>
 
-                <FormField label="Año" name="año" required>
+                <FormField label="Año" name="anio" required>
                   <FormInput
                     type="number"
-                    name="año"
-                    value={formData.año}
+                    name="anio"
+                    value={formData.anio}
                     onChange={handleChange}
                     min="1990"
                     max={new Date().getFullYear() + 1}
@@ -215,10 +226,10 @@ export default function Tractor() {
                     onChange={handleChange}
                     required
                   >
-                    <option value="Disponible">Disponible</option>
-                    <option value="En reparación">En reparación</option>
-                    <option value="En viaje">En viaje</option>
-                    <option value="Fuera de servicio">Fuera de servicio</option>
+                    <option value="disponible">Disponible</option>
+                    <option value="en reparacion">En reparación</option>
+                    <option value="en uso">En viaje</option>
+                    <option value="fuera de servicio">Fuera de servicio</option>
                   </FormSelect>
                 </FormField>
               </div>
@@ -247,12 +258,15 @@ export default function Tractor() {
                 </FormField>
 
                 <FormField label="Alcance del Servicio" name="alcance_servicio">
-                  <FormCheckbox
+                  <FormSelect
                     name="alcance_servicio"
-                    checked={formData.alcance_servicio}
+                    value={formData.alcance_servicio}
                     onChange={handleChange}
-                    label="Alcance Internacional"
-                  />
+                    required
+                  >
+                    <option value="nacional">Nacional</option>
+                    <option value="internacional">Internacional</option>
+                  </FormSelect>
                 </FormField>
               </div>
             </FormSection>

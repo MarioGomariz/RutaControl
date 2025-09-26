@@ -1,40 +1,23 @@
-import { supabase } from '../utils/supabase';
-
-export interface Viaje {
-  id: string;
-  chofer_id: string;
-  tractor_id: string;
-  semirremolque_id: string;
-  tipo_servicio: string;
-  fecha_salida: string;
-  fecha_llegada: string | null;
-  origen: string;
-  destino: string;
-  kilometros_recorridos: number | null;
-  duracion_horas: number | null;
-  alcance_servicio: 'Nacional' | 'Internacional';
-  estado_viaje: 'Programado' | 'En curso' | 'Finalizado' | 'Cancelado';
-  observaciones: string | null;
-  fecha_creacion: string;
-  fecha_actualizacion: string;
-}
+import type { Viaje, EstadoViaje } from '@/types/viaje';
+import api from '../utils/api';
 
 /**
  * Obtener todos los viajes
  * @returns Promise con array de viajes
  */
 export const getAllViajes = async (): Promise<Viaje[]> => {
-  const { data, error } = await supabase
-    .from('viajes')
-    .select('*')
-    .order('fecha_salida', { ascending: false });
-  
-  if (error) {
+  try {
+    const response = await api.get('/viajes');
+    return response.data || [];
+  } catch (error) {
+    // Si no hay viajes, devolver arreglo vacío
+    // @ts-ignore
+    if (error?.response?.status === 404) {
+      return [];
+    }
     console.error('Error al obtener viajes:', error);
     throw error;
   }
-  
-  return data || [];
 };
 
 /**
@@ -43,18 +26,16 @@ export const getAllViajes = async (): Promise<Viaje[]> => {
  * @returns Promise con el viaje o null si no existe
  */
 export const getViajeById = async (id: string): Promise<Viaje | null> => {
-  const { data, error } = await supabase
-    .from('viajes')
-    .select('*')
-    .eq('id', id)
-    .single();
-  
-  if (error) {
+  try {
+    const response = await api.get(`/viajes/${id}`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.status === 404) {
+      return null;
+    }
     console.error('Error al obtener viaje por ID:', error);
-    return null;
+    throw error;
   }
-  
-  return data;
 };
 
 /**
@@ -62,33 +43,23 @@ export const getViajeById = async (id: string): Promise<Viaje | null> => {
  * @param viaje Datos del viaje (sin ID)
  * @returns Promise con el viaje creado
  */
-export const createViaje = async (viaje: Omit<Viaje, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>): Promise<Viaje> => {
-  // Calcular duración en horas si hay fecha de salida y llegada
-  let duracionHoras = null;
-  if (viaje.fecha_salida && viaje.fecha_llegada) {
-    const salida = new Date(viaje.fecha_salida);
-    const llegada = new Date(viaje.fecha_llegada);
-    duracionHoras = (llegada.getTime() - salida.getTime()) / (1000 * 60 * 60);
-  }
-  
-  // Crear el viaje
-  const { data, error } = await supabase
-    .from('viajes')
-    .insert({
+export const createViaje = async (viaje: Omit<Viaje, 'id'>): Promise<Viaje> => {
+  try {
+    // Preparar los datos para la creación
+    const createData: Omit<Viaje, 'id'> = {
       ...viaje,
-      duracion_horas: duracionHoras,
-      fecha_salida: viaje.fecha_salida ? new Date(viaje.fecha_salida).toISOString() : null,
-      fecha_llegada: viaje.fecha_llegada ? new Date(viaje.fecha_llegada).toISOString() : null
-    })
-    .select()
-    .single();
-  
-  if (error) {
+      fecha_hora_salida: viaje.fecha_hora_salida
+        ? new Date(viaje.fecha_hora_salida).toISOString()
+        : new Date().toISOString()
+    };
+    
+    // Crear el viaje
+    const response = await api.post('/viajes', createData);
+    return response.data;
+  } catch (error) {
     console.error('Error al crear viaje:', error);
     throw error;
   }
-  
-  return data;
 };
 
 /**
@@ -99,55 +70,33 @@ export const createViaje = async (viaje: Omit<Viaje, 'id' | 'fecha_creacion' | '
  */
 export const updateViaje = async (
   id: string, 
-  viajeData: Partial<Omit<Viaje, 'id' | 'fecha_creacion' | 'fecha_actualizacion'>>
+  viajeData: Partial<Omit<Viaje, 'id'>>
 ): Promise<Viaje | null> => {
-  // Verificar si el viaje existe
-  const { data: existingViaje } = await supabase
-    .from('viajes')
-    .select('*')
-    .eq('id', id)
-    .single();
-  
-  if (!existingViaje) {
-    return null;
-  }
-  
-  // Preparar los datos para la actualización
-  const updateData = { ...viajeData };
-  
-  // Convertir fechas a formato ISO si existen
-  if (updateData.fecha_salida) {
-    updateData.fecha_salida = new Date(updateData.fecha_salida).toISOString();
-  }
-  
-  if (updateData.fecha_llegada) {
-    updateData.fecha_llegada = new Date(updateData.fecha_llegada).toISOString();
-  }
-  
-  // Calcular duración en horas si hay cambios en las fechas
-  const fechaSalida = updateData.fecha_salida || existingViaje.fecha_salida;
-  const fechaLlegada = updateData.fecha_llegada || existingViaje.fecha_llegada;
-  
-  if (fechaSalida && fechaLlegada) {
-    const salida = new Date(fechaSalida);
-    const llegada = new Date(fechaLlegada);
-    updateData.duracion_horas = (llegada.getTime() - salida.getTime()) / (1000 * 60 * 60);
-  }
-  
-  // Actualizar el viaje
-  const { data, error } = await supabase
-    .from('viajes')
-    .update(updateData)
-    .eq('id', id)
-    .select()
-    .single();
-  
-  if (error) {
+  try {
+    // Verificar si el viaje existe
+    const existingViaje = await getViajeById(id);
+    if (!existingViaje) {
+      return null;
+    }
+    
+    // Preparar los datos para la actualización
+    const updateData: Partial<Omit<Viaje, 'id'>> = { ...viajeData };
+
+    // Convertir fechas a formato ISO si existen
+    if (updateData.fecha_hora_salida) {
+      updateData.fecha_hora_salida = new Date(updateData.fecha_hora_salida).toISOString();
+    }
+    
+    // Actualizar el viaje
+    const response = await api.put(`/viajes/${id}`, updateData);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.status === 404) {
+      return null;
+    }
     console.error('Error al actualizar viaje:', error);
     throw error;
   }
-  
-  return data;
 };
 
 /**
@@ -156,29 +105,23 @@ export const updateViaje = async (
  * @returns Promise con true si se eliminó correctamente, false si no existe
  */
 export const deleteViaje = async (id: string): Promise<boolean> => {
-  // Verificar si el viaje existe
-  const { data: existingViaje } = await supabase
-    .from('viajes')
-    .select('*')
-    .eq('id', id)
-    .single();
-  
-  if (!existingViaje) {
-    return false;
-  }
-  
-  // Eliminar el viaje
-  const { error } = await supabase
-    .from('viajes')
-    .delete()
-    .eq('id', id);
-  
-  if (error) {
+  try {
+    // Verificar si el viaje existe
+    const existingViaje = await getViajeById(id);
+    if (!existingViaje) {
+      return false;
+    }
+    
+    // Eliminar el viaje
+    await api.delete(`/viajes/${id}`);
+    return true;
+  } catch (error: any) {
+    if (error.response && error.response.status === 404) {
+      return false;
+    }
     console.error('Error al eliminar viaje:', error);
     throw error;
   }
-  
-  return true;
 };
 
 /**
@@ -189,9 +132,9 @@ export const deleteViaje = async (id: string): Promise<boolean> => {
  */
 export const cambiarEstadoViaje = async (
   id: string, 
-  estado: 'Programado' | 'En curso' | 'Finalizado' | 'Cancelado'
+  estado: EstadoViaje
 ): Promise<Viaje | null> => {
-  return updateViaje(id, { estado_viaje: estado });
+  return updateViaje(id, { estado });
 };
 
 /**
@@ -200,20 +143,20 @@ export const cambiarEstadoViaje = async (
  * @returns Promise con array de viajes que coinciden con la búsqueda
  */
 export const searchViajes = async (query: string): Promise<Viaje[]> => {
-  const searchTerm = `%${query.toLowerCase()}%`;
-  
-  const { data, error } = await supabase
-    .from('viajes')
-    .select('*')
-    .or(`origen.ilike.${searchTerm},destino.ilike.${searchTerm},estado_viaje.ilike.${searchTerm}`)
-    .order('fecha_salida', { ascending: false });
-  
-  if (error) {
+  try {
+    const response = await api.get('/viajes/search', {
+      params: { query }
+    });
+    return response.data || [];
+  } catch (error) {
+    // Si no hay resultados, devolver arreglo vacío
+    // @ts-ignore
+    if (error?.response?.status === 404) {
+      return [];
+    }
     console.error('Error al buscar viajes:', error);
     throw error;
   }
-  
-  return data || [];
 };
 
 /**
@@ -222,18 +165,18 @@ export const searchViajes = async (query: string): Promise<Viaje[]> => {
  * @returns Promise con array de viajes del chofer
  */
 export const getViajesByChofer = async (choferId: string): Promise<Viaje[]> => {
-  const { data, error } = await supabase
-    .from('viajes')
-    .select('*')
-    .eq('chofer_id', choferId)
-    .order('fecha_salida', { ascending: false });
-  
-  if (error) {
+  try {
+    const response = await api.get(`/viajes/chofer/${choferId}`);
+    return response.data || [];
+  } catch (error) {
+    // Si el backend devuelve 404 cuando no hay viajes para el chofer, devolvemos []
+    // @ts-ignore
+    if (error?.response?.status === 404) {
+      return [];
+    }
     console.error('Error al obtener viajes por chofer:', error);
     throw error;
   }
-  
-  return data || [];
 };
 
 /**
@@ -242,18 +185,17 @@ export const getViajesByChofer = async (choferId: string): Promise<Viaje[]> => {
  * @returns Promise con array de viajes del tractor
  */
 export const getViajesByTractor = async (tractorId: string): Promise<Viaje[]> => {
-  const { data, error } = await supabase
-    .from('viajes')
-    .select('*')
-    .eq('tractor_id', tractorId)
-    .order('fecha_salida', { ascending: false });
-  
-  if (error) {
+  try {
+    const response = await api.get(`/viajes/tractor/${tractorId}`);
+    return response.data || [];
+  } catch (error) {
+    // @ts-ignore
+    if (error?.response?.status === 404) {
+      return [];
+    }
     console.error('Error al obtener viajes por tractor:', error);
     throw error;
   }
-  
-  return data || [];
 };
 
 /**
@@ -262,18 +204,17 @@ export const getViajesByTractor = async (tractorId: string): Promise<Viaje[]> =>
  * @returns Promise con array de viajes del semirremolque
  */
 export const getViajesBySemirremolque = async (semirremolqueId: string): Promise<Viaje[]> => {
-  const { data, error } = await supabase
-    .from('viajes')
-    .select('*')
-    .eq('semirremolque_id', semirremolqueId)
-    .order('fecha_salida', { ascending: false });
-  
-  if (error) {
+  try {
+    const response = await api.get(`/viajes/semirremolque/${semirremolqueId}`);
+    return response.data || [];
+  } catch (error) {
+    // @ts-ignore
+    if (error?.response?.status === 404) {
+      return [];
+    }
     console.error('Error al obtener viajes por semirremolque:', error);
     throw error;
   }
-  
-  return data || [];
 };
 
 /**
@@ -281,19 +222,18 @@ export const getViajesBySemirremolque = async (semirremolqueId: string): Promise
  * @param estado Estado del viaje
  * @returns Promise con array de viajes con el estado especificado
  */
-export const getViajesByEstado = async (estado: 'Programado' | 'En curso' | 'Finalizado' | 'Cancelado'): Promise<Viaje[]> => {
-  const { data, error } = await supabase
-    .from('viajes')
-    .select('*')
-    .eq('estado_viaje', estado)
-    .order('fecha_salida', { ascending: false });
-  
-  if (error) {
+export const getViajesByEstado = async (estado: EstadoViaje): Promise<Viaje[]> => {
+  try {
+    const response = await api.get(`/viajes/estado/${estado}`);
+    return response.data || [];
+  } catch (error) {
+    // @ts-ignore
+    if (error?.response?.status === 404) {
+      return [];
+    }
     console.error('Error al obtener viajes por estado:', error);
     throw error;
   }
-  
-  return data || [];
 };
 
 /**
@@ -303,17 +243,20 @@ export const getViajesByEstado = async (estado: 'Programado' | 'En curso' | 'Fin
  * @returns Promise con array de viajes dentro del rango de fechas
  */
 export const getViajesByFechas = async (fechaInicio: string, fechaFin: string): Promise<Viaje[]> => {
-  const { data, error } = await supabase
-    .from('viajes')
-    .select('*')
-    .gte('fecha_salida', new Date(fechaInicio).toISOString())
-    .lte('fecha_salida', new Date(fechaFin).toISOString())
-    .order('fecha_salida', { ascending: false });
-  
-  if (error) {
+  try {
+    const inicio = new Date(fechaInicio).toISOString();
+    const fin = new Date(fechaFin).toISOString();
+    
+    const response = await api.get('/viajes/fechas', {
+      params: { fechaInicio: inicio, fechaFin: fin }
+    });
+    return response.data || [];
+  } catch (error) {
+    // @ts-ignore
+    if (error?.response?.status === 404) {
+      return [];
+    }
     console.error('Error al obtener viajes por rango de fechas:', error);
     throw error;
   }
-  
-  return data || [];
 };
