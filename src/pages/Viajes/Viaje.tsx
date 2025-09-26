@@ -189,8 +189,6 @@ export default function Viaje() {
   // Filtrar semirremolques con estado activo
   const semirremolquesActivos = semirremolques.filter(semirremolque => semirremolque.estado === 'disponible');
 
-  console.log(tractores);
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">

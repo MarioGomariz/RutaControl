@@ -2,20 +2,36 @@ import { useEffect, useState } from "react";
 import { useViajesStore } from "@/stores/viajesStore";
 import { Link } from "react-router-dom";
 import { FaMapMarkerAlt, FaCalendarAlt, FaTruck, FaRoute, FaPlus } from "react-icons/fa";
+import { useAuth } from "@/stores/authStore";
+import { useServiciosStore } from "@/stores";
 
 export default function Viajes() {
-    const { viajes, isLoading, error, fetchViajes } = useViajesStore();
+    const { viajes, isLoading, error, fetchViajes, fetchViajesByChofer } = useViajesStore();
+    const { servicios, fetchServicios } = useServiciosStore();
     const [filtroEstado, setFiltroEstado] = useState<string>('todos');
+    const { user } = useAuth();
 
     useEffect(() => {
-        // Cargar viajes cuando el componente se monta
-        fetchViajes();
-    }, [fetchViajes]);
+        fetchServicios();
+        // Cargar viajes según el rol del usuario
+        if (user?.role === 'chofer') {
+            // Un chofer solo ve sus propios viajes
+            if (user.id) {
+                fetchViajesByChofer(user.id);
+            }
+        } else {
+            // Admin u otros roles ven todos los viajes
+            fetchViajes();
+        }
+    }, [user, fetchViajes, fetchViajesByChofer]);
 
     // Filtrar viajes por estado
+    const baseViajes = user?.role === 'chofer'
+        ? viajes.filter(v => v.chofer_id === user.id)
+        : viajes;
     const viajesFiltrados = filtroEstado === 'todos'
-        ? viajes
-        : viajes.filter(viaje => viaje.estado === filtroEstado.toLowerCase());
+        ? baseViajes
+        : baseViajes.filter(viaje => viaje.estado === filtroEstado.toLowerCase());
 
     // Función para obtener una clase de color según el estado del viaje
     const getEstadoClass = (estado: string) => {
@@ -99,10 +115,12 @@ export default function Viajes() {
                 </div>
             ) : (
                 <div className="w-full max-w-4xl">
-                    <Link to="/viaje/new" className="flex items-center justify-center gap-2 bg-white border-2 border-dashed border-gray-300 rounded-lg p-6 mb-6 hover:border-primary hover:text-primary transition-all duration-200 group">
-                        <FaPlus className="text-xl group-hover:scale-110 transition-transform duration-200" />
-                        <span className="text-lg font-medium">Agregar nuevo viaje</span>
-                    </Link>
+                    {user?.role !== 'chofer' && (
+                        <Link to="/viaje/new" className="flex items-center justify-center gap-2 bg-white border-2 border-dashed border-gray-300 rounded-lg p-6 mb-6 hover:border-primary hover:text-primary transition-all duration-200 group">
+                            <FaPlus className="text-xl group-hover:scale-110 transition-transform duration-200" />
+                            <span className="text-lg font-medium">Agregar nuevo viaje</span>
+                        </Link>
+                    )}
 
                     {viajesFiltrados.length > 0 ? (
                         <div className="grid grid-cols-1 gap-6">
@@ -114,7 +132,7 @@ export default function Viajes() {
                                                 <div className="flex items-center mb-2">
                                                     <FaMapMarkerAlt className="text-primary mr-2" />
                                                     <h3 className="text-lg font-semibold text-gray-800">
-                                                        {viaje.origen} ({viaje.alcance})
+                                                        {viaje.origen}
                                                     </h3>
                                                 </div>
                                                 <div className="flex flex-wrap gap-y-1 gap-x-4 text-sm text-gray-600">
@@ -132,7 +150,7 @@ export default function Viajes() {
                                         <div className="flex flex-wrap gap-x-4 gap-y-2 mb-4 text-sm text-gray-600">
                                             <div className="flex items-center">
                                                 <FaTruck className="mr-1 text-gray-500" />
-                                                <span>Servicio ID: {viaje.servicio_id}</span>
+                                                <span>Servicio: {servicios.find(s => s.id === viaje.servicio_id)?.nombre}</span>
                                             </div>
                                             <div className="flex items-center">
                                                 <FaRoute className="mr-1 text-gray-500" />
@@ -140,7 +158,7 @@ export default function Viajes() {
                                             </div>
                                         </div>
                                         
-                                        <div className="flex justify-end">
+                                        {user?.role !== 'chofer' && <div className="flex justify-end">
                                             <Link 
                                                 to={`/viaje/${viaje.id}`}
                                                 className="bg-primary text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
@@ -151,6 +169,7 @@ export default function Viajes() {
                                                 </svg>
                                             </Link>
                                         </div>
+                                        }
                                     </div>
                                 </div>
                             ))}
@@ -160,16 +179,22 @@ export default function Viajes() {
                             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M9 17l-5-5 5-5m6 10l5-5-5-5" />
                             </svg>
-                            <h3 className="mt-2 text-lg font-medium text-gray-900">No hay viajes disponibles</h3>
+                            <h3 className="mt-2 text-lg font-medium text-gray-900">
+                                {user?.role === 'chofer' ? 'No tienes viajes asignados' : 'No hay viajes disponibles'}
+                            </h3>
                             <p className="mt-1 text-gray-500">
-                                No se encontraron viajes {filtroEstado !== 'todos' ? `con estado "${filtroEstado}"` : ''}.                                
+                                {user?.role === 'chofer'
+                                    ? 'Aún no tienes viajes asignados en el sistema.'
+                                    : `No se encontraron viajes ${filtroEstado !== 'todos' ? `con estado "${filtroEstado}"` : ''}.`}
                             </p>
-                            <div className="mt-6">
-                                <Link to="/viaje/new" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-blue-700">
-                                    <FaPlus className="mr-2" />
-                                    Crear nuevo viaje
-                                </Link>
-                            </div>
+                            {user?.role !== 'chofer' && (
+                                <div className="mt-6">
+                                    <Link to="/viaje/new" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-blue-700">
+                                        <FaPlus className="mr-2" />
+                                        Crear nuevo viaje
+                                    </Link>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

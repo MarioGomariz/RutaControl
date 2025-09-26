@@ -10,6 +10,11 @@ export const getAllViajes = async (): Promise<Viaje[]> => {
     const response = await api.get('/viajes');
     return response.data || [];
   } catch (error) {
+    // Si no hay viajes, devolver arreglo vacío
+    // @ts-ignore
+    if (error?.response?.status === 404) {
+      return [];
+    }
     console.error('Error al obtener viajes:', error);
     throw error;
   }
@@ -144,6 +149,11 @@ export const searchViajes = async (query: string): Promise<Viaje[]> => {
     });
     return response.data || [];
   } catch (error) {
+    // Si no hay resultados, devolver arreglo vacío
+    // @ts-ignore
+    if (error?.response?.status === 404) {
+      return [];
+    }
     console.error('Error al buscar viajes:', error);
     throw error;
   }
@@ -159,6 +169,11 @@ export const getViajesByChofer = async (choferId: string): Promise<Viaje[]> => {
     const response = await api.get(`/viajes/chofer/${choferId}`);
     return response.data || [];
   } catch (error) {
+    // Si el backend devuelve 404 cuando no hay viajes para el chofer, devolvemos []
+    // @ts-ignore
+    if (error?.response?.status === 404) {
+      return [];
+    }
     console.error('Error al obtener viajes por chofer:', error);
     throw error;
   }
@@ -174,6 +189,10 @@ export const getViajesByTractor = async (tractorId: string): Promise<Viaje[]> =>
     const response = await api.get(`/viajes/tractor/${tractorId}`);
     return response.data || [];
   } catch (error) {
+    // @ts-ignore
+    if (error?.response?.status === 404) {
+      return [];
+    }
     console.error('Error al obtener viajes por tractor:', error);
     throw error;
   }
@@ -189,6 +208,10 @@ export const getViajesBySemirremolque = async (semirremolqueId: string): Promise
     const response = await api.get(`/viajes/semirremolque/${semirremolqueId}`);
     return response.data || [];
   } catch (error) {
+    // @ts-ignore
+    if (error?.response?.status === 404) {
+      return [];
+    }
     console.error('Error al obtener viajes por semirremolque:', error);
     throw error;
   }
@@ -204,6 +227,10 @@ export const getViajesByEstado = async (estado: EstadoViaje): Promise<Viaje[]> =
     const response = await api.get(`/viajes/estado/${estado}`);
     return response.data || [];
   } catch (error) {
+    // @ts-ignore
+    if (error?.response?.status === 404) {
+      return [];
+    }
     console.error('Error al obtener viajes por estado:', error);
     throw error;
   }
@@ -225,6 +252,10 @@ export const getViajesByFechas = async (fechaInicio: string, fechaFin: string): 
     });
     return response.data || [];
   } catch (error) {
+    // @ts-ignore
+    if (error?.response?.status === 404) {
+      return [];
+    }
     console.error('Error al obtener viajes por rango de fechas:', error);
     throw error;
   }
