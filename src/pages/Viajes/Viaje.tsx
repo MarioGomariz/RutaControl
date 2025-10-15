@@ -8,7 +8,7 @@ import { useServiciosStore } from "@/stores/serviciosStore";
 import type { Viaje as ViajeType, EstadoViaje } from "@/types/viaje";
 import { toast } from "react-toastify";
 import ConfirmModal from "@/components/ConfirmModal";
-import { FaArrowLeft, FaTruck, FaRoute, FaClipboardList, FaTrash, FaSave, FaMapMarked } from "react-icons/fa";
+import { FaArrowLeft, FaTruck, FaRoute, FaClipboardList, FaTrash, FaSave, FaMapMarked, FaMapMarkerAlt, FaPlus } from "react-icons/fa";
 import { 
   FormSection, 
   FormField, 
@@ -53,6 +53,11 @@ export default function Viaje() {
   }, [parsedId, isEditing, fetchViajeById, clearSelectedViaje, fetchChoferes, fetchTractores, fetchSemirremolques, fetchServicios]);
 
   interface ViajeForm extends Omit<ViajeType, 'id'> {}
+  
+  interface DestinoForm {
+    orden: number;
+    ubicacion: string;
+  }
 
   const [formData, setFormData] = useState<ViajeForm>({
     chofer_id: 0,
@@ -65,6 +70,10 @@ export default function Viaje() {
     fecha_hora_salida: "",
     estado: "programado" as EstadoViaje,
   });
+  
+  const [destinos, setDestinos] = useState<DestinoForm[]>([
+    { orden: 1, ubicacion: "" }
+  ]);
 
   useEffect(() => {
     if (selectedViaje) {
@@ -79,6 +88,15 @@ export default function Viaje() {
         fecha_hora_salida: selectedViaje.fecha_hora_salida ? new Date(selectedViaje.fecha_hora_salida).toISOString().slice(0, 16) : "",
         estado: selectedViaje.estado,
       });
+      
+      // Cargar destinos si existen
+      if ((selectedViaje as any).destinos && Array.isArray((selectedViaje as any).destinos)) {
+        const destinosCargados = (selectedViaje as any).destinos.map((d: any) => ({
+          orden: d.orden,
+          ubicacion: d.ubicacion
+        }));
+        setDestinos(destinosCargados.length > 0 ? destinosCargados : [{ orden: 1, ubicacion: "" }]);
+      }
     }
   }, [selectedViaje]);
 
@@ -116,6 +134,26 @@ export default function Viaje() {
 
   const [error, setError] = useState<string>('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  
+  // Funciones para manejar destinos
+  const agregarDestino = () => {
+    setDestinos([...destinos, { orden: destinos.length + 1, ubicacion: "" }]);
+  };
+  
+  const eliminarDestino = (index: number) => {
+    if (destinos.length > 1) {
+      const nuevosDestinos = destinos.filter((_, i) => i !== index);
+      // Reordenar
+      const reordenados = nuevosDestinos.map((d, i) => ({ ...d, orden: i + 1 }));
+      setDestinos(reordenados);
+    }
+  };
+  
+  const actualizarDestino = (index: number, ubicacion: string) => {
+    const nuevosDestinos = [...destinos];
+    nuevosDestinos[index].ubicacion = ubicacion;
+    setDestinos(nuevosDestinos);
+  };
 
   const handleDelete = async () => {
     if (parsedId === null) return;
@@ -161,17 +199,32 @@ export default function Viaje() {
         toast.error('Debes seleccionar un servicio');
         return;
       }
-      if (!formData.cantidad_destinos || formData.cantidad_destinos <= 0) {
-        toast.error('La cantidad de destinos debe ser mayor a 0');
+      
+      // Validar destinos
+      if (destinos.length === 0) {
+        toast.error('Debe haber al menos un destino');
+        return;
+      }
+      
+      const destinosVacios = destinos.filter(d => !d.ubicacion.trim());
+      if (destinosVacios.length > 0) {
+        toast.error('Todos los destinos deben tener una ubicación');
         return;
       }
 
+      // Preparar datos con destinos
+      const viajeData = {
+        ...formData,
+        cantidad_destinos: destinos.length,
+        destinos: destinos.map(d => ({ orden: d.orden, ubicacion: d.ubicacion }))
+      };
+
       if (isEditing && parsedId !== null) {
-        await editViaje(parsedId, formData);
+        await editViaje(parsedId, viajeData as any);
         toast.success("Viaje actualizado correctamente");
         navigate("/viajes");
       } else {
-        await addViaje(formData);
+        await addViaje(viajeData as any);
         toast.success("Viaje creado correctamente");
         navigate("/viajes");
       }
@@ -329,19 +382,54 @@ export default function Viaje() {
                     <option value="internacional">Internacional</option>
                   </FormSelect>
                 </FormField>
-
-                {/* Cantidad de destinos */}
-                <FormField label="Cantidad de destinos" name="cantidad_destinos" required>
-                  <FormInput
-                    type="number"
-                    name="cantidad_destinos"
-                    value={formData.cantidad_destinos}
-                    onChange={handleNumericChange}
-                    min="1"
-                    step="1"
-                    required
-                  />
-                </FormField>
+              </div>
+            </FormSection>
+            
+            <FormSection
+              title="Destinos del viaje"
+              icon={<FaMapMarkerAlt />}
+              color="indigo"
+            >
+              <div className="space-y-4">
+                {destinos.map((destino, index) => (
+                  <div key={index} className="flex gap-3 items-start">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Destino {index + 1}
+                      </label>
+                      <input
+                        type="text"
+                        value={destino.ubicacion}
+                        onChange={(e) => actualizarDestino(index, e.target.value)}
+                        placeholder="Ubicación del destino"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                        required
+                      />
+                    </div>
+                    {destinos.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => eliminarDestino(index)}
+                        className="mt-8 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition-colors"
+                        title="Eliminar destino"
+                      >
+                        <FaTrash />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                
+                <button
+                  type="button"
+                  onClick={agregarDestino}
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  <FaPlus /> Agregar destino
+                </button>
+                
+                <p className="text-sm text-gray-600 mt-2">
+                  Total de destinos: <strong>{destinos.length}</strong>
+                </p>
               </div>
             </FormSection>
 

@@ -7,6 +7,7 @@ export * from './roles';
 export * from './servicio';
 export * from './usuario';
 export * from './viaje';
+export * from './parada';
 
 // Explicit re-exports to avoid name collisions
 import type { Semirremolque, EstadoUnidad as EstadoUnidadSemirremolque } from './semirremolque';

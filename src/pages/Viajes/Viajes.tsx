@@ -1,15 +1,30 @@
 import { useEffect, useState } from "react";
 import { useViajesStore } from "@/stores/viajesStore";
 import { Link } from "react-router-dom";
-import { FaMapMarkerAlt, FaCalendarAlt, FaTruck, FaRoute, FaPlus } from "react-icons/fa";
+import { FaMapMarkerAlt, FaCalendarAlt, FaTruck, FaRoute, FaPlus, FaMapMarked, FaDownload } from "react-icons/fa";
 import { useAuth } from "@/stores/authStore";
 import { useServiciosStore } from "@/stores";
+import { useParadasStore } from "@/stores";
+import { generarPDFViaje } from "@/utils/pdfGenerator";
+import { toast } from "react-toastify";
 
 export default function Viajes() {
     const { viajes, isLoading, error, fetchViajes, fetchViajesByChofer } = useViajesStore();
     const { servicios, fetchServicios } = useServiciosStore();
+    const { exportarParadas } = useParadasStore();
     const [filtroEstado, setFiltroEstado] = useState<string>('todos');
     const { user } = useAuth();
+    
+    const handleDescargarPDF = async (viajeId: number) => {
+        try {
+            const data = await exportarParadas(String(viajeId));
+            generarPDFViaje(data);
+            toast.success("PDF generado exitosamente");
+        } catch (error: any) {
+            console.error('Error al generar PDF:', error);
+            toast.error("Error al generar el PDF");
+        }
+    };
 
     useEffect(() => {
         fetchServicios();
@@ -158,18 +173,48 @@ export default function Viajes() {
                                             </div>
                                         </div>
                                         
-                                        {user?.role !== 'chofer' && <div className="flex justify-end">
-                                            <Link 
-                                                to={`/viaje/${viaje.id}`}
-                                                className="bg-primary text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
-                                            >
-                                                Ver detalles
-                                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                                </svg>
-                                            </Link>
+                                        <div className="flex justify-end gap-3">
+                                            {user?.role === 'chofer' && (
+                                                <Link 
+                                                    to={`/viaje/${viaje.id}/paradas`}
+                                                    className="bg-primary text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+                                                >
+                                                    <FaMapMarked />
+                                                    {viaje.estado === 'programado' ? 'Iniciar Viaje' : 'Ver Paradas'}
+                                                </Link>
+                                            )}
+                                            
+                                            {user?.role !== 'chofer' && (
+                                                <>
+                                                    <Link 
+                                                        to={`/viaje/${viaje.id}/paradas`}
+                                                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors inline-flex items-center gap-2"
+                                                    >
+                                                        <FaMapMarked />
+                                                        Ver Paradas
+                                                    </Link>
+                                                    <Link 
+                                                        to={`/viaje/${viaje.id}`}
+                                                        className="bg-primary text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+                                                    >
+                                                        Ver detalles
+                                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                                        </svg>
+                                                    </Link>
+                                                    {viaje.estado === 'finalizado' && (
+                                                        <button
+                                                            onClick={() => handleDescargarPDF(viaje.id)}
+                                                            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors inline-flex items-center gap-2"
+                                                            title="Descargar reporte en PDF"
+                                                        >
+                                                            <FaDownload />
+                                                            PDF
+                                                        </button>
+                                                    )}
+                                                </>
+                                            )}
                                         </div>
-                                        }
                                     </div>
                                 </div>
                             ))}

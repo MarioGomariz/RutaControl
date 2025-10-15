@@ -19,6 +19,7 @@ import Chofer from './pages/Choferes/Chofer';
 import Tractor from './pages/Tractores/Tractor';
 import Servicio from './pages/Servicios/Servicio';
 import Viaje from './pages/Viajes/Viaje';
+import ParadasView from './pages/Viajes/ParadasView';
 import Semirremolque from './pages/Semirremolques/Semirremolque';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -113,6 +114,7 @@ function App() {
             <Route path="tractor/:id" element={<Tractor />} />
             <Route path="servicio/:id" element={<Servicio />} />
             <Route path="viaje/:id" element={<Viaje />} />
+            <Route path="viaje/:id/paradas" element={<ParadasView />} />
             <Route path="semirremolque/:id" element={<Semirremolque />} />
           </Route>
         </Route>
