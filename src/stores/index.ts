@@ -5,3 +5,4 @@ export { useServiciosStore } from './serviciosStore';
 export { useUsuariosStore } from './usuariosStore';
 export { useViajesStore } from './viajesStore';
 export { useParadasStore } from './paradasStore';
+export { useEstadisticasStore } from './estadisticasStore';

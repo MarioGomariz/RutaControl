@@ -103,6 +103,14 @@ export default function Navbar() {
                   Usuarios
                 </Link>
               </li>
+              <li>
+                <Link 
+                  to="/estadisticas" 
+                  className={`hover:text-gray-300 ${isActive('/estadisticas') ? 'text-primary font-bold' : ''}`}
+                >
+                  Estadísticas
+                </Link>
+              </li>
             </>
           )}
           
@@ -186,6 +194,15 @@ export default function Navbar() {
                     onClick={closeMenu}
                   >
                     Usuarios
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    to="/estadisticas" 
+                    className={`block hover:text-gray-300 ${isActive('/estadisticas') ? 'text-primary font-bold' : ''}`}
+                    onClick={closeMenu}
+                  >
+                    Estadísticas
                   </Link>
                 </li>
               </>

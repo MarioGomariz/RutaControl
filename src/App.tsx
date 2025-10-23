@@ -21,6 +21,7 @@ import Servicio from './pages/Servicios/Servicio';
 import Viaje from './pages/Viajes/Viaje';
 import ParadasView from './pages/Viajes/ParadasView';
 import Semirremolque from './pages/Semirremolques/Semirremolque';
+import Estadisticas from './pages/Estadisticas/Estadisticas';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 // Página de acceso denegado
@@ -116,6 +117,7 @@ function App() {
             <Route path="viaje/:id" element={<Viaje />} />
             <Route path="viaje/:id/paradas" element={<ParadasView />} />
             <Route path="semirremolque/:id" element={<Semirremolque />} />
+            <Route path="estadisticas" element={<Estadisticas />} />
           </Route>
         </Route>
         

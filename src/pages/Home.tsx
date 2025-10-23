@@ -1,5 +1,5 @@
 import Card from "@/components/ui/Card";
-import { Combine, MapPin, Truck, User, Box, Users } from "lucide-react";
+import { Combine, MapPin, Truck, User, Box, Users, BarChart3 } from "lucide-react";
 import { useAuth } from "@/stores/authStore";
 
 export default function Home() {
@@ -46,6 +46,12 @@ export default function Home() {
       link: "/viajes",
       icon: <MapPin size={56} className="text-primary" />,
     },
+    {
+      title: "Estadísticas",
+      description: "Ver gráficos y métricas",
+      link: "/estadisticas",
+      icon: <BarChart3 size={56} className="text-primary" />,
+    },
   ];
 
   const choferCards = [
@@ -62,10 +68,10 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-4 py-8 flex flex-col items-center justify-center text-gray-800">
-      <h1 className="text-3xl font-bold mb-4 text-center">Página de Inicio</h1>
-      <p className="text-lg text-gray-700 mb-8 text-center">
-        Bienvenido a la aplicación de Ruta Control
-      </p>
+
+      <h1 className="text-3xl font-bold mb-8 text-center">
+        Bienvenido a Ruta Control
+      </h1>
 
       <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10 justify-items-center">
         {cards.map((card, index) => (
