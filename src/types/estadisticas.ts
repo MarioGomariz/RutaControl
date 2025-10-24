@@ -53,6 +53,8 @@ export interface ViajesPorServicio {
   servicio_id: number;
   servicio_nombre: string;
   total_viajes: number;
+  viajes_programados: number;
+  viajes_en_curso: number;
   viajes_finalizados: number;
 }
 

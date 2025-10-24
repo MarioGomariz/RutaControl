@@ -104,26 +104,25 @@ export default function ParadasView() {
   };
 
   const handleIniciarViaje = async () => {
-    if (!odometro || !ubicacion) {
-      toast.error("Por favor complete todos los campos");
+    if (!odometro) {
+      toast.error("Por favor ingrese el odómetro");
       return;
     }
 
-    if (!id) return;
+    if (!id || !selectedViaje) return;
 
     setIsInitializing(true);
     try {
       const nuevaParada: CreateParadaDTO = {
         viaje_id: Number(id),
         odometro: Number(odometro),
-        ubicacion,
+        ubicacion: selectedViaje.origen, // Usar el origen del viaje como ubicación inicial
         tipo: 'inicio'
       };
 
       await addParada(nuevaParada);
       toast.success("Viaje iniciado exitosamente");
       setOdometro("");
-      setUbicacion("");
       // Recargar el viaje para actualizar el estado
       await fetchViajeById(Number(id));
     } catch (error: any) {
@@ -134,8 +133,8 @@ export default function ParadasView() {
   };
 
   const handleAgregarParada = async () => {
-    if (!odometro || !ubicacion || !tipoParada) {
-      toast.error("Por favor complete todos los campos");
+    if (!odometro || !tipoParada) {
+      toast.error("Por favor complete el odómetro");
       return;
     }
 
@@ -144,13 +143,26 @@ export default function ParadasView() {
       return;
     }
 
+    // Para paradas que no son de llegada, validar que se ingrese ubicación
+    if (tipoParada !== 'llegada' && !ubicacion) {
+      toast.error("Por favor ingrese la ubicación");
+      return;
+    }
+
     if (!id) return;
 
     try {
+      // Determinar la ubicación según el tipo de parada
+      let ubicacionFinal = ubicacion;
+      if (tipoParada === 'llegada' && destinoSeleccionado) {
+        const destinoEncontrado = destinos.find(d => d.id === destinoSeleccionado);
+        ubicacionFinal = destinoEncontrado?.ubicacion || ubicacion;
+      }
+
       const nuevaParada: CreateParadaDTO = {
         viaje_id: Number(id),
         odometro: Number(odometro),
-        ubicacion,
+        ubicacion: ubicacionFinal,
         tipo: tipoParada,
         destino_id: tipoParada === 'llegada' ? destinoSeleccionado : null
       };
@@ -218,44 +230,31 @@ export default function ParadasView() {
           
           <div className="mb-6 bg-blue-50 p-4 rounded-lg">
             <h2 className="font-semibold text-lg mb-2">Información del Viaje</h2>
-            <p><strong>Origen:</strong> {selectedViaje.origen}</p>
+            <p><strong>Ubicación de salida:</strong> {selectedViaje.origen}</p>
             <p><strong>Destinos:</strong> {selectedViaje.cantidad_destinos}</p>
             <p><strong>Fecha de salida:</strong> {formatearFecha(selectedViaje.fecha_hora_salida)}</p>
+            <p className="text-sm text-gray-600 mt-2">La ubicación de inicio se registrará automáticamente como: <span className="font-semibold">{selectedViaje.origen}</span></p>
           </div>
 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <FaTachometerAlt className="inline mr-2" />
-                Odómetro Inicial (km)
+                Odómetro Inicial (km) *
               </label>
               <input
                 type="number"
                 value={odometro}
                 onChange={(e) => setOdometro(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="Ingrese el odómetro"
+                placeholder="Ingrese el odómetro inicial"
                 step="0.01"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <FaMapMarkerAlt className="inline mr-2" />
-                Ubicación de Salida
-              </label>
-              <input
-                type="text"
-                value={ubicacion}
-                onChange={(e) => setUbicacion(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="Ingrese la ubicación"
               />
             </div>
 
             <button
               onClick={handleIniciarViaje}
-              disabled={isInitializing || !odometro || !ubicacion}
+              disabled={isInitializing || !odometro}
               className="w-full bg-primary text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold"
             >
               {isInitializing ? "Iniciando..." : "Iniciar Viaje"}
@@ -388,11 +387,19 @@ export default function ParadasView() {
               {tipoParada === 'llegada' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Destino
+                    Destino *
                   </label>
                   <select
                     value={destinoSeleccionado || ''}
-                    onChange={(e) => setDestinoSeleccionado(Number(e.target.value))}
+                    onChange={(e) => {
+                      const destinoId = Number(e.target.value);
+                      setDestinoSeleccionado(destinoId);
+                      // Auto-completar la ubicación con el destino seleccionado
+                      const destinoEncontrado = destinos.find(d => d.id === destinoId);
+                      if (destinoEncontrado) {
+                        setUbicacion(destinoEncontrado.ubicacion);
+                      }
+                    }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   >
                     <option value="">Seleccione un destino</option>
@@ -402,12 +409,17 @@ export default function ParadasView() {
                       </option>
                     ))}
                   </select>
+                  {destinoSeleccionado && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      Ubicación: <span className="font-semibold">{destinos.find(d => d.id === destinoSeleccionado)?.ubicacion}</span>
+                    </p>
+                  )}
                 </div>
               )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Odómetro (km)
+                  Odómetro (km) *
                 </label>
                 <input
                   type="number"
@@ -419,18 +431,20 @@ export default function ParadasView() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Ubicación
-                </label>
-                <input
-                  type="text"
-                  value={ubicacion}
-                  onChange={(e) => setUbicacion(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  placeholder="Ingrese la ubicación"
-                />
-              </div>
+              {tipoParada !== 'llegada' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ubicación *
+                  </label>
+                  <input
+                    type="text"
+                    value={ubicacion}
+                    onChange={(e) => setUbicacion(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="Ingrese la ubicación"
+                  />
+                </div>
+              )}
 
               <div className="flex gap-3 pt-4">
                 <button

@@ -8,6 +8,12 @@ import ConfirmModal from '@/components/ConfirmModal';
 import { FormSection, FormField, FormInput, FormSelect, FormButton } from '@/components/FormComponents';
 import { FaTruck, FaCalendarAlt, FaGlobeAmericas } from 'react-icons/fa';
 import { toDateInput, toSqlDate } from '@/helpers/dateFormater';
+import { 
+  SERVICE_DOCUMENTATION_CONFIG, 
+  DOCUMENTATION_LABELS_FULL,
+  shouldShowDocField as shouldShowField,
+  getRequiredDocFields 
+} from '@/utils/semirremolqueDocumentation';
 
 export default function Semirremolque() {
   const { id } = useParams();
@@ -76,10 +82,33 @@ export default function Semirremolque() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
     
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "number" ? parseFloat(value) || 0 : value,
-    }));
+    setFormData((prev) => {
+      const newData = {
+        ...prev,
+        [name]: type === "number" ? parseFloat(value) || 0 : value,
+      };
+      
+      // Si se cambia el tipo de servicio, limpiar los campos de documentación no aplicables
+      if (name === 'tipo_servicio') {
+        const allowedFields = getRequiredDocFields(value);
+        const allDocFields = Object.keys(SERVICE_DOCUMENTATION_CONFIG).flatMap(key => SERVICE_DOCUMENTATION_CONFIG[key]);
+        const uniqueDocFields = [...new Set(allDocFields)];
+        
+        // Limpiar campos que no aplican al nuevo tipo de servicio
+        uniqueDocFields.forEach(field => {
+          if (!allowedFields.includes(field)) {
+            newData[field as keyof typeof newData] = undefined as any;
+          }
+        });
+      }
+      
+      return newData;
+    });
+  };
+
+  // Función para determinar si un campo de documentación debe mostrarse
+  const shouldShowDocField = (fieldName: string): boolean => {
+    return shouldShowField(fieldName, formData.tipo_servicio);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -264,71 +293,97 @@ export default function Semirremolque() {
             icon={<FaCalendarAlt />}
             color="green"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField label="Vencimiento RTO" name="vencimiento_rto" required>
-                <FormInput
-                  type="date"
-                  name="vencimiento_rto"
-                  value={formData.vencimiento_rto}
-                  onChange={handleChange}
-                  required
-                />
-              </FormField>
+            {!formData.tipo_servicio ? (
+              <div className="text-center py-8 text-gray-500">
+                <p className="text-lg">Seleccione un tipo de servicio para ver los campos de documentación correspondientes</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {shouldShowDocField('vencimiento_rto') && (
+                  <FormField label={DOCUMENTATION_LABELS_FULL['vencimiento_rto']} name="vencimiento_rto" required>
+                    <FormInput
+                      type="date"
+                      name="vencimiento_rto"
+                      value={formData.vencimiento_rto}
+                      onChange={handleChange}
+                      required
+                    />
+                  </FormField>
+                )}
 
-              <FormField label="Vencimiento Visual Externa" name="vencimiento_visual_externa">
-                <FormInput
-                  type="date"
-                  name="vencimiento_visual_externa"
-                  value={formData.vencimiento_visual_externa}
-                  onChange={handleChange}
-                />
-              </FormField>
+                {shouldShowDocField('vencimiento_visual_externa') && (
+                  <FormField label={DOCUMENTATION_LABELS_FULL['vencimiento_visual_externa']} name="vencimiento_visual_externa" required>
+                    <FormInput
+                      type="date"
+                      name="vencimiento_visual_externa"
+                      value={formData.vencimiento_visual_externa}
+                      onChange={handleChange}
+                      required
+                    />
+                  </FormField>
+                )}
 
-              <FormField label="Vencimiento Visual Interna" name="vencimiento_visual_interna">
-                <FormInput
-                  type="date"
-                  name="vencimiento_visual_interna"
-                  value={formData.vencimiento_visual_interna}
-                  onChange={handleChange}
-                />
-              </FormField>
+                {shouldShowDocField('vencimiento_visual_interna') && (
+                  <FormField label={DOCUMENTATION_LABELS_FULL['vencimiento_visual_interna']} name="vencimiento_visual_interna" required>
+                    <FormInput
+                      type="date"
+                      name="vencimiento_visual_interna"
+                      value={formData.vencimiento_visual_interna}
+                      onChange={handleChange}
+                      required
+                    />
+                  </FormField>
+                )}
 
-              <FormField label="Vencimiento Espesores" name="vencimiento_espesores">
-                <FormInput
-                  type="date"
-                  name="vencimiento_espesores"
-                  value={formData.vencimiento_espesores}
-                  onChange={handleChange}
-                />
-              </FormField>
+                {shouldShowDocField('vencimiento_espesores') && (
+                  <FormField label={DOCUMENTATION_LABELS_FULL['vencimiento_espesores']} name="vencimiento_espesores" required>
+                    <FormInput
+                      type="date"
+                      name="vencimiento_espesores"
+                      value={formData.vencimiento_espesores}
+                      onChange={handleChange}
+                      required
+                    />
+                  </FormField>
+                )}
 
-              <FormField label="Vencimiento Prueba Hidráulica" name="vencimiento_prueba_hidraulica">
-                <FormInput
-                  type="date"
-                  name="vencimiento_prueba_hidraulica"
-                  value={formData.vencimiento_prueba_hidraulica}
-                  onChange={handleChange}
-                />
-              </FormField>
+                {shouldShowDocField('vencimiento_prueba_hidraulica') && (
+                  <FormField label={DOCUMENTATION_LABELS_FULL['vencimiento_prueba_hidraulica']} name="vencimiento_prueba_hidraulica" required>
+                    <FormInput
+                      type="date"
+                      name="vencimiento_prueba_hidraulica"
+                      value={formData.vencimiento_prueba_hidraulica}
+                      onChange={handleChange}
+                      required
+                    />
+                  </FormField>
+                )}
 
-              <FormField label="Vencimiento Mangueras" name="vencimiento_mangueras">
-                <FormInput
-                  type="date"
-                  name="vencimiento_mangueras"
-                  value={formData.vencimiento_mangueras}
-                  onChange={handleChange}
-                />
-              </FormField>
+                {shouldShowDocField('vencimiento_mangueras') && (
+                  <FormField label={DOCUMENTATION_LABELS_FULL['vencimiento_mangueras']} name="vencimiento_mangueras" required>
+                    <FormInput
+                      type="date"
+                      name="vencimiento_mangueras"
+                      value={formData.vencimiento_mangueras}
+                      onChange={handleChange}
+                      required
+                    />
+                  </FormField>
+                )}
 
-              <FormField label="Vencimiento Válvula Five" name="vencimiento_valvula_flujo">
-                <FormInput
-                  type="date"
-                  name="vencimiento_valvula_flujo"
-                  value={formData.vencimiento_valvula_flujo}
-                  onChange={handleChange}
-                />
-              </FormField>
-            </div>
+                {shouldShowDocField('vencimiento_valvula_flujo') && (
+                  <FormField label={DOCUMENTATION_LABELS_FULL['vencimiento_valvula_flujo']} name="vencimiento_valvula_flujo" required>
+                    <FormInput
+                      type="date"
+                      name="vencimiento_valvula_flujo"
+                      value={formData.vencimiento_valvula_flujo}
+                      onChange={handleChange}
+                      required
+                    />
+                  </FormField>
+                )}
+              </div>
+            )}
           </FormSection>
 
           {/* No incluimos observaciones ya que no existe en el tipo Semirremolque de Supabase */}

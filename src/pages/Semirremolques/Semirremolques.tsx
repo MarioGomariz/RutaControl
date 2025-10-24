@@ -1,9 +1,16 @@
 
 import { useEffect, useState } from "react";
 import { useSemirremolquesStore } from "@/stores/semirremolquesStore";
-import { FaTruckMoving, FaSearch, FaPlus, FaIdCard, FaWeightHanging, FaCalendar } from "react-icons/fa";
+import { FaTruckMoving, FaSearch, FaPlus, FaIdCard, FaWeightHanging, FaCalendar, FaExclamationTriangle } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import type { Semirremolque } from "@/types/semirremolque";
+import { 
+  getRequiredDocFields, 
+  DOCUMENTATION_LABELS,
+  getExpirationStatus,
+  getExpirationBadgeColor,
+  getExpirationBadgeText 
+} from "@/utils/semirremolqueDocumentation";
 
 export default function Semirremolques() {
     const { semirremolques, isLoading, error, fetchSemirremolques } = useSemirremolquesStore();
@@ -102,16 +109,23 @@ function SemirremolqueCard({ semirremolque }: { semirremolque: Semirremolque }) 
     // Determinar si el semirremolque está activo basado en su estado
     const isActive = semirremolque.estado === 'disponible';
     
-    // Calcular si el RTO está próximo a vencer (30 días) si existe
-    const rtoDate = semirremolque.vencimiento_rto ? new Date(semirremolque.vencimiento_rto) : null;
-    const today = new Date();
-    const daysUntilRto = rtoDate ? Math.ceil((rtoDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
-    const isRtoExpiringSoon = daysUntilRto !== null && daysUntilRto <= 30 && daysUntilRto >= 0;
-    const isRtoExpired = daysUntilRto !== null && daysUntilRto < 0;
+    // Obtener los campos de documentación relevantes según el tipo de servicio
+    const requiredDocFields = getRequiredDocFields(semirremolque.tipo_servicio);
+    
+    // Verificar si hay algún vencimiento expirado o próximo a vencer
+    const hasExpiredDoc = requiredDocFields.some(field => {
+        const status = getExpirationStatus(semirremolque[field as keyof Semirremolque] as string);
+        return status === 'expired';
+    });
+    
+    const hasExpiringSoonDoc = requiredDocFields.some(field => {
+        const status = getExpirationStatus(semirremolque[field as keyof Semirremolque] as string);
+        return status === 'expiring-soon';
+    });
     
     return (
         <Link to={`/semirremolque/${semirremolque.id}`} className="block">
-            <div className={`bg-white rounded-lg shadow-md overflow-hidden border-l-4 hover:shadow-lg transition-shadow ${!isActive ? 'border-gray-400' : isRtoExpired ? 'border-red-500' : isRtoExpiringSoon ? 'border-amber-500' : 'border-green-500'}`}>
+            <div className={`bg-white rounded-lg shadow-md overflow-hidden border-l-4 hover:shadow-lg transition-shadow ${!isActive ? 'border-gray-400' : hasExpiredDoc ? 'border-red-500' : hasExpiringSoonDoc ? 'border-amber-500' : 'border-green-500'}`}>
                 <div className="p-5">
                     <div className="flex justify-between items-start mb-3">
                         <h3 className="font-bold text-lg text-gray-800 truncate">
@@ -145,17 +159,42 @@ function SemirremolqueCard({ semirremolque }: { semirremolque: Semirremolque }) 
                         )}
                     </div>
                     
-                    {rtoDate && (
+                    {requiredDocFields.length > 0 && (
                         <div className="mt-4 pt-3 border-t border-gray-100">
-                            <div className="flex items-center">
-                                <div className="flex-1">
-                                    <p className="text-xs text-gray-500">RTO</p>
-                                    <p className="font-medium">{new Date(semirremolque.vencimiento_rto || '').toLocaleDateString()}</p>
-                                </div>
-                                <div className={`px-3 py-1 rounded-full text-xs font-medium ${isRtoExpired ? 'bg-red-100 text-red-800' : isRtoExpiringSoon ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
-                                    {isRtoExpired ? 'Vencida' : isRtoExpiringSoon ? `${daysUntilRto} días` : 'Vigente'}
-                                </div>
+                            <p className="text-xs text-gray-500 mb-2 font-semibold">Documentación</p>
+                            <div className="space-y-2">
+                                {requiredDocFields.map(field => {
+                                    const value = semirremolque[field as keyof Semirremolque] as string;
+                                    const status = getExpirationStatus(value);
+                                    const badgeColor = getExpirationBadgeColor(status);
+                                    const badgeText = getExpirationBadgeText(value);
+                                    
+                                    return (
+                                        <div key={field} className="flex items-center justify-between text-xs">
+                                            <span className="text-gray-600 truncate flex-1">
+                                                {DOCUMENTATION_LABELS[field]}
+                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                {value && (
+                                                    <span className="text-gray-500">
+                                                        {new Date(value).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                                                    </span>
+                                                )}
+                                                <span className={`px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${badgeColor}`}>
+                                                    {badgeText}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
+                        </div>
+                    )}
+                    
+                    {!semirremolque.tipo_servicio && (
+                        <div className="mt-4 pt-3 border-t border-gray-100 flex items-center gap-2 text-amber-600">
+                            <FaExclamationTriangle className="text-sm" />
+                            <p className="text-xs">Sin tipo de servicio asignado</p>
                         </div>
                     )}
                 </div>
