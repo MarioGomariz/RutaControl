@@ -81,14 +81,6 @@ export default function Navbar() {
               </li>
               <li>
                 <Link 
-                  to="/servicios" 
-                  className={`hover:text-gray-300 ${isActive('/servicios') ? 'text-primary font-bold' : ''}`}
-                >
-                  Servicios
-                </Link>
-              </li>
-              <li>
-                <Link 
                   to="/semirremolques" 
                   className={`hover:text-gray-300 ${isActive('/semirremolques') ? 'text-primary font-bold' : ''}`}
                 >
@@ -167,15 +159,6 @@ export default function Navbar() {
                     onClick={closeMenu}
                   >
                     Choferes
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/servicios" 
-                    className={`block hover:text-gray-300 ${isActive('/servicios') ? 'text-primary font-bold' : ''}`}
-                    onClick={closeMenu}
-                  >
-                    Servicios
                   </Link>
                 </li>
                 <li>

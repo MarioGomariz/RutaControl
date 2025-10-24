@@ -1,9 +1,8 @@
 // Configuración de documentación por tipo de servicio
+// Solo hay 2 servicios: Gas Líquido y Combustible Líquido
 export const SERVICE_DOCUMENTATION_CONFIG: Record<string, string[]> = {
-  'liviano': ['vencimiento_rto', 'vencimiento_visual_externa', 'vencimiento_visual_interna', 'vencimiento_espesores'],
-  'glp': ['vencimiento_mangueras', 'vencimiento_prueba_hidraulica', 'vencimiento_valvula_flujo'],
-  'metanol': ['vencimiento_rto', 'vencimiento_visual_externa', 'vencimiento_visual_interna', 'vencimiento_espesores'],
-  'aditivos': ['vencimiento_rto', 'vencimiento_visual_externa', 'vencimiento_visual_interna', 'vencimiento_espesores'],
+  'gas líquido': ['vencimiento_mangueras', 'vencimiento_prueba_hidraulica', 'vencimiento_valvula_flujo'],
+  'combustible líquido': ['vencimiento_rto', 'vencimiento_visual_externa', 'vencimiento_visual_interna', 'vencimiento_espesores'],
 };
 
 // Etiquetas amigables para los campos de documentación

@@ -12,12 +12,10 @@ import Usuarios from './pages/Usuarios/Usuarios';
 import Usuario from './pages/Usuarios/Usuario';
 import Tractors from './pages/Tractores/Tractores';
 import Choferes from './pages/Choferes/Choferes';
-import Servicios from './pages/Servicios/Servicios';
 import Viajes from './pages/Viajes/Viajes';
 import Semirremolques from './pages/Semirremolques/Semirremolques';
 import Chofer from './pages/Choferes/Chofer';
 import Tractor from './pages/Tractores/Tractor';
-import Servicio from './pages/Servicios/Servicio';
 import Viaje from './pages/Viajes/Viaje';
 import ParadasView from './pages/Viajes/ParadasView';
 import Semirremolque from './pages/Semirremolques/Semirremolque';
@@ -108,12 +106,10 @@ function App() {
             <Route index element={<Home />} />
             <Route path="tractores" element={<Tractors />} />
             <Route path="choferes" element={<Choferes />} />
-            <Route path="servicios" element={<Servicios />} />
             <Route path="viajes" element={<Viajes />} />
             <Route path="semirremolques" element={<Semirremolques />} />
             <Route path="chofer/:id" element={<Chofer />} />
             <Route path="tractor/:id" element={<Tractor />} />
-            <Route path="servicio/:id" element={<Servicio />} />
             <Route path="viaje/:id" element={<Viaje />} />
             <Route path="viaje/:id/paradas" element={<ParadasView />} />
             <Route path="semirremolque/:id" element={<Semirremolque />} />

@@ -1,5 +1,5 @@
 import Card from "@/components/ui/Card";
-import { Combine, MapPin, Truck, User, Box, Users, BarChart3 } from "lucide-react";
+import { MapPin, Truck, User, Box, Users, BarChart3 } from "lucide-react";
 import { useAuth } from "@/stores/authStore";
 
 export default function Home() {
@@ -21,12 +21,6 @@ export default function Home() {
       description: "Gestionar choferes",
       link: "/choferes",
       icon: <User size={56} className="text-primary" />,
-    },
-    {
-      title: "Servicios",
-      description: "Gestionar servicios",
-      link: "/servicios",
-      icon: <Combine size={56} className="text-primary" />,
     },
     {
       title: "Tractores",
