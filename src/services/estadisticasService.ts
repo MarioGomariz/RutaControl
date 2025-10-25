@@ -1,5 +1,5 @@
 import api from '../utils/api';
-import type { FiltrosEstadisticas, RespuestaEstadisticas } from '@/types/estadisticas';
+import type { FiltrosEstadisticas, RespuestaEstadisticas, ViajeDetallado } from '@/types/estadisticas';
 
 export const obtenerEstadisticas = async (filtros?: FiltrosEstadisticas): Promise<RespuestaEstadisticas> => {
   const params = new URLSearchParams();
@@ -18,5 +18,23 @@ export const obtenerEstadisticas = async (filtros?: FiltrosEstadisticas): Promis
   const url = `/estadisticas${queryString ? `?${queryString}` : ''}`;
   
   const response = await api.get<RespuestaEstadisticas>(url);
+  return response.data;
+};
+
+export const obtenerViajesDetalladosPorChofer = async (
+  choferId: number,
+  filtros?: Pick<FiltrosEstadisticas, 'fecha_inicio' | 'fecha_fin'>
+): Promise<ViajeDetallado[]> => {
+  const params = new URLSearchParams();
+  
+  if (filtros) {
+    if (filtros.fecha_inicio) params.append('fecha_inicio', filtros.fecha_inicio);
+    if (filtros.fecha_fin) params.append('fecha_fin', filtros.fecha_fin);
+  }
+  
+  const queryString = params.toString();
+  const url = `/estadisticas/chofer/${choferId}/viajes-detallados${queryString ? `?${queryString}` : ''}`;
+  
+  const response = await api.get<ViajeDetallado[]>(url);
   return response.data;
 };

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useEstadisticasStore } from '@/stores';
 import { useChoferesStore, useTractoresStore, useSemirremolquesStore, useServiciosStore } from '@/stores';
+import { obtenerViajesDetalladosPorChofer } from '@/services/estadisticasService';
 import { 
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
@@ -62,7 +63,7 @@ export default function Estadisticas() {
     toast.info('Filtros limpiados');
   };
 
-  const exportarPDF = () => {
+  const exportarPDF = async () => {
     if (!estadisticas) return;
 
     const doc = new jsPDF();
@@ -81,58 +82,180 @@ export default function Estadisticas() {
     doc.text(`Generado: ${new Date().toLocaleString('es-ES')}`, pageWidth / 2, yPosition, { align: 'center' });
     yPosition += 15;
 
-    // Estadísticas Generales
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Estadísticas Generales', 14, yPosition);
-    yPosition += 8;
+    // Si hay un chofer seleccionado, generar PDF detallado
+    if (filtros.chofer_id) {
+      try {
+        const choferSeleccionado = choferes.find(c => c.id === filtros.chofer_id);
+        const nombreChofer = choferSeleccionado 
+          ? `${choferSeleccionado.nombre} ${choferSeleccionado.apellido}`
+          : 'Chofer';
 
-    const datosGenerales = [
-      ['Total de Viajes', estadisticas.generales.total_viajes.toString()],
-      ['Viajes Programados', estadisticas.generales.viajes_programados.toString()],
-      ['Viajes en Curso', estadisticas.generales.viajes_en_curso.toString()],
-      ['Viajes Finalizados', estadisticas.generales.viajes_finalizados.toString()],
-      ['Kilómetros Totales', `${estadisticas.generales.total_km_recorridos.toFixed(2)} km`],
-      ['Promedio km/Viaje', `${estadisticas.generales.promedio_km_por_viaje.toFixed(2)} km`],
-      ['Choferes Activos', estadisticas.generales.total_choferes_activos.toString()],
-      ['Tractores Disponibles', estadisticas.generales.total_tractores_disponibles.toString()],
-    ];
+        // Obtener viajes detallados
+        const viajesDetallados = await obtenerViajesDetalladosPorChofer(
+          filtros.chofer_id,
+          { fecha_inicio: filtros.fecha_inicio, fecha_fin: filtros.fecha_fin }
+        );
 
-    autoTable(doc, {
-      startY: yPosition,
-      head: [],
-      body: datosGenerales,
-      theme: 'striped',
-      headStyles: { fillColor: [66, 139, 202] },
-      margin: { left: 14, right: 14 }
-    });
+        // Obtener el dominio del tractor (del primer viaje si hay)
+        const dominioTractor = viajesDetallados.length > 0 ? viajesDetallados[0].tractor_dominio : '';
 
-    yPosition = (doc as any).lastAutoTable.finalY + 10;
+        // Título del chofer con dominio del camión
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Viajes Detallados - ${nombreChofer} - ${dominioTractor}`, 14, yPosition);
+        yPosition += 10;
 
-    // Top 5 Choferes
-    if (estadisticas.viajes_por_chofer.length > 0) {
-      doc.addPage();
-      yPosition = 20;
+        if (viajesDetallados.length === 0) {
+          doc.setFontSize(12);
+          doc.setFont('helvetica', 'normal');
+          doc.text('No hay viajes registrados para este chofer en el período seleccionado.', 14, yPosition);
+        } else {
+          // Función para obtener el día de la semana en español
+          const obtenerDiaSemana = (fecha: Date): string => {
+            const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            return dias[fecha.getDay()];
+          };
+
+          // Preparar datos para la tabla
+          const datosViajes = viajesDetallados.map(tramo => {
+            const fechaSalida = new Date(tramo.fecha_salida);
+            const fechaLlegada = tramo.fecha_llegada ? new Date(tramo.fecha_llegada) : null;
+
+            return [
+              obtenerDiaSemana(fechaSalida),
+              fechaSalida.toLocaleDateString('es-ES'),
+              tramo.origen || '-',
+              fechaLlegada ? obtenerDiaSemana(fechaLlegada) : '-',
+              fechaLlegada ? fechaLlegada.toLocaleDateString('es-ES') : '-',
+              tramo.destino || '-',
+              tramo.km_comunes.toFixed(2),
+              tramo.km_100x100.toFixed(2)
+            ];
+          });
+
+          // Tabla con viajes detallados
+          autoTable(doc, {
+            startY: yPosition,
+            head: [[
+              'Día Salida',
+              'Fecha Salida',
+              'Sale De',
+              'Día Llegada',
+              'Fecha Llegada',
+              'Llega a',
+              'Km Comunes',
+              'Km 100x100'
+            ]],
+            body: datosViajes,
+            theme: 'striped',
+            headStyles: { 
+              fillColor: [66, 139, 202],
+              fontSize: 8,
+              halign: 'center'
+            },
+            bodyStyles: {
+              fontSize: 7
+            },
+            columnStyles: {
+              0: { cellWidth: 20 },
+              1: { cellWidth: 22 },
+              2: { cellWidth: 25 },
+              3: { cellWidth: 20 },
+              4: { cellWidth: 22 },
+              5: { cellWidth: 25 },
+              6: { cellWidth: 20, halign: 'right' },
+              7: { cellWidth: 20, halign: 'right' }
+            },
+            margin: { left: 14, right: 14 }
+          });
+
+          // Totales
+          yPosition = (doc as any).lastAutoTable.finalY + 10;
+          const totalKmComunes = viajesDetallados.reduce((sum, v) => sum + v.km_comunes, 0);
+          const totalKm100x100 = viajesDetallados.reduce((sum, v) => sum + v.km_100x100, 0);
+          const totalKm = totalKmComunes + totalKm100x100;
+
+          doc.setFontSize(12);
+          doc.setFont('helvetica', 'bold');
+          doc.text('Resumen de Kilómetros:', 14, yPosition);
+          yPosition += 8;
+
+          const datosTotales = [
+            ['Total Kilómetros Comunes', `${totalKmComunes.toFixed(2)} km`],
+            ['Total Kilómetros 100x100', `${totalKm100x100.toFixed(2)} km`],
+            ['Total General', `${totalKm.toFixed(2)} km`],
+            ['Cantidad de Tramos', viajesDetallados.length.toString()]
+          ];
+
+          autoTable(doc, {
+            startY: yPosition,
+            head: [],
+            body: datosTotales,
+            theme: 'plain',
+            styles: { fontSize: 10, fontStyle: 'bold' },
+            margin: { left: 14, right: 14 }
+          });
+        }
+      } catch (error) {
+        console.error('Error al obtener viajes detallados:', error);
+        toast.error('Error al generar PDF detallado');
+        return;
+      }
+    } else {
+      // PDF general (sin chofer seleccionado)
+      // Estadísticas Generales
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text('Top Choferes por Viajes', 14, yPosition);
+      doc.text('Estadísticas Generales', 14, yPosition);
       yPosition += 8;
 
-      const datosChoferes = estadisticas.viajes_por_chofer.slice(0, 5).map(c => [
-        `${c.chofer_nombre} ${c.chofer_apellido}`,
-        c.total_viajes.toString(),
-        c.viajes_finalizados.toString(),
-        `${c.total_km.toFixed(2)} km`
-      ]);
+      const datosGenerales = [
+        ['Total de Viajes', estadisticas.generales.total_viajes.toString()],
+        ['Viajes Programados', estadisticas.generales.viajes_programados.toString()],
+        ['Viajes en Curso', estadisticas.generales.viajes_en_curso.toString()],
+        ['Viajes Finalizados', estadisticas.generales.viajes_finalizados.toString()],
+        ['Kilómetros Totales', `${estadisticas.generales.total_km_recorridos.toFixed(2)} km`],
+        ['Promedio km/Viaje', `${estadisticas.generales.promedio_km_por_viaje.toFixed(2)} km`],
+        ['Choferes Activos', estadisticas.generales.total_choferes_activos.toString()],
+        ['Tractores Disponibles', estadisticas.generales.total_tractores_disponibles.toString()],
+      ];
 
       autoTable(doc, {
         startY: yPosition,
-        head: [['Chofer', 'Total Viajes', 'Finalizados', 'Km Recorridos']],
-        body: datosChoferes,
+        head: [],
+        body: datosGenerales,
         theme: 'striped',
         headStyles: { fillColor: [66, 139, 202] },
         margin: { left: 14, right: 14 }
       });
+
+      yPosition = (doc as any).lastAutoTable.finalY + 10;
+
+      // Top 5 Choferes
+      if (estadisticas.viajes_por_chofer.length > 0) {
+        doc.addPage();
+        yPosition = 20;
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Top Choferes por Viajes', 14, yPosition);
+        yPosition += 8;
+
+        const datosChoferes = estadisticas.viajes_por_chofer.slice(0, 5).map(c => [
+          `${c.chofer_nombre} ${c.chofer_apellido}`,
+          c.total_viajes.toString(),
+          c.viajes_finalizados.toString(),
+          `${c.total_km.toFixed(2)} km`
+        ]);
+
+        autoTable(doc, {
+          startY: yPosition,
+          head: [['Chofer', 'Total Viajes', 'Finalizados', 'Km Recorridos']],
+          body: datosChoferes,
+          theme: 'striped',
+          headStyles: { fillColor: [66, 139, 202] },
+          margin: { left: 14, right: 14 }
+        });
+      }
     }
 
     doc.save(`estadisticas-${new Date().getTime()}.pdf`);

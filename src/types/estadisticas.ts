@@ -77,3 +77,16 @@ export interface RespuestaEstadisticas {
   viajes_por_mes: ViajesPorMes[];
   viajes_por_servicio: ViajesPorServicio[];
 }
+
+export interface ViajeDetallado {
+  viaje_id: number;
+  fecha_salida: string;
+  origen: string;
+  fecha_llegada: string | null;
+  destino: string | null;
+  km_comunes: number;
+  km_100x100: number;
+  tractor_marca: string;
+  tractor_modelo: string;
+  tractor_dominio: string;
+}
