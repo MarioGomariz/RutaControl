@@ -822,28 +822,3 @@ El sistema no permitirá finalizar el viaje hasta que se registren todas.
 **Km Comunes**: Kilómetros recorridos en rutas comunes
 
 **Km 100x100**: Kilómetros recorridos en rutas especiales
-
----
-
-## Información de Contacto
-
-Para soporte técnico o consultas adicionales, contacte al administrador del sistema.
-
-**Versión del Manual**: 1.0  
-**Última actualización**: Octubre 2025  
-**Sistema**: RutaControl - Gestión de Transporte de Cargas Líquidas
-
----
-
-## Anexo: Atajos de Teclado
-
-| Acción | Atajo |
-|--------|-------|
-| Recargar página | F5 |
-| Buscar en página | Ctrl+F (Cmd+F en Mac) |
-| Cerrar modal | Esc |
-| Imprimir | Ctrl+P (Cmd+P en Mac) |
-
----
-
-**Fin del Manual de Usuario**
