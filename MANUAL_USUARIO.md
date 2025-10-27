@@ -148,7 +148,9 @@ Contacte al administrador del sistema para restablecer su contraseña.
 - Nombre completo
 - DNI
 - Teléfono
+- Mail
 - Estado (Activo/Inactivo)
+- Licencia
 - Vencimiento de licencia con código de colores
 
 **Código de colores**:
@@ -164,6 +166,8 @@ Contacte al administrador del sistema para restablecer su contraseña.
    - **Apellido** (obligatorio)
    - **DNI** (obligatorio, único)
    - **Teléfono** (obligatorio)
+   - **Mail** (obligatorio)
+   - **Licencia** (obligatorio)
    - **Vencimiento Licencia** (obligatorio)
    - **Estado**: Activo/Inactivo
 3. Click en **"Guardar"**
