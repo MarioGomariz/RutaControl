@@ -122,16 +122,6 @@ export default function Viaje() {
       }));
     }
   };
-  
-  // Función específica para campos numéricos
-  const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value === "" ? 0 : Number(value)
-    }));
-  };
-
   const [error, setError] = useState<string>('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   
