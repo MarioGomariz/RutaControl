@@ -36,14 +36,14 @@ RutaControl es un sistema de gestión integral diseñado para empresas de transp
 
 ### 1.2 Características Principales
 
-✅ **Gestión de Flotas**: Control completo de tractores y semirremolques  
-✅ **Administración de Personal**: Registro y seguimiento de choferes  
-✅ **Control de Viajes**: Desde planificación hasta finalización  
-✅ **Registro de Paradas**: Seguimiento detallado de cada parada  
-✅ **Alertas de Vencimientos**: Notificaciones automáticas de documentación  
-✅ **Estadísticas Avanzadas**: Análisis de rendimiento y KPIs  
-✅ **Reportes PDF**: Exportación de información detallada  
-✅ **Responsive**: Funciona en PC, tablets y smartphones
+• **Gestión de Flotas**: Control completo de tractores y semirremolques  
+• **Administración de Personal**: Registro y seguimiento de choferes  
+• **Control de Viajes**: Desde planificación hasta finalización  
+• **Registro de Paradas**: Seguimiento detallado de cada parada  
+• **Alertas de Vencimientos**: Notificaciones automáticas de documentación  
+• **Estadísticas Avanzadas**: Análisis de rendimiento y KPIs  
+• **Reportes PDF**: Exportación de información detallada  
+• **Responsive**: Funciona en PC, tablets y smartphones
 
 ### 1.3 Tipos de Servicio
 
@@ -117,24 +117,24 @@ Contacte al administrador del sistema para restablecer su contraseña.
 ### 4.1 Administrador
 
 **Permisos Completos**:
-- ✅ Gestionar usuarios, choferes, tractores, semirremolques
-- ✅ Crear, editar y eliminar viajes
-- ✅ Ver todos los viajes del sistema
-- ✅ Ver paradas de todos los viajes
-- ✅ Acceso completo a estadísticas
-- ✅ Descargar reportes PDF
+- Gestionar usuarios, choferes, tractores, semirremolques
+- Crear, editar y eliminar viajes
+- Ver todos los viajes del sistema
+- Ver paradas de todos los viajes
+- Acceso completo a estadísticas
+- Descargar reportes PDF
 
 ### 4.2 Chofer
 
 **Permisos Limitados**:
-- ✅ Ver solo sus viajes asignados
-- ✅ Iniciar viajes programados
-- ✅ Registrar paradas durante el viaje
-- ✅ Finalizar viajes
-- ❌ No puede crear viajes
-- ❌ No puede ver viajes de otros choferes
-- ❌ No puede gestionar usuarios ni vehículos
-- ❌ No puede descargar reportes
+- Puede: Ver solo sus viajes asignados
+- Puede: Iniciar viajes programados
+- Puede: Registrar paradas durante el viaje
+- Puede: Finalizar viajes
+- No puede: Crear viajes
+- No puede: Ver viajes de otros choferes
+- No puede: Gestionar usuarios ni vehículos
+- No puede: Descargar reportes
 
 ---
 
@@ -154,9 +154,9 @@ Contacte al administrador del sistema para restablecer su contraseña.
 - Vencimiento de licencia con código de colores
 
 **Código de colores**:
-- 🔴 Rojo: Licencia vencida
-- 🟡 Amarillo: Vence en ≤30 días
-- 🟢 Verde: Vigente
+- **Rojo**: Licencia vencida
+- **Amarillo**: Vence en ≤30 días
+- **Verde**: Vigente
 
 ### 5.2 Agregar Chofer
 
@@ -285,9 +285,9 @@ Similar a Choferes.
 ### 7.5 Código de Colores
 
 **Borde de la tarjeta**:
-- 🔴 Rojo: Al menos un documento vencido
-- 🟡 Amarillo: Al menos un documento vence en ≤30 días
-- 🟢 Verde: Toda la documentación vigente
+- **Rojo**: Al menos un documento vencido
+- **Amarillo**: Al menos un documento vence en ≤30 días
+- **Verde**: Toda la documentación vigente
 
 ---
 
@@ -305,9 +305,9 @@ Similar a Choferes.
 - Finalizados
 
 **Estados**:
-- 🔵 Programado: Pendiente de inicio
-- 🟡 En curso: Viaje activo
-- 🟢 Finalizado: Completado
+- **Programado** (Azul): Pendiente de inicio
+- **En curso** (Amarillo): Viaje activo
+- **Finalizado** (Verde): Completado
 
 ### 8.2 Crear Viaje (Solo Admin)
 
@@ -447,11 +447,11 @@ Similar a Choferes.
    - Destino (si aplica)
 
 **Iconos de tipos**:
-- 🏁 Verde: Inicio
-- ☕ Amarillo: Descanso
-- 📦 Azul: Carga
-- ✅ Púrpura: Llegada
-- ⋯ Gris: Otro
+- **Inicio** (Verde)
+- **Descanso** (Amarillo)
+- **Carga** (Azul)
+- **Llegada** (Púrpura)
+- **Otro** (Gris)
 
 ---
 
@@ -477,10 +477,10 @@ Similar a Choferes.
 **2. Por Unidad**:
 - Kilómetros por tractor (gráfico de barras)
 - Tabla de actividad de tractores:
-  - 🔴 Rojo: +30 días inactivo
-  - 🟡 Amarillo: +7 días inactivo
-  - 🟢 Verde: Activo (≤7 días)
-  - ⚪ Gris: Sin viajes (nunca usado)
+  - **Rojo**: +30 días inactivo
+  - **Amarillo**: +7 días inactivo
+  - **Verde**: Activo (≤7 días)
+  - **Gris**: Sin viajes (nunca usado)
 
 **Nota sobre días de inactividad**:
 - Solo se cuentan viajes finalizados o en curso
@@ -659,9 +659,9 @@ Similar a Choferes.
 ### 13.2 Sistema de Alertas
 
 **Código de Colores**:
-- 🔴 **Rojo (Vencido)**: Acción inmediata requerida
-- 🟡 **Amarillo (≤30 días)**: Planificar renovación
-- 🟢 **Verde (>30 días)**: Vigente
+- **Rojo (Vencido)**: Acción inmediata requerida
+- **Amarillo (≤30 días)**: Planificar renovación
+- **Verde (>30 días)**: Vigente
 
 **Aplicación**:
 - **Choferes**: Licencia de conducir
