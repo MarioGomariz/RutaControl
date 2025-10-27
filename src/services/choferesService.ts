@@ -124,6 +124,14 @@ export const deleteChofer = async (id: string): Promise<boolean> => {
     if (error.response && error.response.status === 404) {
       return false; // El chofer no existe
     }
+    // Detectar error de restricción de clave foránea o usar mensaje del backend
+    if (error.response?.status === 400 && error.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    }
+    if (error.response?.data?.sqlMessage?.includes('foreign key constraint fails') || 
+        error.response?.data?.code === 'ER_ROW_IS_REFERENCED_2') {
+      throw new Error('No se puede eliminar el chofer porque está asignado a uno o más viajes. Primero debe reasignar o eliminar esos viajes.');
+    }
     console.error('Error al eliminar chofer:', error);
     throw error;
   }

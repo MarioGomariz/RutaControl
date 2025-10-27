@@ -119,10 +119,13 @@ export const useSemirremolquesStore = create<SemirremolquesState>((set) => ({
         throw new Error('No se encontró el semirremolque');
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al eliminar el semirremolque';
       set({ 
-        error: error instanceof Error ? error.message : 'Error al eliminar el semirremolque', 
+        error: errorMessage, 
         isLoading: false 
       });
+      // Re-lanzar el error para que el componente pueda manejarlo
+      throw error;
     }
   },
   

@@ -123,10 +123,13 @@ export const useTractoresStore = create<TractoresState>((set) => ({
         throw new Error('No se encontró el tractor');
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al eliminar el tractor';
       set({ 
-        error: error instanceof Error ? error.message : 'Error al eliminar el tractor', 
+        error: errorMessage, 
         isLoading: false 
       });
+      // Re-lanzar el error para que el componente pueda manejarlo
+      throw error;
     }
   },
   

@@ -13,10 +13,12 @@ export default function Choferes() {
     }, [fetchChoferes]);
 
     const filteredChoferes = choferes.filter(chofer => 
-        chofer.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        chofer.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        chofer.dni?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        chofer.email?.toLowerCase().includes(searchTerm.toLowerCase())
+        chofer && (
+            chofer.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            chofer.apellido?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            chofer.dni?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            chofer.email?.toLowerCase().includes(searchTerm.toLowerCase())
+        )
     );
 
     return (

@@ -85,7 +85,7 @@ export default function Viaje() {
         alcance: selectedViaje.alcance,
         origen: selectedViaje.origen,
         cantidad_destinos: selectedViaje.cantidad_destinos,
-        fecha_hora_salida: selectedViaje.fecha_hora_salida ? new Date(selectedViaje.fecha_hora_salida).toISOString().slice(0, 16) : "",
+        fecha_hora_salida: selectedViaje.fecha_hora_salida ? new Date(selectedViaje.fecha_hora_salida).toISOString().slice(0, 10) : "",
         estado: selectedViaje.estado,
       });
       
@@ -452,9 +452,9 @@ export default function Viaje() {
                 </FormField>
 
                 {/* Fecha de salida */}
-                <FormField label="Fecha y hora de salida" name="fecha_hora_salida" required>
+                <FormField label="Fecha de salida" name="fecha_hora_salida" required>
                   <FormInput
-                    type="datetime-local"
+                    type="date"
                     name="fecha_hora_salida"
                     value={formData.fecha_hora_salida}
                     onChange={handleChange}

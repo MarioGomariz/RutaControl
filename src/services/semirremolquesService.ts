@@ -65,10 +65,17 @@ export const createSemirremolque = async (semirremolque: Omit<Semirremolque, 'id
     const response = await api.post('/semirremolques', createData);
     return response.data;
   } catch (error: any) {
+    console.error('Error al crear semirremolque:', error);
+    console.error('Status:', error.response?.status);
+    console.error('Data del error:', error.response?.data);
+    
     if (error.response && error.response.status === 409) {
       throw new Error('Ya existe un semirremolque con ese dominio');
     }
-    console.error('Error al crear semirremolque:', error);
+    if (error.response && error.response.status === 400) {
+      const errorMsg = error.response.data?.error || error.response.data?.message || 'Error de validación';
+      throw new Error(errorMsg);
+    }
     throw error;
   }
 };
@@ -145,6 +152,14 @@ export const deleteSemirremolque = async (id: string): Promise<boolean> => {
   } catch (error: any) {
     if (error.response && error.response.status === 404) {
       return false;
+    }
+    // Detectar error de restricción de clave foránea o usar mensaje del backend
+    if (error.response?.status === 400 && error.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    }
+    if (error.response?.data?.sqlMessage?.includes('foreign key constraint fails') || 
+        error.response?.data?.code === 'ER_ROW_IS_REFERENCED_2') {
+      throw new Error('No se puede eliminar el semirremolque porque está asignado a uno o más viajes. Primero debe reasignar o eliminar esos viajes.');
     }
     console.error('Error al eliminar semirremolque:', error);
     throw error;

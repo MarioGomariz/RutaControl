@@ -112,7 +112,8 @@ export default function Tractor() {
       navigate('/tractores');
     } catch (err) {
       console.error(err);
-      toast.error('Error al eliminar el tractor');
+      const errorMessage = err instanceof Error ? err.message : 'Error al eliminar el tractor';
+      toast.error(errorMessage);
       setShowDeleteModal(false);
     }
   };

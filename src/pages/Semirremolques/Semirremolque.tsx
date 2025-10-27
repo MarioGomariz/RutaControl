@@ -19,6 +19,7 @@ export default function Semirremolque() {
   const { id } = useParams();
   const navigate = useNavigate();
   const parsedId = id && id !== 'new' ? Number(id) : null;
+  const isEditing = parsedId !== null;
   
   const { 
     selectedSemirremolque: semirremolque, 
@@ -113,18 +114,26 @@ export default function Semirremolque() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const payload = {
-      ...formData,
-      vencimiento_rto: toSqlDate(formData.vencimiento_rto),
-      vencimiento_visual_externa: toSqlDate(formData.vencimiento_visual_externa),
-      vencimiento_visual_interna: toSqlDate(formData.vencimiento_visual_interna),
-      vencimiento_espesores: toSqlDate(formData.vencimiento_espesores),
-      vencimiento_prueba_hidraulica: toSqlDate(formData.vencimiento_prueba_hidraulica),
-      vencimiento_mangueras: toSqlDate(formData.vencimiento_mangueras),
-      vencimiento_valvula_flujo: toSqlDate(formData.vencimiento_valvula_flujo),
+    
+    // Construir payload solo con campos relevantes según tipo de servicio
+    const payload: any = {
+      nombre: formData.nombre,
+      dominio: formData.dominio,
+      anio: formData.anio,
+      estado: formData.estado,
+      tipo_servicio: formData.tipo_servicio,
+      alcance_servicio: formData.alcance_servicio,
     };
+    
+    // Agregar solo los campos de documentación que aplican al tipo de servicio
+    const requiredFields = getRequiredDocFields(formData.tipo_servicio || '');
+    requiredFields.forEach(field => {
+      const value = formData[field as keyof typeof formData];
+      payload[field] = toSqlDate(value as string | Date | null | undefined);
+    });
+    
     try {
-      if (semirremolque && parsedId !== null) {
+      if (isEditing && parsedId !== null) {
         await editSemirremolque(parsedId, payload);
         toast.success("Semirremolque actualizado correctamente");
       } else {
@@ -134,7 +143,8 @@ export default function Semirremolque() {
       navigate("/semirremolques");
     } catch (err) {
       console.error("Error al guardar el semirremolque:", err);
-      toast.error("Error al guardar el semirremolque");
+      const errorMessage = err instanceof Error ? err.message : "Error al guardar el semirremolque";
+      toast.error(errorMessage);
     }
   };
   
@@ -150,7 +160,8 @@ export default function Semirremolque() {
       navigate('/semirremolques');
     } catch (err) {
       console.error(err);
-      toast.error('Error al eliminar el semirremolque');
+      const errorMessage = err instanceof Error ? err.message : 'Error al eliminar el semirremolque';
+      toast.error(errorMessage);
       setShowDeleteModal(false);
     }
   };
@@ -178,9 +189,9 @@ export default function Semirremolque() {
         ) : (
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-800">
-              {semirremolque ? "Editar semirremolque" : "Agregar semirremolque"}
+              {isEditing ? "Editar semirremolque" : "Agregar semirremolque"}
             </h1>
-            {semirremolque && id && (
+            {isEditing && (
               <FormButton
                 type="button"
                 onClick={() => setShowDeleteModal(true)}
@@ -400,7 +411,7 @@ export default function Semirremolque() {
               type="submit"
               variant="primary"
             >
-              {semirremolque ? "Actualizar" : "Crear"}
+              {isEditing ? "Actualizar" : "Guardar"}
             </FormButton>
           </div>
         </form>

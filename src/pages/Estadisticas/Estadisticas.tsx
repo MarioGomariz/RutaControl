@@ -805,7 +805,15 @@ export default function Estadisticas() {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {estadisticas.inactividad_vehiculos.map((item, index) => (
-                          <tr key={index} className={item.dias_inactivo > 30 ? 'bg-red-50' : item.dias_inactivo > 7 ? 'bg-yellow-50' : ''}>
+                          <tr key={index} className={
+                            item.dias_inactivo >= 999 
+                              ? '' 
+                              : item.dias_inactivo > 30 
+                                ? 'bg-red-50' 
+                                : item.dias_inactivo > 7 
+                                  ? 'bg-yellow-50' 
+                                  : ''
+                          }>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                               {item.tractor_marca} {item.tractor_modelo} - {item.tractor_dominio}
                             </td>
@@ -814,13 +822,15 @@ export default function Estadisticas() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                               <span className={`px-3 py-1 rounded-full font-medium ${
-                                item.dias_inactivo > 30 
-                                  ? 'bg-red-100 text-red-800' 
-                                  : item.dias_inactivo > 7 
-                                    ? 'bg-yellow-100 text-yellow-800' 
-                                    : 'bg-green-100 text-green-800'
+                                item.dias_inactivo >= 999
+                                  ? 'bg-gray-100 text-gray-800'
+                                  : item.dias_inactivo > 30 
+                                    ? 'bg-red-100 text-red-800' 
+                                    : item.dias_inactivo > 7 
+                                      ? 'bg-yellow-100 text-yellow-800' 
+                                      : 'bg-green-100 text-green-800'
                               }`}>
-                                {item.dias_inactivo} días
+                                {item.dias_inactivo >= 999 ? 'Sin viajes' : `${item.dias_inactivo} días`}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
