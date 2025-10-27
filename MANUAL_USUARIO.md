@@ -184,7 +184,7 @@ Contacte al administrador del sistema para restablecer su contraseña.
 2. Click en **"Eliminar"**
 3. Confirme la acción
 
-**Restricción**: No se puede eliminar si tiene viajes asignados.
+**Restricción**: No se puede eliminar si tiene viajes asignados. El sistema mostrará un mensaje claro: *"No se puede eliminar el chofer porque está asignado a uno o más viajes"*.
 
 ---
 
@@ -217,7 +217,9 @@ Contacte al administrador del sistema para restablecer su contraseña.
 
 ### 6.3 Editar/Eliminar
 
-Similar a Choferes. No se puede eliminar si tiene viajes asignados.
+Similar a Choferes. 
+
+**Restricción de eliminación**: No se puede eliminar si tiene viajes asignados. El sistema mostrará un mensaje claro: *"No se puede eliminar el tractor porque está asignado a uno o más viajes"*.
 
 ---
 
@@ -252,7 +254,11 @@ Similar a Choferes. No se puede eliminar si tiene viajes asignados.
 4. **Sección 3: Documentación**
    - Complete las fechas de vencimiento según el tipo de servicio
    - Todos los campos mostrados son obligatorios
-5. Click en **"Crear"**
+5. Click en **"Guardar"**
+
+**Importante**: El botón cambia según la acción:
+- **"Guardar"**: Al crear un nuevo semirremolque
+- **"Actualizar"**: Al editar un semirremolque existente
 
 ### 7.3 Cambiar Tipo de Servicio
 
@@ -260,11 +266,19 @@ Similar a Choferes. No se puede eliminar si tiene viajes asignados.
 2. Cambie el tipo de servicio
 3. Los campos de documentación se actualizan automáticamente
 4. Complete las nuevas fechas
-5. Guardar
+5. Click en **"Actualizar"**
 
 **Nota**: Los valores anteriores se limpian automáticamente.
 
-### 7.4 Código de Colores
+### 7.4 Eliminar Semirremolque
+
+1. Entre en modo edición
+2. Click en **"Eliminar"**
+3. Confirme la acción
+
+**Restricción**: No se puede eliminar si tiene viajes asignados. El sistema mostrará un mensaje claro: *"No se puede eliminar el semirremolque porque está asignado a uno o más viajes"*.
+
+### 7.5 Código de Colores
 
 **Borde de la tarjeta**:
 - 🔴 Rojo: Al menos un documento vencido
@@ -308,7 +322,7 @@ Similar a Choferes. No se puede eliminar si tiene viajes asignados.
    - El orden de los destinos es el orden de visita
 5. **Sección 4: Origen y Fecha**
    - Origen (ubicación de salida)
-   - Fecha y hora de salida
+   - Fecha de salida (solo fecha, sin hora)
 6. **Sección 5: Estado**
    - Programado (por defecto)
 7. Click en **"Crear viaje"**
@@ -461,7 +475,13 @@ Similar a Choferes. No se puede eliminar si tiene viajes asignados.
 - Tabla de actividad de tractores:
   - 🔴 Rojo: +30 días inactivo
   - 🟡 Amarillo: +7 días inactivo
-  - 🟢 Verde: Activo
+  - 🟢 Verde: Activo (≤7 días)
+  - ⚪ Gris: Sin viajes (nunca usado)
+
+**Nota sobre días de inactividad**:
+- Solo se cuentan viajes finalizados o en curso
+- Viajes programados no afectan el cálculo
+- "Sin viajes" indica que el tractor nunca ha tenido viajes finalizados
 
 **3. Por Chofer**:
 - Distribución de viajes por chofer (gráfico de barras)
