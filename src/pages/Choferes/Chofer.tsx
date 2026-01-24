@@ -111,10 +111,14 @@ export default function ChoferForm() {
 
         if (formData.email) {
           const nuevoChofer = useChoferesStore.getState().selectedChofer;
+          console.log('[FRONTEND] Chofer creado, selectedChofer:', nuevoChofer);
           if (nuevoChofer) {
+            console.log('[FRONTEND] Mostrando modal de contraseña para chofer ID:', nuevoChofer.id);
             setNewChoferId(nuevoChofer.id);
             setShowPasswordModal(true);
-          } 
+          } else {
+            console.error('[FRONTEND] Error: selectedChofer es null después de crear');
+          }
         }
       }
     } catch (err: any) {
@@ -124,27 +128,35 @@ export default function ChoferForm() {
 
   const handleCreateUsuario = async () => {
     setPasswordError('');
+    console.log('[FRONTEND] handleCreateUsuario llamado, newChoferId:', newChoferId);
 
     if (password.length < 6) {
+      console.log('[FRONTEND] Error: Contraseña muy corta');
       setPasswordError('La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
     if (password !== confirmPassword) {
+      console.log('[FRONTEND] Error: Contraseñas no coinciden');
       setPasswordError('Las contraseñas no coinciden');
       return;
     }
 
     try {
       if (newChoferId) {
+        console.log('[FRONTEND] Actualizando contraseña para chofer ID:', newChoferId);
         // Actualizar la contraseña del usuario ya creado por el backend
         await updateChoferPassword(String(newChoferId), password);
+        console.log('[FRONTEND] Contraseña actualizada exitosamente');
         toast.success("Contraseña configurada correctamente");
+      } else {
+        console.error('[FRONTEND] Error: newChoferId es null');
       }
 
       setShowPasswordModal(false);
       navigate("/choferes");
     } catch (err: any) {
+      console.error('[FRONTEND] Error al configurar contraseña:', err);
       setPasswordError(err.message || 'Error al configurar la contraseña');
     }
   };
