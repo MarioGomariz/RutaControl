@@ -41,17 +41,12 @@ export const createChofer = async (chofer: Omit<Chofer, 'id' | 'usuario_id'>): P
     const response = await api.post('/choferes', chofer);
     return response.data;
   } catch (error: any) {
-    if (error.response) {
-      if (error.response.status === 409) {
-        if (error.response.data.message.includes('DNI')) {
-          throw new Error('Ya existe un chofer con ese DNI');
-        } else if (error.response.data.message.includes('email')) {
-          throw new Error('Ya existe un chofer con ese email');
-        }
-      }
-    }
     console.error('Error al crear chofer:', error);
-    throw error;
+    // Capturar mensaje descriptivo del backend
+    if (error.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    }
+    throw new Error('Error al crear el chofer');
   }
 };
 
@@ -71,19 +66,15 @@ export const updateChofer = async (
     const response = await api.put(`/choferes/${id}`, updateData);
     return response.data;
   } catch (error: any) {
-    if (error.response) {
-      if (error.response.status === 404) {
-        return null;
-      } else if (error.response.status === 409) {
-        if (error.response.data.message.includes('DNI')) {
-          throw new Error('Ya existe un chofer con ese DNI');
-        } else if (error.response.data.message.includes('email')) {
-          throw new Error('Ya existe un chofer con ese email');
-        }
-      }
-    }
     console.error('Error al actualizar chofer:', error);
-    throw error;
+    if (error.response?.status === 404) {
+      return null;
+    }
+    // Capturar mensaje descriptivo del backend
+    if (error.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    }
+    throw new Error('Error al actualizar el chofer');
   }
 };
 

@@ -77,10 +77,13 @@ export const useChoferesStore = create<ChoferesState>((set) => ({
         isLoading: false 
       }));
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al crear el chofer';
       set({ 
-        error: error instanceof Error ? error.message : 'Error al crear el chofer', 
+        error: errorMessage, 
         isLoading: false 
       });
+      // Re-lanzar el error para que el componente pueda manejarlo
+      throw error;
     }
   },
   
@@ -100,10 +103,13 @@ export const useChoferesStore = create<ChoferesState>((set) => ({
         throw new Error('No se encontró el chofer');
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al actualizar el chofer';
       set({ 
-        error: error instanceof Error ? error.message : 'Error al actualizar el chofer', 
+        error: errorMessage, 
         isLoading: false 
       });
+      // Re-lanzar el error para que el componente pueda manejarlo
+      throw error;
     }
   },
   
