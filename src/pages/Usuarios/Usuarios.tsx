@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { FaUserPlus, FaSearch, FaEdit, FaTrash, FaUserSlash, FaUserCheck } from 'react-icons/fa';
+import React, { useState, useEffect, useMemo } from 'react';
+import { FaUserPlus, FaSearch, FaEdit, FaTrash, FaUserSlash, FaUserCheck, FaUserShield, FaUserTie } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useUsuariosStore } from '@/stores/usuariosStore';
+import { useAuth } from '@/stores/authStore';
 import ConfirmModal from '@/components/ConfirmModal';
 import type { Usuario } from '@/types/usuario';
 
@@ -15,9 +16,11 @@ const Usuarios: React.FC = () => {
     removeUsuario, 
     cambiarEstado 
   } = useUsuariosStore();
+  const { user: currentUser } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<'todos' | 'administradores' | 'choferes'>('todos');
   const navigate = useNavigate();
 
   // Cargar usuarios al iniciar
@@ -66,12 +69,36 @@ const Usuarios: React.FC = () => {
     await cambiarEstado(usuario.id, !usuario.activo);
   };
 
+  // Filtrar usuarios: excluir el usuario actual y filtrar por rol según la pestaña
+  const filteredUsuarios = useMemo(() => {
+    let filtered = usuarios.filter(u => u.usuario !== currentUser?.username);
+    
+    if (activeTab === 'administradores') {
+      filtered = filtered.filter(u => u.rol_id === 1);
+    } else if (activeTab === 'choferes') {
+      filtered = filtered.filter(u => u.rol_id === 2);
+    }
+    
+    return filtered;
+  }, [usuarios, currentUser, activeTab]);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Gestión de Usuarios</h1>
       
+      {/* Indicador de cuenta logueada */}
+      {currentUser && (
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
+          <FaUserShield className="text-blue-600 text-xl" />
+          <div>
+            <p className="text-sm text-gray-600">Sesión actual:</p>
+            <p className="font-semibold text-gray-800">{currentUser.username}</p>
+          </div>
+        </div>
+      )}
+      
       {/* Barra de búsqueda y botón de agregar */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
         <div className="relative w-full md:w-1/2">
           <input
             type="text"
@@ -90,6 +117,42 @@ const Usuarios: React.FC = () => {
         </button>
       </div>
 
+      {/* Pestañas de filtro */}
+      <div className="flex gap-2 mb-6 border-b border-gray-200">
+        <button
+          onClick={() => setActiveTab('todos')}
+          className={`px-4 py-2 font-medium transition-colors ${
+            activeTab === 'todos'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          Todos ({usuarios.filter(u => u.usuario !== currentUser?.username).length})
+        </button>
+        <button
+          onClick={() => setActiveTab('administradores')}
+          className={`px-4 py-2 font-medium transition-colors flex items-center gap-2 ${
+            activeTab === 'administradores'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          <FaUserShield />
+          Administradores ({usuarios.filter(u => u.rol_id === 1 && u.usuario !== currentUser?.username).length})
+        </button>
+        <button
+          onClick={() => setActiveTab('choferes')}
+          className={`px-4 py-2 font-medium transition-colors flex items-center gap-2 ${
+            activeTab === 'choferes'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          <FaUserTie />
+          Choferes ({usuarios.filter(u => u.rol_id === 2 && u.usuario !== currentUser?.username).length})
+        </button>
+      </div>
+
       {/* Lista de usuarios */}
       {isLoading ? (
         <div className="flex justify-center items-center h-32">
@@ -102,7 +165,7 @@ const Usuarios: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-          {usuarios.map((usuario) => (
+          {filteredUsuarios.map((usuario) => (
           <div 
             key={usuario.id}
             className={`border rounded-lg shadow-md p-5 bg-white ${
@@ -150,7 +213,7 @@ const Usuarios: React.FC = () => {
             </div>
           </div>
           ))}
-          {usuarios.length === 0 && (
+          {filteredUsuarios.length === 0 && (
             <div className="col-span-full text-center py-8 text-gray-500 bg-white rounded-lg shadow-md p-6">
               No se encontraron usuarios. {searchQuery ? 'Intente con otra búsqueda.' : ''}
             </div>
