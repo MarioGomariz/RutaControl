@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useChoferesStore } from "@/stores/choferesStore";
-import { useUsuariosStore } from "@/stores/usuariosStore";
+import { updateChoferPassword } from "@/services/choferesService";
 import type { Chofer } from "@/types/chofer";
 import { toast } from "react-toastify";
 import ConfirmModal from "@/components/ConfirmModal";
@@ -22,7 +22,6 @@ export default function ChoferForm() {
     removeChofer,
     clearSelectedChofer 
   } = useChoferesStore();
-  const { addUsuario } = useUsuariosStore();
 
   const isEditing = id !== 'new';
   const parsedId = isEditing && id ? Number(id) : null;
@@ -138,20 +137,15 @@ export default function ChoferForm() {
 
     try {
       if (newChoferId) {
-        const nuevoUsuario = {
-          usuario: formData.email,
-          contrasena: password,
-          rol_id: 2,
-          activo: true,
-        } as Omit<import('@/types/usuario').Usuario, 'id'>;
-        await addUsuario(nuevoUsuario);
-        toast.success("Usuario creado correctamente");
+        // Actualizar la contraseña del usuario ya creado por el backend
+        await updateChoferPassword(String(newChoferId), password);
+        toast.success("Contraseña configurada correctamente");
       }
 
       setShowPasswordModal(false);
       navigate("/choferes");
     } catch (err: any) {
-      setPasswordError(err.message || 'Error al crear el usuario');
+      setPasswordError(err.message || 'Error al configurar la contraseña');
     }
   };
 

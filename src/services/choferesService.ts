@@ -79,6 +79,25 @@ export const updateChofer = async (
 };
 
 /**
+ * Actualizar la contraseña del usuario asociado a un chofer
+ * @param id ID del chofer
+ * @param password Nueva contraseña
+ * @returns Promise con true si se actualizó correctamente
+ */
+export const updateChoferPassword = async (id: string, password: string): Promise<boolean> => {
+  try {
+    await api.put(`/choferes/${id}/password`, { password });
+    return true;
+  } catch (error: any) {
+    console.error('Error al actualizar contraseña del chofer:', error);
+    if (error.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    }
+    throw new Error('Error al actualizar la contraseña');
+  }
+};
+
+/**
  * Eliminar un chofer por ID
  * @param id ID del chofer a eliminar
  * @returns Promise con true si se eliminó correctamente, false si no existe
