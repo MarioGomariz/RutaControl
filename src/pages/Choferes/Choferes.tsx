@@ -102,8 +102,8 @@ function ChoferCard({ chofer }: { chofer: Chofer }) {
     const licenciaDate = chofer.fecha_vencimiento_licencia ? new Date(chofer.fecha_vencimiento_licencia) : null;
     const today = new Date();
     const daysUntilExpiration = licenciaDate ? Math.ceil((licenciaDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
-    const isExpiringSoon = daysUntilExpiration !== null && daysUntilExpiration <= 30 && daysUntilExpiration >= 0;
-    const isExpired = daysUntilExpiration !== null && daysUntilExpiration < 0;
+    const isExpiringSoon = daysUntilExpiration !== null && daysUntilExpiration <= 30 && daysUntilExpiration > 0;
+    const isExpired = daysUntilExpiration !== null && daysUntilExpiration <= 0;
     
     return (
         <Link to={`/chofer/${chofer.id}`} className="block">
@@ -149,7 +149,7 @@ function ChoferCard({ chofer }: { chofer: Chofer }) {
                             </div>
                             {licenciaDate && (
                                 <div className={`px-3 py-1 rounded-full text-xs font-medium ${isExpired ? 'bg-red-100 text-red-800' : isExpiringSoon ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
-                                    {isExpired ? 'Vencida' : isExpiringSoon ? `${daysUntilExpiration} días` : 'Vigente'}
+                                    {isExpired ? 'Vencido' : daysUntilExpiration === 0 ? 'Vence hoy' : daysUntilExpiration === 1 ? 'Vence mañana' : isExpiringSoon ? `${daysUntilExpiration} días` : 'Vigente'}
                                 </div>
                             )}
                         </div>

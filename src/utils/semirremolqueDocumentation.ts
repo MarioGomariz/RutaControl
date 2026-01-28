@@ -46,12 +46,22 @@ export function shouldShowDocField(fieldName: string, tipoServicio: string | und
 
 /**
  * Calcula los días hasta el vencimiento de una fecha
+ * Compara solo las fechas sin tener en cuenta las horas
  */
 export function getDaysUntilExpiration(dateString: string | undefined): number | null {
   if (!dateString) return null;
-  const expirationDate = new Date(dateString);
+  
+  // Parsear la fecha sin conversión de zona horaria
+  const [year, month, day] = dateString.split('T')[0].split('-');
+  const expirationDate = new Date(Number(year), Number(month) - 1, Number(day));
+  
+  // Obtener la fecha actual sin horas
   const today = new Date();
-  return Math.ceil((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  
+  // Calcular diferencia en días
+  const diffTime = expirationDate.getTime() - todayDate.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
 /**
@@ -60,7 +70,7 @@ export function getDaysUntilExpiration(dateString: string | undefined): number |
 export function getExpirationStatus(dateString: string | undefined): 'expired' | 'expiring-soon' | 'valid' | null {
   const days = getDaysUntilExpiration(dateString);
   if (days === null) return null;
-  if (days < 0) return 'expired';
+  if (days <= 0) return 'expired'; // Hoy o antes = vencido (rojo)
   if (days <= 30) return 'expiring-soon';
   return 'valid';
 }
@@ -87,7 +97,9 @@ export function getExpirationBadgeColor(status: 'expired' | 'expiring-soon' | 'v
 export function getExpirationBadgeText(dateString: string | undefined): string {
   const days = getDaysUntilExpiration(dateString);
   if (days === null) return 'Sin fecha';
-  if (days < 0) return 'Vencida';
+  if (days < 0) return 'Vencido';
+  if (days === 0) return 'Vence hoy';
+  if (days === 1) return 'Vence mañana';
   if (days <= 30) return `${days} días`;
   return 'Vigente';
 }

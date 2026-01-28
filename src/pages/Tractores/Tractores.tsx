@@ -103,8 +103,8 @@ function TractorCard({ tractor }: { tractor: Tractor }) {
     const rtoDate = tractor.vencimiento_rto ? new Date(tractor.vencimiento_rto) : null;
     const today = new Date();
     const daysUntilRto = rtoDate ? Math.ceil((rtoDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
-    const isRtoExpiringSoon = daysUntilRto !== null && daysUntilRto <= 30 && daysUntilRto >= 0;
-    const isRtoExpired = daysUntilRto !== null && daysUntilRto < 0;
+    const isRtoExpiringSoon = daysUntilRto !== null && daysUntilRto <= 30 && daysUntilRto > 0;
+    const isRtoExpired = daysUntilRto !== null && daysUntilRto <= 0;
     
     return (
         <Link to={`/tractor/${tractor.id}`} className="block">
@@ -150,7 +150,7 @@ function TractorCard({ tractor }: { tractor: Tractor }) {
                                     <p className="font-medium">{formatDate(tractor.vencimiento_rto)}</p>
                                 </div>
                                 <div className={`px-3 py-1 rounded-full text-xs font-medium ${isRtoExpired ? 'bg-red-100 text-red-800' : isRtoExpiringSoon ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
-                                    {isRtoExpired ? 'Vencida' : isRtoExpiringSoon ? `${daysUntilRto} días` : 'Vigente'}
+                                    {isRtoExpired ? 'Vencido' : daysUntilRto === 0 ? 'Vence hoy' : daysUntilRto === 1 ? 'Vence mañana' : isRtoExpiringSoon ? `${daysUntilRto} días` : 'Vigente'}
                                 </div>
                             </div>
                         </div>
