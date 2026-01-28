@@ -88,12 +88,22 @@ const Usuarios: React.FC = () => {
       
       {/* Indicador de cuenta logueada */}
       {currentUser && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
-          <FaUserShield className="text-blue-600 text-xl" />
-          <div>
-            <p className="text-sm text-gray-600">Sesión actual:</p>
-            <p className="font-semibold text-gray-800">{currentUser.username}</p>
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <FaUserShield className="text-blue-600 text-xl" />
+            <div>
+              <p className="text-sm text-gray-600">Sesión actual:</p>
+              <p className="font-semibold text-gray-800">{currentUser.username}</p>
+            </div>
           </div>
+          <button
+            onClick={() => navigate(`/usuario/${currentUser.id}`)}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+            title="Editar mi perfil"
+          >
+            <FaEdit />
+            <span className="hidden sm:inline">Editar perfil</span>
+          </button>
         </div>
       )}
       
