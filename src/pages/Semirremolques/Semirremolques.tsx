@@ -1,16 +1,9 @@
-
 import { useEffect, useState } from "react";
 import { useSemirremolquesStore } from "@/stores/semirremolquesStore";
-import { FaTruckMoving, FaSearch, FaPlus, FaIdCard, FaWeightHanging, FaCalendar, FaExclamationTriangle } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import type { Semirremolque } from "@/types/semirremolque";
-import { 
-  getRequiredDocFields, 
-  DOCUMENTATION_LABELS,
-  getExpirationStatus,
-  getExpirationBadgeColor,
-  getExpirationBadgeText 
-} from "@/utils/semirremolqueDocumentation";
+import { FaPlus, FaIdCard, FaCalendar, FaWeightHanging, FaExclamationTriangle, FaTruckMoving, FaSearch } from "react-icons/fa";
+import { Semirremolque } from "@/types/semirremolque";
+import { getRequiredDocFields, getExpirationStatus, getExpirationBadgeColor, getExpirationBadgeText, DOCUMENTATION_LABELS, formatDate } from "@/utils/semirremolqueDocumentation";
 
 export default function Semirremolques() {
     const { semirremolques, isLoading, error, fetchSemirremolques } = useSemirremolquesStore();
@@ -177,7 +170,7 @@ function SemirremolqueCard({ semirremolque }: { semirremolque: Semirremolque }) 
                                             <div className="flex items-center gap-2">
                                                 {value && (
                                                     <span className="text-gray-500">
-                                                        {new Date(value).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                                                        {formatDate(value)}
                                                     </span>
                                                 )}
                                                 <span className={`px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${badgeColor}`}>

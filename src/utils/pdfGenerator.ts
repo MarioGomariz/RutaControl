@@ -56,12 +56,22 @@ export const generarPDFViaje = (data: ViajeCompleto) => {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  };
+
   const infoGeneral = [
     ['ID del Viaje:', `#${viaje.id}`],
     ['Estado:', viaje.estado.toUpperCase()],
     ['Origen:', viaje.origen],
     ['Alcance:', viaje.alcance],
-    ['Fecha de Salida:', new Date(viaje.fecha_hora_salida).toLocaleString('es-ES')],
+    ['Fecha de Salida:', formatDateTime(viaje.fecha_hora_salida)],
     ['Cantidad de Destinos:', viaje.cantidad_destinos.toString()],
   ];
 
@@ -145,13 +155,7 @@ export const generarPDFViaje = (data: ViajeCompleto) => {
 
   const paradasData = paradas.map((p, index) => [
     (index + 1).toString(),
-    new Date(p.fecha_hora).toLocaleString('es-ES', { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric',
-      hour: '2-digit', 
-      minute: '2-digit' 
-    }),
+    formatDateTime(p.fecha_hora),
     p.tipo.charAt(0).toUpperCase() + p.tipo.slice(1),
     p.ubicacion,
     `${p.odometro} km`,
@@ -226,7 +230,7 @@ export const generarPDFViaje = (data: ViajeCompleto) => {
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.text(
-      `Página ${i} de ${pageCount} - Generado el ${new Date().toLocaleString('es-ES')}`,
+      `Página ${i} de ${pageCount} - Generado el ${formatDateTime(new Date().toISOString())}`,
       pageWidth / 2,
       doc.internal.pageSize.getHeight() - 10,
       { align: 'center' }

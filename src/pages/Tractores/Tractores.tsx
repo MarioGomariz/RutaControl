@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTractoresStore } from "@/stores/tractoresStore";
-import { FaTruck, FaSearch, FaPlus, FaIdCard, FaCalendar, FaCogs } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { FaPlus, FaTruck, FaIdCard, FaCalendar, FaCogs, FaSearch } from "react-icons/fa";
+import { formatDate } from '@/utils/semirremolqueDocumentation';
 import type { Tractor } from "@/types/tractor";
 
 export default function Tractores() {
@@ -146,7 +147,7 @@ function TractorCard({ tractor }: { tractor: Tractor }) {
                             <div className="flex items-center">
                                 <div className="flex-1">
                                     <p className="text-xs text-gray-500">RTO</p>
-                                    <p className="font-medium">{new Date(tractor.vencimiento_rto || '').toLocaleDateString()}</p>
+                                    <p className="font-medium">{formatDate(tractor.vencimiento_rto)}</p>
                                 </div>
                                 <div className={`px-3 py-1 rounded-full text-xs font-medium ${isRtoExpired ? 'bg-red-100 text-red-800' : isRtoExpiringSoon ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
                                     {isRtoExpired ? 'Vencida' : isRtoExpiringSoon ? `${daysUntilRto} días` : 'Vigente'}
