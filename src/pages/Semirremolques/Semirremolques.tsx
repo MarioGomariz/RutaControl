@@ -3,7 +3,8 @@ import { useSemirremolquesStore } from "@/stores/semirremolquesStore";
 import { Link } from "react-router-dom";
 import { FaPlus, FaIdCard, FaCalendar, FaWeightHanging, FaExclamationTriangle, FaTruckMoving, FaSearch } from "react-icons/fa";
 import { Semirremolque } from "@/types/semirremolque";
-import { getRequiredDocFields, getExpirationStatus, getExpirationBadgeColor, getExpirationBadgeText, DOCUMENTATION_LABELS, formatDate } from "@/utils/semirremolqueDocumentation";
+import { getRequiredDocFields, getExpirationStatus, getExpirationBadgeColor, getExpirationBadgeText, DOCUMENTATION_LABELS } from "@/utils/semirremolqueDocumentation";
+import { formatDate } from "@/utils/formatDate";
 
 export default function Semirremolques() {
     const { semirremolques, isLoading, error, fetchSemirremolques } = useSemirremolquesStore();

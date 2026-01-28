@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { formatDateTime } from './formatDate';
 
 interface ViajeCompleto {
   viaje: {
@@ -55,16 +56,6 @@ export const generarPDFViaje = (data: ViajeCompleto) => {
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${day}/${month}/${year} ${hours}:${minutes}`;
-  };
 
   const infoGeneral = [
     ['ID del Viaje:', `#${viaje.id}`],

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTractoresStore } from "@/stores/tractoresStore";
 import { Link } from "react-router-dom";
 import { FaPlus, FaTruck, FaIdCard, FaCalendar, FaCogs, FaSearch } from "react-icons/fa";
-import { formatDate } from '@/utils/semirremolqueDocumentation';
+import { formatDate } from "@/utils/formatDate";
 import type { Tractor } from "@/types/tractor";
 
 export default function Tractores() {

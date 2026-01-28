@@ -15,6 +15,7 @@ import type { FiltrosEstadisticas } from '@/types/estadisticas';
 import { toast } from 'react-toastify';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { formatDate } from '@/utils/formatDate';
 
 type TabType = 'general' | 'unidades' | 'choferes' | 'rendimiento';
 
@@ -121,19 +122,12 @@ export default function Estadisticas() {
             const fechaSalida = new Date(tramo.fecha_salida);
             const fechaLlegada = tramo.fecha_llegada ? new Date(tramo.fecha_llegada) : null;
 
-            const formatDate = (date: Date) => {
-              const day = String(date.getDate()).padStart(2, '0');
-              const month = String(date.getMonth() + 1).padStart(2, '0');
-              const year = date.getFullYear();
-              return `${day}/${month}/${year}`;
-            };
-
             return [
               obtenerDiaSemana(fechaSalida),
-              formatDate(fechaSalida),
+              formatDate(tramo.fecha_salida),
               tramo.origen || '-',
               fechaLlegada ? obtenerDiaSemana(fechaLlegada) : '-',
-              fechaLlegada ? formatDate(fechaLlegada) : '-',
+              fechaLlegada ? formatDate(tramo.fecha_llegada) : '-',
               tramo.destino || '-',
               tramo.km_comunes.toFixed(2),
               tramo.km_100x100.toFixed(2)
@@ -825,13 +819,7 @@ export default function Estadisticas() {
                               {item.tractor_marca} {item.tractor_modelo} - {item.tractor_dominio}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {item.ultimo_viaje ? (() => {
-                                const date = new Date(item.ultimo_viaje);
-                                const day = String(date.getDate()).padStart(2, '0');
-                                const month = String(date.getMonth() + 1).padStart(2, '0');
-                                const year = date.getFullYear();
-                                return `${day}/${month}/${year}`;
-                              })() : 'Sin viajes'}
+                              {item.ultimo_viaje ? formatDate(item.ultimo_viaje) : 'Sin viajes'}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                               <span className={`px-3 py-1 rounded-full font-medium ${
