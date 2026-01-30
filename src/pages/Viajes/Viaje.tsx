@@ -125,10 +125,12 @@ export default function Viaje() {
   };
   const [error, setError] = useState<string>('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [expiredErrors, setExpiredErrors] = useState<string[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
   
   // Verificar documentación vencida o próxima a vencer
   useEffect(() => {
+    const newErrors: string[] = [];
     const newWarnings: string[] = [];
     
     // Verificar chofer
@@ -138,11 +140,9 @@ export default function Viaje() {
         const days = getDaysUntilExpiration(chofer.fecha_vencimiento_licencia);
         if (days !== null) {
           if (days <= 0) {
-            newWarnings.push(`⚠️ CHOFER: La licencia está VENCIDA`);
-          } else if (days === 1) {
-            newWarnings.push(`⚠️ CHOFER: La licencia vence mañana`);
+            newErrors.push(`❌ CHOFER: La licencia está VENCIDA`);
           } else if (days <= 7) {
-            newWarnings.push(`⚠️ CHOFER: La licencia vence en ${days} días`);
+            newWarnings.push(`⚠️ CHOFER: La licencia vence en ${days === 1 ? '1 día' : `${days} días`}`);
           }
         }
       }
@@ -155,11 +155,9 @@ export default function Viaje() {
         const days = getDaysUntilExpiration(tractor.vencimiento_rto);
         if (days !== null) {
           if (days <= 0) {
-            newWarnings.push(`⚠️ TRACTOR: El RTO está VENCIDO`);
-          } else if (days === 1) {
-            newWarnings.push(`⚠️ TRACTOR: El RTO vence mañana`);
+            newErrors.push(`❌ TRACTOR: El RTO está VENCIDO`);
           } else if (days <= 7) {
-            newWarnings.push(`⚠️ TRACTOR: El RTO vence en ${days} días`);
+            newWarnings.push(`⚠️ TRACTOR: El RTO vence en ${days === 1 ? '1 día' : `${days} días`}`);
           }
         }
       }
@@ -187,11 +185,9 @@ export default function Viaje() {
             if (days !== null) {
               const label = fieldLabels[field] || field;
               if (days <= 0) {
-                newWarnings.push(`⚠️ SEMIRREMOLQUE: ${label} está VENCIDO`);
-              } else if (days === 1) {
-                newWarnings.push(`⚠️ SEMIRREMOLQUE: ${label} vence mañana`);
+                newErrors.push(`❌ SEMIRREMOLQUE: ${label} está VENCIDO`);
               } else if (days <= 7) {
-                newWarnings.push(`⚠️ SEMIRREMOLQUE: ${label} vence en ${days} días`);
+                newWarnings.push(`⚠️ SEMIRREMOLQUE: ${label} vence en ${days === 1 ? '1 día' : `${days} días`}`);
               }
             }
           }
@@ -199,6 +195,7 @@ export default function Viaje() {
       }
     }
     
+    setExpiredErrors(newErrors);
     setWarnings(newWarnings);
   }, [formData.chofer_id, formData.tractor_id, formData.semirremolque_id, choferes, tractores, semirremolques]);
   
@@ -241,6 +238,13 @@ export default function Viaje() {
     setError('');
 
     try {
+      // Verificar documentación vencida
+      if (expiredErrors.length > 0) {
+        toast.error('No se puede crear el viaje con documentación vencida');
+        setError('No se puede crear el viaje porque hay documentación vencida. Por favor, actualice los documentos antes de continuar.');
+        return;
+      }
+
       // Validaciones básicas
       if (!formData.origen.trim()) {
         toast.error('El origen es obligatorio');
@@ -345,12 +349,33 @@ export default function Viaje() {
           </div>
         )}
 
-        {warnings.length > 0 && (
+        {expiredErrors.length > 0 && (
+          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6">
+            <div className="flex items-start">
+              <FaExclamationTriangle className="h-5 w-5 mr-3 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="font-bold mb-2">⛔ No se puede crear el viaje - Documentación vencida:</h3>
+                <ul className="space-y-1">
+                  {expiredErrors.map((error, index) => (
+                    <li key={index} className="text-sm font-medium">
+                      {error}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-sm mt-3 font-medium">
+                  Debe actualizar la documentación vencida antes de poder crear el viaje.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {warnings.length > 0 && expiredErrors.length === 0 && (
           <div className="bg-amber-50 border-l-4 border-amber-500 text-amber-800 p-4 rounded mb-6">
             <div className="flex items-start">
               <FaExclamationTriangle className="h-5 w-5 mr-3 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <h3 className="font-semibold mb-2">Advertencias de documentación:</h3>
+                <h3 className="font-semibold mb-2">Advertencias - Documentación próxima a vencer:</h3>
                 <ul className="space-y-1">
                   {warnings.map((warning, index) => (
                     <li key={index} className="text-sm">
@@ -358,6 +383,9 @@ export default function Viaje() {
                     </li>
                   ))}
                 </ul>
+                <p className="text-sm mt-3 italic">
+                  Puede crear el viaje, pero considere actualizar esta documentación pronto.
+                </p>
               </div>
             </div>
           </div>
