@@ -41,6 +41,7 @@ export default function ParadasView() {
   const [destinoSeleccionado, setDestinoSeleccionado] = useState<number | null>(null);
   const [destinos, setDestinos] = useState<Destino[]>([]);
   const [isInitializing, setIsInitializing] = useState(false);
+  const [modalError, setModalError] = useState<string>("");
 
   const isChofer = user?.role === 'chofer';
 
@@ -132,19 +133,21 @@ export default function ParadasView() {
   };
 
   const handleAgregarParada = async () => {
+    setModalError("");
+    
     if (!odometro || !tipoParada) {
-      toast.error("Por favor complete el odómetro");
+      setModalError("Por favor complete el odómetro");
       return;
     }
 
     if (tipoParada === 'llegada' && !destinoSeleccionado) {
-      toast.error("Por favor seleccione un destino");
+      setModalError("Por favor seleccione un destino");
       return;
     }
 
     // Para paradas que no son de llegada, validar que se ingrese ubicación
     if (tipoParada !== 'llegada' && !ubicacion) {
-      toast.error("Por favor ingrese la ubicación");
+      setModalError("Por favor ingrese la ubicación");
       return;
     }
 
@@ -173,12 +176,10 @@ export default function ParadasView() {
       setUbicacion("");
       setTipoParada("descanso");
       setDestinoSeleccionado(null);
+      setModalError("");
     } catch (error: any) {
       const errorMsg = error?.response?.data?.error || "Error al agregar parada";
-      toast.error(errorMsg, {
-        autoClose: 5000,
-        position: "top-center"
-      });
+      setModalError(errorMsg);
     }
   };
 
@@ -370,6 +371,12 @@ export default function ParadasView() {
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h2 className="text-2xl font-bold mb-4">Agregar Parada</h2>
             
+            {modalError && (
+              <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-3 rounded mb-4">
+                <p className="text-sm font-medium">{modalError}</p>
+              </div>
+            )}
+            
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -464,6 +471,7 @@ export default function ParadasView() {
                     setUbicacion("");
                     setTipoParada("descanso");
                     setDestinoSeleccionado(null);
+                    setModalError("");
                   }}
                   className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors"
                 >
