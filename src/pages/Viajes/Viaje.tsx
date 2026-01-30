@@ -8,7 +8,7 @@ import { useServiciosStore } from "@/stores/serviciosStore";
 import type { Viaje as ViajeType, EstadoViaje } from "@/types/viaje";
 import { toast } from "react-toastify";
 import ConfirmModal from "@/components/ConfirmModal";
-import { FaArrowLeft, FaTruck, FaRoute, FaClipboardList, FaTrash, FaSave, FaMapMarked, FaMapMarkerAlt, FaPlus } from "react-icons/fa";
+import { FaArrowLeft, FaTruck, FaRoute, FaClipboardList, FaTrash, FaSave, FaMapMarked, FaMapMarkerAlt, FaPlus, FaExclamationTriangle } from "react-icons/fa";
 import { 
   FormSection, 
   FormField, 
@@ -16,6 +16,7 @@ import {
   FormSelect, 
   FormButton 
 } from "@/components/FormComponents";
+import { getDaysUntilExpiration, getRequiredDocFields } from "@/utils/semirremolqueDocumentation";
 
 export default function Viaje() {
   const { id } = useParams();
@@ -124,6 +125,82 @@ export default function Viaje() {
   };
   const [error, setError] = useState<string>('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [warnings, setWarnings] = useState<string[]>([]);
+  
+  // Verificar documentación vencida o próxima a vencer
+  useEffect(() => {
+    const newWarnings: string[] = [];
+    
+    // Verificar chofer
+    if (formData.chofer_id > 0) {
+      const chofer = choferes.find(c => c.id === formData.chofer_id);
+      if (chofer?.fecha_vencimiento_licencia) {
+        const days = getDaysUntilExpiration(chofer.fecha_vencimiento_licencia);
+        if (days !== null) {
+          if (days <= 0) {
+            newWarnings.push(`⚠️ CHOFER: La licencia está VENCIDA`);
+          } else if (days === 1) {
+            newWarnings.push(`⚠️ CHOFER: La licencia vence mañana`);
+          } else if (days <= 7) {
+            newWarnings.push(`⚠️ CHOFER: La licencia vence en ${days} días`);
+          }
+        }
+      }
+    }
+    
+    // Verificar tractor
+    if (formData.tractor_id > 0) {
+      const tractor = tractores.find(t => t.id === formData.tractor_id);
+      if (tractor?.vencimiento_rto) {
+        const days = getDaysUntilExpiration(tractor.vencimiento_rto);
+        if (days !== null) {
+          if (days <= 0) {
+            newWarnings.push(`⚠️ TRACTOR: El RTO está VENCIDO`);
+          } else if (days === 1) {
+            newWarnings.push(`⚠️ TRACTOR: El RTO vence mañana`);
+          } else if (days <= 7) {
+            newWarnings.push(`⚠️ TRACTOR: El RTO vence en ${days} días`);
+          }
+        }
+      }
+    }
+    
+    // Verificar semirremolque
+    if (formData.semirremolque_id > 0) {
+      const semi = semirremolques.find(s => s.id === formData.semirremolque_id);
+      if (semi?.tipo_servicio) {
+        const requiredFields = getRequiredDocFields(semi.tipo_servicio);
+        const fieldLabels: Record<string, string> = {
+          'vencimiento_rto': 'RTO',
+          'vencimiento_visual_externa': 'Visual Externa',
+          'vencimiento_visual_interna': 'Visual Interna',
+          'vencimiento_espesores': 'Espesores',
+          'vencimiento_mangueras': 'Mangueras',
+          'vencimiento_prueba_hidraulica': 'Prueba Hidráulica',
+          'vencimiento_valvula_flujo': 'Válvula de Flujo',
+        };
+        
+        requiredFields.forEach(field => {
+          const dateValue = (semi as any)[field];
+          if (dateValue) {
+            const days = getDaysUntilExpiration(dateValue);
+            if (days !== null) {
+              const label = fieldLabels[field] || field;
+              if (days <= 0) {
+                newWarnings.push(`⚠️ SEMIRREMOLQUE: ${label} está VENCIDO`);
+              } else if (days === 1) {
+                newWarnings.push(`⚠️ SEMIRREMOLQUE: ${label} vence mañana`);
+              } else if (days <= 7) {
+                newWarnings.push(`⚠️ SEMIRREMOLQUE: ${label} vence en ${days} días`);
+              }
+            }
+          }
+        });
+      }
+    }
+    
+    setWarnings(newWarnings);
+  }, [formData.chofer_id, formData.tractor_id, formData.semirremolque_id, choferes, tractores, semirremolques]);
   
   // Funciones para manejar destinos
   const agregarDestino = () => {
@@ -264,6 +341,24 @@ export default function Viaje() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <span>{error || viajeError}</span>
+            </div>
+          </div>
+        )}
+
+        {warnings.length > 0 && (
+          <div className="bg-amber-50 border-l-4 border-amber-500 text-amber-800 p-4 rounded mb-6">
+            <div className="flex items-start">
+              <FaExclamationTriangle className="h-5 w-5 mr-3 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="font-semibold mb-2">Advertencias de documentación:</h3>
+                <ul className="space-y-1">
+                  {warnings.map((warning, index) => (
+                    <li key={index} className="text-sm">
+                      {warning}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         )}
