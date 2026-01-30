@@ -96,8 +96,10 @@ export default function Tractores() {
 
 // Componente de tarjeta de tractor mejorado
 function TractorCard({ tractor }: { tractor: Tractor }) {
-    // Determinar si el tractor está activo basado en su estado
-    const isActive = tractor.estado === 'disponible';
+    // Determinar el estado del tractor
+    const isEnUso = tractor.estado === 'en uso';
+    const isEnReparacion = tractor.estado === 'en reparacion';
+    const isFueraDeServicio = tractor.estado === 'fuera de servicio';
     
     // Calcular si el RTO está próximo a vencer (30 días) si existe
     const rtoDate = tractor.vencimiento_rto ? new Date(tractor.vencimiento_rto) : null;
@@ -106,17 +108,37 @@ function TractorCard({ tractor }: { tractor: Tractor }) {
     const isRtoExpiringSoon = daysUntilRto !== null && daysUntilRto <= 30 && daysUntilRto > 0;
     const isRtoExpired = daysUntilRto !== null && daysUntilRto <= 0;
     
+    // Determinar el color del borde según el estado
+    const getBorderColor = () => {
+        if (isFueraDeServicio) return 'border-gray-400';
+        if (isEnReparacion) return 'border-orange-400';
+        if (isEnUso) return 'border-blue-400';
+        if (isRtoExpired) return 'border-red-500';
+        if (isRtoExpiringSoon) return 'border-amber-500';
+        return 'border-green-500';
+    };
+    
     return (
         <Link to={`/tractor/${tractor.id}`} className="block">
-            <div className={`bg-white rounded-lg shadow-md overflow-hidden border-l-4 hover:shadow-lg transition-shadow ${!isActive ? 'border-gray-400' : isRtoExpired ? 'border-red-500' : isRtoExpiringSoon ? 'border-amber-500' : 'border-green-500'}`}>
+            <div className={`bg-white rounded-lg shadow-md overflow-hidden border-l-4 hover:shadow-lg transition-shadow ${getBorderColor()}`}>
                 <div className="p-5">
                     <div className="flex justify-between items-start mb-3">
                         <h3 className="font-bold text-lg text-gray-800 truncate">
                             {tractor.marca} {tractor.modelo}
                         </h3>
-                        {!isActive && (
+                        {isEnUso && (
+                            <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">
+                                En uso
+                            </span>
+                        )}
+                        {isEnReparacion && (
+                            <span className="px-2 py-1 text-xs rounded bg-orange-100 text-orange-700">
+                                En reparación
+                            </span>
+                        )}
+                        {isFueraDeServicio && (
                             <span className="px-2 py-1 text-xs rounded bg-gray-200 text-gray-700">
-                                Inactivo
+                                Fuera de servicio
                             </span>
                         )}
                     </div>
