@@ -142,7 +142,7 @@ export const deleteUsuario = async (id: string): Promise<boolean> => {
 // Eliminado: ultima_conexion ya no existe en el tipo actual
 
 /**
- * Buscar usuarios por nombre, apellido, email o nombre de usuario
+ * Buscar usuarios por nombre de usuario
  * @param query Texto de búsqueda
  * @returns Promise con array de usuarios que coinciden con la búsqueda
  */
@@ -152,9 +152,34 @@ export const searchUsuarios = async (query: string): Promise<Usuario[]> => {
       params: { query }
     });
     return response.data || [];
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error al buscar usuarios:', error);
-    throw error;
+    
+    // Manejo detallado de errores
+    if (error.response) {
+      // El servidor respondió con un código de estado fuera del rango 2xx
+      const status = error.response.status;
+      const message = error.response.data?.error || error.response.data?.message || 'Error desconocido';
+      const details = error.response.data?.details || '';
+      
+      if (status === 404) {
+        throw new Error('Endpoint de búsqueda no encontrado. Contacte al administrador.');
+      } else if (status === 400) {
+        throw new Error(`Error de búsqueda: ${message}`);
+      } else if (status === 401) {
+        throw new Error('No autorizado. Por favor, inicie sesión nuevamente.');
+      } else if (status === 500) {
+        throw new Error(`Error del servidor: ${message}${details ? ` - ${details}` : ''}`);
+      } else {
+        throw new Error(`Error ${status}: ${message}`);
+      }
+    } else if (error.request) {
+      // La solicitud se hizo pero no se recibió respuesta
+      throw new Error('No se pudo conectar con el servidor. Verifique su conexión.');
+    } else {
+      // Algo sucedió al configurar la solicitud
+      throw new Error(`Error al buscar usuarios: ${error.message}`);
+    }
   }
 };
 

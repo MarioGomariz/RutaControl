@@ -134,8 +134,10 @@ export const useUsuariosStore = create<UsuariosState>((set) => ({
         set({ usuarios: data, isLoading: false });
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido al buscar usuarios';
+      console.error('Error en searchUsuario:', errorMessage);
       set({ 
-        error: error instanceof Error ? error.message : 'Error al buscar usuarios', 
+        error: errorMessage, 
         isLoading: false 
       });
     }
