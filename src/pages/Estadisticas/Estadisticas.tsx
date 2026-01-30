@@ -363,9 +363,9 @@ export default function Estadisticas() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                 >
                   <option value="">Todos</option>
-                  {choferes.filter(c => c.activo).map(c => (
+                  {choferes.map(c => (
                     <option key={c.id} value={c.id}>
-                      {c.nombre} {c.apellido}
+                      {c.nombre} {c.apellido} {!c.activo ? '(Inactivo)' : ''}
                     </option>
                   ))}
                 </select>
@@ -901,6 +901,11 @@ export default function Estadisticas() {
                           <tr key={index} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                               {item.chofer_nombre} {item.chofer_apellido}
+                              {!item.chofer_activo && (
+                                <span className="ml-2 px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs">
+                                  Inactivo
+                                </span>
+                              )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               {item.total_viajes}

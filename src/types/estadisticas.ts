@@ -25,6 +25,7 @@ export interface ViajesPorChofer {
   chofer_id: number;
   chofer_nombre: string;
   chofer_apellido: string;
+  chofer_activo: boolean;
   total_viajes: number;
   viajes_finalizados: number;
   viajes_en_curso: number;
