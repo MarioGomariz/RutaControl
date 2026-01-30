@@ -174,7 +174,11 @@ export default function ParadasView() {
       setTipoParada("descanso");
       setDestinoSeleccionado(null);
     } catch (error: any) {
-      toast.error(error?.response?.data?.error || "Error al agregar parada");
+      const errorMsg = error?.response?.data?.error || "Error al agregar parada";
+      toast.error(errorMsg, {
+        autoClose: 5000,
+        position: "top-center"
+      });
     }
   };
 
