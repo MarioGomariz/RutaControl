@@ -137,7 +137,7 @@ const Usuarios: React.FC = () => {
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          Todos ({usuarios.filter(u => u.usuario !== currentUser?.username).length})
+          Todos ({usuarios.length})
         </button>
         <button
           onClick={() => setActiveTab('administradores')}
@@ -148,7 +148,7 @@ const Usuarios: React.FC = () => {
           }`}
         >
           <FaUserShield />
-          Administradores ({usuarios.filter(u => u.rol_id === 1 && u.usuario !== currentUser?.username).length})
+          Administradores ({usuarios.filter(u => u.rol_id === 1).length})
         </button>
         <button
           onClick={() => setActiveTab('choferes')}
@@ -159,7 +159,7 @@ const Usuarios: React.FC = () => {
           }`}
         >
           <FaUserTie />
-          Choferes ({usuarios.filter(u => u.rol_id === 2 && u.usuario !== currentUser?.username).length})
+          Choferes ({usuarios.filter(u => u.rol_id === 2).length})
         </button>
       </div>
 
