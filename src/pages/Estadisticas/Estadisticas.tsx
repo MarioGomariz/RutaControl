@@ -563,16 +563,25 @@ export default function Estadisticas() {
               </div>
             </div>
 
-            {/* Choferes Activos */}
+            {/* Choferes */}
             <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
               <div className="flex flex-col">
                 <div className="flex items-center justify-between mb-3">
                   <FaUserTie className="text-5xl opacity-90" />
                 </div>
                 <div>
-                  <p className="text-purple-100 text-sm font-medium mb-1">Choferes</p>
-                  <p className="text-4xl font-bold">{generales.total_choferes_activos}</p>
-                  <p className="text-purple-100 text-xs mt-2">Activos</p>
+                  <p className="text-purple-100 text-sm font-medium mb-1">Total Choferes</p>
+                  <p className="text-4xl font-bold mb-3">{choferes.length}</p>
+                  <div className="flex gap-2">
+                    <div className="flex-1 bg-white rounded-lg px-3 py-2">
+                      <p className="text-xs text-purple-600 font-medium mb-1">Activos</p>
+                      <p className="text-2xl font-bold text-purple-700">{choferes.filter(c => c.activo).length}</p>
+                    </div>
+                    <div className="flex-1 bg-purple-100 rounded-lg px-3 py-2">
+                      <p className="text-xs text-purple-600 font-medium mb-1">Inactivos</p>
+                      <p className="text-2xl font-bold text-purple-700">{choferes.filter(c => !c.activo).length}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
