@@ -1,26 +1,49 @@
 import { useEffect, useState } from "react";
 import { useTractoresStore } from "@/stores/tractoresStore";
 import { Link } from "react-router-dom";
-import { FaPlus, FaTruck, FaIdCard, FaCalendar, FaCogs, FaSearch } from "react-icons/fa";
+import { FaPlus, FaTruck, FaIdCard, FaCalendar, FaCogs, FaSearch, FaExclamationTriangle, FaClock, FaCheckCircle } from "react-icons/fa";
 import { formatDate } from "@/utils/formatDate";
 import type { Tractor } from "@/types/tractor";
+import { getDaysUntilExpiration } from "@/utils/semirremolqueDocumentation";
+
+type FiltroVencimiento = 'todos' | 'vencidos' | 'proximos';
 
 export default function Tractores() {
     const { tractores, isLoading, error, fetchTractores } = useTractoresStore();
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filtroVencimiento, setFiltroVencimiento] = useState<FiltroVencimiento>('todos');
 
     useEffect(() => {
-        // Load tractores data when component mounts
         fetchTractores();
     }, [fetchTractores]);
 
-    // Filtrar tractores según el término de búsqueda
-    const filteredTractores = tractores.filter(tractor => 
-        tractor.marca?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        tractor.modelo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        tractor.dominio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        tractor.tipo_servicio?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredTractores = tractores.filter(tractor => {
+        // Filtro de búsqueda
+        const matchesSearch = tractor && (
+            tractor.marca?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            tractor.modelo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            tractor.dominio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            tractor.tipo_servicio?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        if (!matchesSearch) return false;
+
+        // Filtro de vencimiento
+        if (filtroVencimiento === 'todos') return true;
+
+        if (tractor.vencimiento_rto) {
+            const days = getDaysUntilExpiration(tractor.vencimiento_rto);
+            if (days !== null) {
+                if (filtroVencimiento === 'vencidos') {
+                    return days <= 0;
+                } else if (filtroVencimiento === 'proximos') {
+                    return days > 0 && days <= 30;
+                }
+            }
+        }
+
+        return false;
+    });
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -49,6 +72,43 @@ export default function Tractores() {
                         <span>Agregar Tractor</span>
                     </Link>
                 </div>
+            </div>
+
+            {/* Filtros de vencimiento */}
+            <div className="flex flex-wrap gap-2 mb-8">
+                <button
+                    onClick={() => setFiltroVencimiento('todos')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        filtroVencimiento === 'todos'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                    <FaCheckCircle />
+                    Todos
+                </button>
+                <button
+                    onClick={() => setFiltroVencimiento('vencidos')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        filtroVencimiento === 'vencidos'
+                            ? 'bg-red-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                    <FaExclamationTriangle />
+                    Vencidos
+                </button>
+                <button
+                    onClick={() => setFiltroVencimiento('proximos')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        filtroVencimiento === 'proximos'
+                            ? 'bg-amber-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                    <FaClock />
+                    Próximos a vencer
+                </button>
             </div>
 
             {isLoading ? (

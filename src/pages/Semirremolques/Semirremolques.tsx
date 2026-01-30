@@ -1,27 +1,55 @@
 import { useEffect, useState } from "react";
 import { useSemirremolquesStore } from "@/stores/semirremolquesStore";
 import { Link } from "react-router-dom";
-import { FaPlus, FaIdCard, FaCalendar, FaWeightHanging, FaExclamationTriangle, FaTruckMoving, FaSearch } from "react-icons/fa";
+import { FaPlus, FaIdCard, FaCalendar, FaWeightHanging, FaExclamationTriangle, FaTruckMoving, FaSearch, FaClock, FaCheckCircle } from "react-icons/fa";
 import { Semirremolque } from "@/types/semirremolque";
-import { getRequiredDocFields, getExpirationStatus, getExpirationBadgeColor, getExpirationBadgeText, DOCUMENTATION_LABELS } from "@/utils/semirremolqueDocumentation";
+import { getRequiredDocFields, getExpirationStatus, getExpirationBadgeColor, getExpirationBadgeText, DOCUMENTATION_LABELS, getDaysUntilExpiration } from "@/utils/semirremolqueDocumentation";
 import { formatDate } from "@/utils/formatDate";
+
+type FiltroVencimiento = 'todos' | 'vencidos' | 'proximos';
 
 export default function Semirremolques() {
     const { semirremolques, isLoading, error, fetchSemirremolques } = useSemirremolquesStore();
     const [searchTerm, setSearchTerm] = useState("");
+    const [filtroVencimiento, setFiltroVencimiento] = useState<FiltroVencimiento>('todos');
 
     useEffect(() => {
-        // Load semirremolques data when component mounts
         fetchSemirremolques();
     }, [fetchSemirremolques]);
 
-    // Filtrar semirremolques según el término de búsqueda
-    const filteredSemirremolques = semirremolques.filter(semirremolque => 
-        semirremolque.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        semirremolque.dominio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        semirremolque.tipo_servicio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        String(semirremolque.anio || '').includes(searchTerm)
-    );
+    const filteredSemirremolques = semirremolques.filter(semirremolque => {
+        // Filtro de búsqueda
+        const matchesSearch = semirremolque.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            semirremolque.dominio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            semirremolque.tipo_servicio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            String(semirremolque.anio || '').includes(searchTerm);
+
+        if (!matchesSearch) return false;
+
+        // Filtro de vencimiento
+        if (filtroVencimiento === 'todos') return true;
+
+        // Verificar todos los documentos requeridos según el tipo de servicio
+        if (semirremolque.tipo_servicio) {
+            const requiredFields = getRequiredDocFields(semirremolque.tipo_servicio);
+            
+            for (const field of requiredFields) {
+                const dateValue = (semirremolque as any)[field];
+                if (dateValue) {
+                    const days = getDaysUntilExpiration(dateValue);
+                    if (days !== null) {
+                        if (filtroVencimiento === 'vencidos' && days <= 0) {
+                            return true;
+                        } else if (filtroVencimiento === 'proximos' && days > 0 && days <= 30) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    });
 
     return (
         <div className="w-full max-w-7xl mx-auto p-4 flex flex-col text-gray-800">
@@ -32,7 +60,7 @@ export default function Semirremolques() {
             <p className="text-gray-600 mb-6 pl-9">Gestión de flota de semirremolques</p>
             
             {/* Barra de búsqueda y botón de agregar */}
-            <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
                 <div className="relative w-full sm:max-w-md">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <FaSearch className="text-gray-400" />
@@ -51,6 +79,43 @@ export default function Semirremolques() {
                 >
                     <FaPlus /> Agregar semirremolque
                 </Link>
+            </div>
+
+            {/* Filtros de vencimiento */}
+            <div className="flex flex-wrap gap-2 mb-8">
+                <button
+                    onClick={() => setFiltroVencimiento('todos')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        filtroVencimiento === 'todos'
+                            ? 'bg-green-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                    <FaCheckCircle />
+                    Todos
+                </button>
+                <button
+                    onClick={() => setFiltroVencimiento('vencidos')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        filtroVencimiento === 'vencidos'
+                            ? 'bg-red-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                    <FaExclamationTriangle />
+                    Vencidos
+                </button>
+                <button
+                    onClick={() => setFiltroVencimiento('proximos')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        filtroVencimiento === 'proximos'
+                            ? 'bg-amber-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                    <FaClock />
+                    Próximos a vencer
+                </button>
             </div>
 
             {isLoading ? (

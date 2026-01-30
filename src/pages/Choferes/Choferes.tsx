@@ -1,25 +1,48 @@
 import { useEffect, useState } from "react";
 import { useChoferesStore } from "@/stores/choferesStore";
-import { FaUserTie, FaSearch, FaPlus, FaIdCard, FaPhone, FaEnvelope } from "react-icons/fa";
+import { FaUserTie, FaSearch, FaPlus, FaIdCard, FaPhone, FaEnvelope, FaExclamationTriangle, FaClock, FaCheckCircle } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import type { Chofer } from "@/types/chofer";
+import { getDaysUntilExpiration } from "@/utils/semirremolqueDocumentation";
+
+type FiltroVencimiento = 'todos' | 'vencidos' | 'proximos';
 
 export default function Choferes() {
     const { choferes, isLoading, error, fetchChoferes } = useChoferesStore();
     const [searchTerm, setSearchTerm] = useState("");
+    const [filtroVencimiento, setFiltroVencimiento] = useState<FiltroVencimiento>('todos');
 
     useEffect(() => {
         fetchChoferes();
     }, [fetchChoferes]);
 
-    const filteredChoferes = choferes.filter(chofer => 
-        chofer && (
+    const filteredChoferes = choferes.filter(chofer => {
+        // Filtro de búsqueda
+        const matchesSearch = chofer && (
             chofer.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             chofer.apellido?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             chofer.dni?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             chofer.email?.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-    );
+        );
+
+        if (!matchesSearch) return false;
+
+        // Filtro de vencimiento
+        if (filtroVencimiento === 'todos') return true;
+
+        if (chofer.fecha_vencimiento_licencia) {
+            const days = getDaysUntilExpiration(chofer.fecha_vencimiento_licencia);
+            if (days !== null) {
+                if (filtroVencimiento === 'vencidos') {
+                    return days <= 0;
+                } else if (filtroVencimiento === 'proximos') {
+                    return days > 0 && days <= 30;
+                }
+            }
+        }
+
+        return false;
+    });
 
     return (
         <div className="w-full max-w-7xl mx-auto p-4 flex flex-col text-gray-800">
@@ -30,7 +53,7 @@ export default function Choferes() {
             <p className="text-gray-600 mb-6 pl-9">Gestión de choferes y licencias</p>
             
             {/* Barra de búsqueda y botón de agregar */}
-            <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
                 <div className="relative w-full sm:max-w-md">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <FaSearch className="text-gray-400" />
@@ -49,6 +72,43 @@ export default function Choferes() {
                 >
                     <FaPlus /> Agregar chofer
                 </Link>
+            </div>
+
+            {/* Filtros de vencimiento */}
+            <div className="flex flex-wrap gap-2 mb-8">
+                <button
+                    onClick={() => setFiltroVencimiento('todos')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        filtroVencimiento === 'todos'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                    <FaCheckCircle />
+                    Todos
+                </button>
+                <button
+                    onClick={() => setFiltroVencimiento('vencidos')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        filtroVencimiento === 'vencidos'
+                            ? 'bg-red-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                    <FaExclamationTriangle />
+                    Vencidos
+                </button>
+                <button
+                    onClick={() => setFiltroVencimiento('proximos')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        filtroVencimiento === 'proximos'
+                            ? 'bg-amber-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                    <FaClock />
+                    Próximos a vencer
+                </button>
             </div>
 
             {isLoading ? (
