@@ -5,6 +5,7 @@ import { FaPlus, FaTruck, FaIdCard, FaCalendar, FaCogs, FaSearch, FaExclamationT
 import { formatDate } from "@/utils/formatDate";
 import type { Tractor } from "@/types/tractor";
 import { getDaysUntilExpiration } from "@/utils/semirremolqueDocumentation";
+import { formatMatricula, formatNombrePropio } from "@/utils/inputNormalizers";
 
 type FiltroVencimiento = 'todos' | 'vencidos' | 'proximos';
 
@@ -184,7 +185,7 @@ function TractorCard({ tractor }: { tractor: Tractor }) {
                 <div className="p-5">
                     <div className="flex justify-between items-start mb-3">
                         <h3 className="font-bold text-lg text-gray-800 truncate">
-                            {tractor.marca} {tractor.modelo}
+                            {formatNombrePropio(tractor.marca)} {formatNombrePropio(tractor.modelo)}
                         </h3>
                         {isEnUso && (
                             <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">
@@ -206,7 +207,7 @@ function TractorCard({ tractor }: { tractor: Tractor }) {
                     <div className="space-y-2">
                         <div className="flex items-center text-gray-600">
                             <FaIdCard className="mr-2 text-gray-500" />
-                            <span>{tractor.dominio || 'Sin dominio'}</span>
+                            <span>{tractor.dominio ? formatMatricula(tractor.dominio) : 'Sin dominio'}</span>
                         </div>
                         
                         {tractor.anio && (
@@ -219,7 +220,7 @@ function TractorCard({ tractor }: { tractor: Tractor }) {
                         {tractor.tipo_servicio && (
                             <div className="flex items-center text-gray-600">
                                 <FaCogs className="mr-2 text-gray-500" />
-                                <span>{tractor.tipo_servicio}</span>
+                                <span>{formatNombrePropio(tractor.tipo_servicio)}</span>
                             </div>
                         )}
                     </div>

@@ -8,6 +8,7 @@ import {
   searchUsuarios
 } from '../services/usuariosService';
 import { Usuario } from '@/types/usuario';
+import { normalizeEmail } from '@/utils/inputNormalizers';
 
 interface UsuariosState {
   // Estado
@@ -65,7 +66,11 @@ export const useUsuariosStore = create<UsuariosState>((set) => ({
   addUsuario: async (usuario) => {
     set({ isLoading: true, error: null });
     try {
-      const newUsuario = await createUsuario(usuario);
+      const normalizedUsuario = {
+        ...usuario,
+        usuario: usuario.usuario ? normalizeEmail(usuario.usuario) : ''
+      };
+      const newUsuario = await createUsuario(normalizedUsuario);
       set(state => ({ 
         usuarios: [...state.usuarios, newUsuario],
         selectedUsuario: newUsuario,
@@ -82,7 +87,11 @@ export const useUsuariosStore = create<UsuariosState>((set) => ({
   editUsuario: async (id, usuario) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedUsuario = await updateUsuario(String(id), usuario);
+      const normalizedUsuario = {
+        ...usuario,
+        ...(usuario.usuario && { usuario: normalizeEmail(usuario.usuario) })
+      };
+      const updatedUsuario = await updateUsuario(String(id), normalizedUsuario);
       if (updatedUsuario) {
         set(state => ({ 
           usuarios: state.usuarios.map(item => 

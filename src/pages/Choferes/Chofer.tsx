@@ -118,11 +118,17 @@ export default function ChoferForm() {
             setShowPasswordModal(true);
           } else {
             console.error('[FRONTEND] Error: selectedChofer es null después de crear');
+            navigate("/choferes");
           }
+        } else {
+          navigate("/choferes");
         }
       }
     } catch (err: any) {
-      setError(err.message || 'Ha ocurrido un error');
+      const errorMessage = err.message || 'Ha ocurrido un error';
+      setError(errorMessage);
+      toast.error(errorMessage);
+      // No navegar, mantener al usuario en el formulario
     }
   };
 

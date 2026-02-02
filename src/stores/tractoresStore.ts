@@ -12,6 +12,7 @@ import {
   getTractoresPorTipoServicio
 } from '../services/tractoresService';
 import type { Tractor } from '@/types/tractor';
+import { normalizeMatricula, normalizeTexto } from '@/utils/inputNormalizers';
 
 interface TractoresState {
   // Estado
@@ -72,24 +73,40 @@ export const useTractoresStore = create<TractoresState>((set) => ({
   addTractor: async (tractor) => {
     set({ isLoading: true, error: null });
     try {
-      const newTractor = await createTractor(tractor);
+      const normalizedTractor = {
+        ...tractor,
+        marca: tractor.marca ? normalizeTexto(tractor.marca) : '',
+        modelo: tractor.modelo ? normalizeTexto(tractor.modelo) : '',
+        dominio: tractor.dominio ? normalizeMatricula(tractor.dominio) : '',
+        tipo_servicio: tractor.tipo_servicio ? normalizeTexto(tractor.tipo_servicio) : ''
+      };
+      const newTractor = await createTractor(normalizedTractor);
       set(state => ({ 
         tractores: [...state.tractores, newTractor],
         selectedTractor: newTractor,
         isLoading: false 
       }));
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al crear el tractor';
       set({ 
-        error: error instanceof Error ? error.message : 'Error al crear el tractor', 
+        error: errorMessage, 
         isLoading: false 
       });
+      throw error;
     }
   },
   
   editTractor: async (id, tractor) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedTractor = await updateTractor(String(id), tractor);
+      const normalizedTractor = {
+        ...tractor,
+        ...(tractor.marca && { marca: normalizeTexto(tractor.marca) }),
+        ...(tractor.modelo && { modelo: normalizeTexto(tractor.modelo) }),
+        ...(tractor.dominio && { dominio: normalizeMatricula(tractor.dominio) }),
+        ...(tractor.tipo_servicio && { tipo_servicio: normalizeTexto(tractor.tipo_servicio) })
+      };
+      const updatedTractor = await updateTractor(String(id), normalizedTractor);
       if (updatedTractor) {
         set(state => ({ 
           tractores: state.tractores.map(item => 
@@ -102,10 +119,12 @@ export const useTractoresStore = create<TractoresState>((set) => ({
         throw new Error('No se encontró el tractor');
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al actualizar el tractor';
       set({ 
-        error: error instanceof Error ? error.message : 'Error al actualizar el tractor', 
+        error: errorMessage, 
         isLoading: false 
       });
+      throw error;
     }
   },
   

@@ -5,6 +5,7 @@ import { FaPlus, FaIdCard, FaCalendar, FaWeightHanging, FaExclamationTriangle, F
 import { Semirremolque } from "@/types/semirremolque";
 import { getRequiredDocFields, getExpirationStatus, getExpirationBadgeColor, getExpirationBadgeText, DOCUMENTATION_LABELS, getDaysUntilExpiration } from "@/utils/semirremolqueDocumentation";
 import { formatDate } from "@/utils/formatDate";
+import { formatMatricula, formatNombrePropio } from "@/utils/inputNormalizers";
 
 type FiltroVencimiento = 'todos' | 'vencidos' | 'proximos';
 
@@ -188,7 +189,7 @@ function SemirremolqueCard({ semirremolque }: { semirremolque: Semirremolque }) 
                 <div className="p-5">
                     <div className="flex justify-between items-start mb-3">
                         <h3 className="font-bold text-lg text-gray-800 truncate">
-                            {semirremolque.nombre || 'Sin nombre'}
+                            {semirremolque.nombre ? formatNombrePropio(semirremolque.nombre) : 'Sin nombre'}
                         </h3>
                         {!isActive && (
                             <span className="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full font-medium">
@@ -200,7 +201,7 @@ function SemirremolqueCard({ semirremolque }: { semirremolque: Semirremolque }) 
                     <div className="space-y-2 text-sm">
                         <div className="flex items-center text-gray-600">
                             <FaIdCard className="mr-2 text-gray-500" />
-                            <span>{semirremolque.dominio || 'Sin dominio'}</span>
+                            <span>{semirremolque.dominio ? formatMatricula(semirremolque.dominio) : 'Sin dominio'}</span>
                         </div>
                         
                         {semirremolque.anio && (
@@ -213,7 +214,7 @@ function SemirremolqueCard({ semirremolque }: { semirremolque: Semirremolque }) 
                         {semirremolque.tipo_servicio && (
                             <div className="flex items-center text-gray-600">
                                 <FaWeightHanging className="mr-2 text-gray-500" />
-                                <span>{semirremolque.tipo_servicio}</span>
+                                <span>{formatNombrePropio(semirremolque.tipo_servicio)}</span>
                             </div>
                         )}
                     </div>

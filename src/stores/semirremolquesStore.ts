@@ -10,6 +10,7 @@ import {
   getSemirremolquesVencimientoExpirado
 } from '../services/semirremolquesService';
 import type { Semirremolque } from '@/types/semirremolque';
+import { normalizeMatricula, normalizeTexto } from '@/utils/inputNormalizers';
 
 interface SemirremolquesState {
   // Estado
@@ -68,24 +69,38 @@ export const useSemirremolquesStore = create<SemirremolquesState>((set) => ({
   addSemirremolque: async (semirremolque) => {
     set({ isLoading: true, error: null });
     try {
-      const newSemirremolque = await createSemirremolque(semirremolque);
+      const normalizedSemirremolque = {
+        ...semirremolque,
+        nombre: semirremolque.nombre ? normalizeTexto(semirremolque.nombre) : '',
+        dominio: semirremolque.dominio ? normalizeMatricula(semirremolque.dominio) : '',
+        tipo_servicio: semirremolque.tipo_servicio ? normalizeTexto(semirremolque.tipo_servicio) : ''
+      };
+      const newSemirremolque = await createSemirremolque(normalizedSemirremolque);
       set(state => ({ 
         semirremolques: [...state.semirremolques, newSemirremolque],
         selectedSemirremolque: newSemirremolque,
         isLoading: false 
       }));
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al crear el semirremolque';
       set({ 
-        error: error instanceof Error ? error.message : 'Error al crear el semirremolque', 
+        error: errorMessage, 
         isLoading: false 
       });
+      throw error;
     }
   },
   
   editSemirremolque: async (id, semirremolque) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedSemirremolque = await updateSemirremolque(String(id), semirremolque);
+      const normalizedSemirremolque = {
+        ...semirremolque,
+        ...(semirremolque.nombre && { nombre: normalizeTexto(semirremolque.nombre) }),
+        ...(semirremolque.dominio && { dominio: normalizeMatricula(semirremolque.dominio) }),
+        ...(semirremolque.tipo_servicio && { tipo_servicio: normalizeTexto(semirremolque.tipo_servicio) })
+      };
+      const updatedSemirremolque = await updateSemirremolque(String(id), normalizedSemirremolque);
       if (updatedSemirremolque) {
         set(state => ({ 
           semirremolques: state.semirremolques.map(item => 
@@ -98,10 +113,12 @@ export const useSemirremolquesStore = create<SemirremolquesState>((set) => ({
         throw new Error('No se encontró el semirremolque');
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al actualizar el semirremolque';
       set({ 
-        error: error instanceof Error ? error.message : 'Error al actualizar el semirremolque', 
+        error: errorMessage, 
         isLoading: false 
       });
+      throw error;
     }
   },
   

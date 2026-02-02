@@ -90,15 +90,16 @@ export default function Tractor() {
       if (isEditing && parsedId !== null) {
         await editTractor(parsedId, payload);
         toast.success("Tractor actualizado correctamente");
+        navigate("/tractores");
       } else {
         await addTractor(payload as Omit<TractorType, 'id'>);
         toast.success("Tractor agregado correctamente");
+        navigate("/tractores");
       }
-      navigate("/tractores");
     } catch (err: any) {
-      // El error ya se maneja en el store
       console.error(err);
-      toast.error("Error al guardar el tractor");
+      const errorMessage = err instanceof Error ? err.message : "Error al guardar el tractor";
+      toast.error(errorMessage);
     }
   };
   

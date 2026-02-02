@@ -4,6 +4,7 @@ import { FaUserTie, FaSearch, FaPlus, FaIdCard, FaPhone, FaEnvelope, FaExclamati
 import { Link } from "react-router-dom";
 import type { Chofer } from "@/types/chofer";
 import { getDaysUntilExpiration } from "@/utils/semirremolqueDocumentation";
+import { formatDni, formatTelefono, formatEmail, formatNombrePropio } from "@/utils/inputNormalizers";
 
 type FiltroVencimiento = 'todos' | 'vencidos' | 'proximos';
 
@@ -171,7 +172,7 @@ function ChoferCard({ chofer }: { chofer: Chofer }) {
                 <div className="p-5">
                     <div className="flex justify-between items-start mb-3">
                         <h3 className="font-bold text-lg text-gray-800 truncate">
-                            {chofer.nombre} {chofer.apellido}
+                            {formatNombrePropio(chofer.nombre)} {formatNombrePropio(chofer.apellido)}
                         </h3>
                         {!chofer.activo && (
                             <span className="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full font-medium">
@@ -183,20 +184,20 @@ function ChoferCard({ chofer }: { chofer: Chofer }) {
                     <div className="space-y-2 text-sm">
                         <div className="flex items-center text-gray-600">
                             <FaIdCard className="mr-2 text-gray-500" />
-                            <span>{chofer.dni || 'Sin DNI'}</span>
+                            <span>{chofer.dni ? formatDni(chofer.dni) : 'Sin DNI'}</span>
                         </div>
                         
                         {chofer.telefono && (
                             <div className="flex items-center text-gray-600">
                                 <FaPhone className="mr-2 text-gray-500" />
-                                <span>{chofer.telefono}</span>
+                                <span>{formatTelefono(chofer.telefono)}</span>
                             </div>
                         )}
                         
                         {chofer.email && (
                             <div className="flex items-center text-gray-600 truncate">
                                 <FaEnvelope className="mr-2 text-gray-500 flex-shrink-0" />
-                                <span className="truncate">{chofer.email}</span>
+                                <span className="truncate">{formatEmail(chofer.email)}</span>
                             </div>
                         )}
                     </div>

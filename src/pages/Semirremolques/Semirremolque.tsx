@@ -136,15 +136,17 @@ export default function Semirremolque() {
       if (isEditing && parsedId !== null) {
         await editSemirremolque(parsedId, payload);
         toast.success("Semirremolque actualizado correctamente");
+        navigate("/semirremolques");
       } else {
         await addSemirremolque(payload as Omit<SemirremolqueType, 'id'>);
         toast.success("Semirremolque agregado correctamente");
+        navigate("/semirremolques");
       }
-      navigate("/semirremolques");
     } catch (err) {
       console.error("Error al guardar el semirremolque:", err);
       const errorMessage = err instanceof Error ? err.message : "Error al guardar el semirremolque";
       toast.error(errorMessage);
+      // No navegar, mantener al usuario en el formulario
     }
   };
   

@@ -11,6 +11,12 @@ import {
   toggleChoferStatus
 } from '../services/choferesService';
 import type { Chofer } from '@/types/chofer';
+import { 
+  normalizeDni, 
+  normalizeTelefono, 
+  normalizeEmail, 
+  normalizeTexto 
+} from '@/utils/inputNormalizers';
 
 interface ChoferesState {
   // Estado
@@ -70,7 +76,16 @@ export const useChoferesStore = create<ChoferesState>((set) => ({
   addChofer: async (chofer) => {
     set({ isLoading: true, error: null });
     try {
-      const newChofer = await createChofer(chofer);
+      const normalizedChofer = {
+        ...chofer,
+        nombre: normalizeTexto(chofer.nombre),
+        apellido: normalizeTexto(chofer.apellido),
+        dni: normalizeDni(chofer.dni),
+        telefono: chofer.telefono ? normalizeTelefono(chofer.telefono) : '',
+        email: chofer.email ? normalizeEmail(chofer.email) : '',
+        licencia: chofer.licencia ? normalizeTexto(chofer.licencia) : ''
+      };
+      const newChofer = await createChofer(normalizedChofer);
       set(state => ({ 
         choferes: [...state.choferes, newChofer],
         selectedChofer: newChofer,
@@ -90,7 +105,16 @@ export const useChoferesStore = create<ChoferesState>((set) => ({
   editChofer: async (id, chofer) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedChofer = await updateChofer(String(id), chofer);
+      const normalizedChofer = {
+        ...chofer,
+        ...(chofer.nombre && { nombre: normalizeTexto(chofer.nombre) }),
+        ...(chofer.apellido && { apellido: normalizeTexto(chofer.apellido) }),
+        ...(chofer.dni && { dni: normalizeDni(chofer.dni) }),
+        ...(chofer.telefono !== undefined && { telefono: chofer.telefono ? normalizeTelefono(chofer.telefono) : '' }),
+        ...(chofer.email !== undefined && { email: chofer.email ? normalizeEmail(chofer.email) : '' }),
+        ...(chofer.licencia && { licencia: normalizeTexto(chofer.licencia) })
+      };
+      const updatedChofer = await updateChofer(String(id), normalizedChofer);
       if (updatedChofer) {
         set(state => ({ 
           choferes: state.choferes.map(item => 

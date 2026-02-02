@@ -52,10 +52,14 @@ export const createTractor = async (tractor: Omit<Tractor, 'id'>): Promise<Tract
     const response = await api.post('/tractores', createData);
     return response.data;
   } catch (error: any) {
+    console.error('Error al crear tractor:', error);
+    // Extraer el mensaje de error del backend
+    if (error.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    }
     if (error.response && error.response.status === 409) {
       throw new Error('Ya existe un tractor con ese dominio');
     }
-    console.error('Error al crear tractor:', error);
     throw error;
   }
 };
@@ -89,13 +93,17 @@ export const updateTractor = async (
     const response = await api.put(`/tractores/${id}`, updateData);
     return response.data;
   } catch (error: any) {
+    console.error('Error al actualizar tractor:', error);
     if (error.response && error.response.status === 404) {
       return null;
+    }
+    // Extraer el mensaje de error del backend
+    if (error.response?.data?.error) {
+      throw new Error(error.response.data.error);
     }
     if (error.response && error.response.status === 409) {
       throw new Error('Ya existe un tractor con ese dominio');
     }
-    console.error('Error al actualizar tractor:', error);
     throw error;
   }
 };
