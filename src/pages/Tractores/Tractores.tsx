@@ -158,6 +158,8 @@ export default function Tractores() {
 // Componente de tarjeta de tractor mejorado
 function TractorCard({ tractor }: { tractor: Tractor }) {
     // Determinar el estado del tractor
+    const isDisponible = tractor.estado === 'disponible';
+    const isAsignado = tractor.estado === 'asignado';
     const isEnUso = tractor.estado === 'en uso';
     const isEnReparacion = tractor.estado === 'en reparacion';
     const isFueraDeServicio = tractor.estado === 'fuera de servicio';
@@ -173,7 +175,8 @@ function TractorCard({ tractor }: { tractor: Tractor }) {
     const getBorderColor = () => {
         if (isFueraDeServicio) return 'border-gray-400';
         if (isEnReparacion) return 'border-orange-400';
-        if (isEnUso) return 'border-blue-400';
+        if (isEnUso) return 'border-yellow-400';
+        if (isAsignado) return 'border-blue-400';
         if (isRtoExpired) return 'border-red-500';
         if (isRtoExpiringSoon) return 'border-amber-500';
         return 'border-green-500';
@@ -187,18 +190,28 @@ function TractorCard({ tractor }: { tractor: Tractor }) {
                         <h3 className="font-bold text-lg text-gray-800 truncate">
                             {formatNombrePropio(tractor.marca)} {formatNombrePropio(tractor.modelo)}
                         </h3>
+                        {isDisponible && (
+                            <span className="px-2 py-1 text-xs rounded bg-green-100 text-green-700 font-medium">
+                                Disponible
+                            </span>
+                        )}
+                        {isAsignado && (
+                            <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700 font-medium">
+                                Asignado
+                            </span>
+                        )}
                         {isEnUso && (
-                            <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">
+                            <span className="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-700 font-medium">
                                 En uso
                             </span>
                         )}
                         {isEnReparacion && (
-                            <span className="px-2 py-1 text-xs rounded bg-orange-100 text-orange-700">
+                            <span className="px-2 py-1 text-xs rounded bg-orange-100 text-orange-700 font-medium">
                                 En reparación
                             </span>
                         )}
                         {isFueraDeServicio && (
-                            <span className="px-2 py-1 text-xs rounded bg-gray-200 text-gray-700">
+                            <span className="px-2 py-1 text-xs rounded bg-gray-200 text-gray-700 font-medium">
                                 Fuera de servicio
                             </span>
                         )}

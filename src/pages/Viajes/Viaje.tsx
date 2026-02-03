@@ -308,10 +308,31 @@ export default function Viaje() {
 
   // Filtrar choferes activos
   const choferesActivos = choferes.filter(chofer => chofer.activo);
-  // Filtrar tractores con estado activo
-  const tractoresActivos = tractores.filter(tractor => tractor.estado === 'disponible');
+  // Mostrar todos los tractores con indicadores de estado
+  const tractoresConEstado = tractores.map(tractor => ({
+    ...tractor,
+    disponible: tractor.estado === 'disponible'
+  }));
   // Filtrar semirremolques con estado activo
   const semirremolquesActivos = semirremolques.filter(semirremolque => semirremolque.estado === 'disponible');
+  
+  // Obtener estado del tractor seleccionado
+  const tractorSeleccionado = tractores.find(t => t.id === formData.tractor_id);
+  const [tractorWarning, setTractorWarning] = useState<string>('');
+  
+  useEffect(() => {
+    if (tractorSeleccionado && tractorSeleccionado.estado !== 'disponible') {
+      const mensajes: Record<string, string> = {
+        'asignado': 'ℹ️ Este tractor está asignado a otro viaje (puede asignarlo si las fechas no se superponen)',
+        'en uso': '⚠️ Este tractor está actualmente en uso en un viaje',
+        'en reparacion': '⚠️ Este tractor está en reparación',
+        'fuera de servicio': '⚠️ Este tractor está fuera de servicio'
+      };
+      setTractorWarning(mensajes[tractorSeleccionado.estado] || '');
+    } else {
+      setTractorWarning('');
+    }
+  }, [tractorSeleccionado]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -432,12 +453,35 @@ export default function Viaje() {
                     required
                   >
                     <option value="">Seleccionar tractor</option>
-                    {tractoresActivos.map(tractor => (
-                      <option key={tractor.id} value={tractor.id}>
-                        {tractor.marca} {tractor.modelo} - {tractor.dominio}
-                      </option>
-                    ))}
+                    {tractoresConEstado.map(tractor => {
+                      const estadoLabels: Record<string, string> = {
+                        'disponible': '✓ Disponible',
+                        'asignado': 'ℹ️ Asignado',
+                        'en uso': '🚫 En uso',
+                        'en reparacion': '🔧 En reparación',
+                        'fuera de servicio': '❌ Fuera de servicio'
+                      };
+                      const estadosNoPermitidos = ['en uso', 'en reparacion', 'fuera de servicio'];
+                      return (
+                        <option 
+                          key={tractor.id} 
+                          value={tractor.id}
+                          disabled={!isEditing && estadosNoPermitidos.includes(tractor.estado)}
+                        >
+                          {tractor.marca} {tractor.modelo} - {tractor.dominio} [{estadoLabels[tractor.estado] || tractor.estado}]
+                        </option>
+                      );
+                    })}
                   </FormSelect>
+                  {tractorWarning && (
+                    <div className={`mt-2 text-sm rounded p-2 ${
+                      tractorWarning.includes('ℹ️') 
+                        ? 'text-blue-700 bg-blue-50 border border-blue-200' 
+                        : 'text-amber-700 bg-amber-50 border border-amber-200'
+                    }`}>
+                      {tractorWarning}
+                    </div>
+                  )}
                 </FormField>
 
                 {/* Semirremolque */}

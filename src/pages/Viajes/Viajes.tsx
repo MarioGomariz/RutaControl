@@ -170,6 +170,25 @@ export default function Viajes() {
                                                 <FaRoute className="mr-1 text-gray-500" />
                                                 <span>Alcance: {viaje.alcance}</span>
                                             </div>
+                                            {(viaje as any).tractor_marca && (
+                                                <div className="flex items-center">
+                                                    <FaTruck className="mr-1 text-gray-500" />
+                                                    <span>
+                                                        Tractor: {(viaje as any).tractor_marca} {(viaje as any).tractor_modelo} - {(viaje as any).tractor_dominio}
+                                                        {(viaje as any).tractor_estado && (
+                                                            <span className={`ml-2 px-2 py-0.5 rounded text-xs font-medium ${
+                                                                (viaje as any).tractor_estado === 'disponible' ? 'bg-green-100 text-green-800' :
+                                                                (viaje as any).tractor_estado === 'asignado' ? 'bg-blue-100 text-blue-800' :
+                                                                (viaje as any).tractor_estado === 'en uso' ? 'bg-yellow-100 text-yellow-800' :
+                                                                (viaje as any).tractor_estado === 'en reparacion' ? 'bg-orange-100 text-orange-800' :
+                                                                'bg-red-100 text-red-800'
+                                                            }`}>
+                                                                {(viaje as any).tractor_estado}
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                         
                                         <div className="flex justify-end gap-3">

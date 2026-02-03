@@ -229,8 +229,9 @@ export default function Tractor() {
                     required
                   >
                     <option value="disponible">Disponible</option>
+                    <option value="asignado">Asignado</option>
+                    <option value="en uso">En uso</option>
                     <option value="en reparacion">En reparación</option>
-                    <option value="en uso">En viaje</option>
                     <option value="fuera de servicio">Fuera de servicio</option>
                   </FormSelect>
                 </FormField>
