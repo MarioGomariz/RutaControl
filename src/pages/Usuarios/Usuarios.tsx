@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { FaUserPlus, FaSearch, FaEdit, FaTrash, FaUserSlash, FaUserCheck, FaUserShield, FaUserTie } from 'react-icons/fa';
+import { FaUserPlus, FaSearch, FaEdit, FaTrash, FaUserSlash, FaUserCheck, FaUserShield, FaChartLine, FaTruck } from 'react-icons/fa';
+import { ROLE_NAMES } from '@/types/roles';
 import { useNavigate } from 'react-router-dom';
 import { useUsuariosStore } from '@/stores/usuariosStore';
 import { useAuth } from '@/stores/authStore';
@@ -20,7 +21,7 @@ const Usuarios: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<'todos' | 'administradores' | 'choferes'>('todos');
+  const [activeTab, setActiveTab] = useState<'todos' | 'administradores' | 'analistas' | 'logisticos'>('todos');
   const navigate = useNavigate();
 
   // Cargar usuarios al iniciar
@@ -75,8 +76,10 @@ const Usuarios: React.FC = () => {
     
     if (activeTab === 'administradores') {
       filtered = filtered.filter(u => u.rol_id === 1);
-    } else if (activeTab === 'choferes') {
-      filtered = filtered.filter(u => u.rol_id === 2);
+    } else if (activeTab === 'analistas') {
+      filtered = filtered.filter(u => u.rol_id === 3);
+    } else if (activeTab === 'logisticos') {
+      filtered = filtered.filter(u => u.rol_id === 4);
     }
     
     return filtered;
@@ -151,15 +154,26 @@ const Usuarios: React.FC = () => {
           Administradores ({usuarios.filter(u => u.rol_id === 1).length})
         </button>
         <button
-          onClick={() => setActiveTab('choferes')}
+          onClick={() => setActiveTab('analistas')}
           className={`px-4 py-2 font-medium transition-colors flex items-center gap-2 ${
-            activeTab === 'choferes'
+            activeTab === 'analistas'
               ? 'text-blue-600 border-b-2 border-blue-600'
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          <FaUserTie />
-          Choferes ({usuarios.filter(u => u.rol_id === 2).length})
+          <FaChartLine />
+          Analistas ({usuarios.filter(u => u.rol_id === 3).length})
+        </button>
+        <button
+          onClick={() => setActiveTab('logisticos')}
+          className={`px-4 py-2 font-medium transition-colors flex items-center gap-2 ${
+            activeTab === 'logisticos'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          <FaTruck />
+          Logísticos ({usuarios.filter(u => u.rol_id === 4).length})
         </button>
       </div>
 
@@ -195,7 +209,7 @@ const Usuarios: React.FC = () => {
             
             <div className="text-sm text-gray-700 mb-4 space-y-1">
               <p className="text-sm text-gray-600">Usuario: {usuario.usuario}</p>
-              <p className="text-sm text-gray-600">Rol: {usuario.rol_id === 1 ? 'Administrador' : 'Chofer'}</p>
+              <p className="text-sm text-gray-600">Rol: {ROLE_NAMES[usuario.rol_id] || 'Desconocido'}</p>
             </div>
             
             <div className="flex justify-end gap-2 mt-3">

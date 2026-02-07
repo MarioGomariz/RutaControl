@@ -104,16 +104,46 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
-            <Route path="tractores" element={<Tractors />} />
+          </Route>
+        </Route>
+        
+        {/* Rutas para estadísticas - Admin y Analista */}
+        <Route element={<ProtectedRoute permissions={['view_estadisticas']} />}>
+          <Route path="/" element={<Layout />}>
+            <Route path="estadisticas" element={<Estadisticas />} />
+          </Route>
+        </Route>
+        
+        {/* Rutas para choferes - Admin y Logístico */}
+        <Route element={<ProtectedRoute permissions={['view_choferes']} />}>
+          <Route path="/" element={<Layout />}>
             <Route path="choferes" element={<Choferes />} />
-            <Route path="viajes" element={<Viajes />} />
-            <Route path="semirremolques" element={<Semirremolques />} />
             <Route path="chofer/:id" element={<Chofer />} />
+          </Route>
+        </Route>
+        
+        {/* Rutas para tractores - Admin y Logístico */}
+        <Route element={<ProtectedRoute permissions={['view_tractores']} />}>
+          <Route path="/" element={<Layout />}>
+            <Route path="tractores" element={<Tractors />} />
             <Route path="tractor/:id" element={<Tractor />} />
+          </Route>
+        </Route>
+        
+        {/* Rutas para semirremolques - Admin y Logístico */}
+        <Route element={<ProtectedRoute permissions={['view_semirremolques']} />}>
+          <Route path="/" element={<Layout />}>
+            <Route path="semirremolques" element={<Semirremolques />} />
+            <Route path="semirremolque/:id" element={<Semirremolque />} />
+          </Route>
+        </Route>
+        
+        {/* Rutas para viajes - Admin y Chofer */}
+        <Route element={<ProtectedRoute permissions={['view_viajes']} />}>
+          <Route path="/" element={<Layout />}>
+            <Route path="viajes" element={<Viajes />} />
             <Route path="viaje/:id" element={<Viaje />} />
             <Route path="viaje/:id/paradas" element={<ParadasView />} />
-            <Route path="semirremolque/:id" element={<Semirremolque />} />
-            <Route path="estadisticas" element={<Estadisticas />} />
           </Route>
         </Route>
         

@@ -6,12 +6,15 @@ import type { Chofer } from "@/types/chofer";
 import { toast } from "react-toastify";
 import ConfirmModal from "@/components/ConfirmModal";
 import { FormSection, FormField, FormInput, FormCheckbox, FormButton } from '@/components/FormComponents';
-import { FaUserTie, FaIdCard, FaAddressCard } from 'react-icons/fa';
+import { FaUserTie, FaIdCard, FaAddressCard, FaKey } from 'react-icons/fa';
 import { toDateInput, toSqlDate } from '@/helpers/dateFormater';
+import { useAuth } from '@/stores/authStore';
+import { hasPermission } from '@/utils/permissions';
 
 export default function ChoferForm() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { 
     selectedChofer, 
     isLoading, 
@@ -22,6 +25,19 @@ export default function ChoferForm() {
     removeChofer,
     clearSelectedChofer 
   } = useChoferesStore();
+  
+  // Mapeo de roles string a rol_id
+  const roleToId: Record<string, number> = {
+    'administrador': 1,
+    'admin': 1,
+    'chofer': 2,
+    'analista': 3,
+    'logistico': 4,
+  };
+  
+  const rolId = user ? roleToId[user.role] || 0 : 0;
+  const isLogistico = user?.role === 'logistico';
+  const canDelete = hasPermission(rolId, 'delete_choferes');
 
   const isEditing = id !== 'new';
   const parsedId = isEditing && id ? Number(id) : null;
@@ -76,6 +92,7 @@ export default function ChoferForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [newChoferId, setNewChoferId] = useState<number | null>(null);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   const handleDelete = async () => {
     if (parsedId === null) return;
@@ -167,6 +184,32 @@ export default function ChoferForm() {
     }
   };
 
+  const handleChangePassword = async () => {
+    setPasswordError('');
+
+    if (password.length < 6) {
+      setPasswordError('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setPasswordError('Las contraseñas no coinciden');
+      return;
+    }
+
+    try {
+      if (parsedId) {
+        await updateChoferPassword(String(parsedId), password);
+        toast.success("Contraseña actualizada correctamente");
+        setPassword('');
+        setConfirmPassword('');
+        setShowChangePassword(false);
+      }
+    } catch (err: any) {
+      setPasswordError(err.message || 'Error al cambiar la contraseña');
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-6">
@@ -174,7 +217,7 @@ export default function ChoferForm() {
           <h1 className="text-2xl font-bold text-gray-800">
             {isEditing ? "Editar chofer" : "Agregar chofer"}
           </h1>
-          {isEditing && (
+          {isEditing && canDelete && (
             <FormButton
               type="button"
               onClick={() => setShowDeleteModal(true)}
@@ -184,6 +227,13 @@ export default function ChoferForm() {
             </FormButton>
           )}
         </div>
+        
+        {isLogistico && isEditing && (
+          <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
+            <p className="font-semibold">Modo de edición limitada</p>
+            <p className="text-sm">Como usuario logístico, solo puede editar la fecha de vencimiento de licencia.</p>
+          </div>
+        )}
 
         {(error || choferError) && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
@@ -209,7 +259,9 @@ export default function ChoferForm() {
                     name="nombre"
                     value={formData.nombre}
                     onChange={handleChange}
+                    placeholder="Nombre del chofer"
                     required
+                    disabled={isLogistico}
                   />
                 </FormField>
 
@@ -219,7 +271,9 @@ export default function ChoferForm() {
                     name="apellido"
                     value={formData.apellido}
                     onChange={handleChange}
+                    placeholder="Apellido del chofer"
                     required
+                    disabled={isLogistico}
                   />
                 </FormField>
 
@@ -229,25 +283,33 @@ export default function ChoferForm() {
                     name="dni"
                     value={formData.dni}
                     onChange={handleChange}
+                    placeholder="DNI del chofer"
                     required
+                    disabled={isLogistico}
                   />
                 </FormField>
 
-                <FormField label="Teléfono" name="telefono">
+                <FormField label="Teléfono" name="telefono" required>
                   <FormInput
-                    type="tel"
+                    type="text"
                     name="telefono"
                     value={formData.telefono}
                     onChange={handleChange}
+                    placeholder="Teléfono del chofer"
+                    required
+                    disabled={isLogistico}
                   />
                 </FormField>
 
-                <FormField label="Email" name="email">
+                <FormField label="Email" name="email" required>
                   <FormInput
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
+                    placeholder="Email del chofer"
+                    required
+                    disabled={isLogistico}
                   />
                 </FormField>
               </div>
@@ -259,13 +321,15 @@ export default function ChoferForm() {
               color="amber"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField label="Licencia" name="licencia" required>
+                <FormField label="Número de Licencia" name="licencia" required>
                   <FormInput
                     type="text"
                     name="licencia"
                     value={formData.licencia}
                     onChange={handleChange}
+                    placeholder="Número de licencia"
                     required
+                    disabled={isLogistico}
                   />
                 </FormField>
 
@@ -291,9 +355,83 @@ export default function ChoferForm() {
                   name="activo"
                   checked={formData.activo}
                   onChange={handleChange}
+                  disabled={isLogistico}
                 />
               </FormField>
             </FormSection>
+
+            {isEditing && !isLogistico && (
+              <FormSection
+                title="Seguridad"
+                icon={<FaKey />}
+                color="rose"
+              >
+                {!showChangePassword ? (
+                  <div>
+                    <p className="text-sm text-gray-600 mb-4">
+                      El chofer tiene un usuario asociado para iniciar sesión.
+                    </p>
+                    <FormButton
+                      type="button"
+                      onClick={() => setShowChangePassword(true)}
+                      variant="secondary"
+                    >
+                      Cambiar contraseña
+                    </FormButton>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {passwordError && (
+                      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        {passwordError}
+                      </div>
+                    )}
+                    
+                    <FormField label="Nueva contraseña" name="newPassword">
+                      <FormInput
+                        type="password"
+                        name="newPassword"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Mínimo 6 caracteres"
+                      />
+                    </FormField>
+                    
+                    <FormField label="Confirmar contraseña" name="confirmNewPassword">
+                      <FormInput
+                        type="password"
+                        name="confirmNewPassword"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Repita la contraseña"
+                      />
+                    </FormField>
+                    
+                    <div className="flex gap-2">
+                      <FormButton
+                        type="button"
+                        onClick={handleChangePassword}
+                        variant="primary"
+                      >
+                        Guardar contraseña
+                      </FormButton>
+                      <FormButton
+                        type="button"
+                        onClick={() => {
+                          setShowChangePassword(false);
+                          setPassword('');
+                          setConfirmPassword('');
+                          setPasswordError('');
+                        }}
+                        variant="secondary"
+                      >
+                        Cancelar
+                      </FormButton>
+                    </div>
+                  </div>
+                )}
+              </FormSection>
+            )}
 
             <div className="flex justify-end space-x-4 mt-8">
               <FormButton

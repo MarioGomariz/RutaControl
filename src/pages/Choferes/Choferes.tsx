@@ -5,13 +5,28 @@ import { Link } from "react-router-dom";
 import type { Chofer } from "@/types/chofer";
 import { getDaysUntilExpiration } from "@/utils/semirremolqueDocumentation";
 import { formatDni, formatTelefono, formatEmail, formatNombrePropio } from "@/utils/inputNormalizers";
+import { useAuth } from "@/stores/authStore";
+import { hasPermission } from "@/utils/permissions";
 
 type FiltroVencimiento = 'todos' | 'vencidos' | 'proximos';
 
 export default function Choferes() {
     const { choferes, isLoading, error, fetchChoferes } = useChoferesStore();
+    const { user } = useAuth();
     const [searchTerm, setSearchTerm] = useState("");
     const [filtroVencimiento, setFiltroVencimiento] = useState<FiltroVencimiento>('todos');
+    
+    // Mapeo de roles string a rol_id
+    const roleToId: Record<string, number> = {
+        'administrador': 1,
+        'admin': 1,
+        'chofer': 2,
+        'analista': 3,
+        'logistico': 4,
+    };
+    
+    const rolId = user ? roleToId[user.role] || 0 : 0;
+    const canCreate = hasPermission(rolId, 'create_choferes');
 
     useEffect(() => {
         fetchChoferes();
@@ -67,12 +82,14 @@ export default function Choferes() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <Link 
-                    to="/chofer/new"
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors w-full sm:w-auto justify-center"
-                >
-                    <FaPlus /> Agregar chofer
-                </Link>
+                {canCreate && (
+                    <Link 
+                        to="/chofer/new"
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors w-full sm:w-auto justify-center"
+                    >
+                        <FaPlus /> Agregar chofer
+                    </Link>
+                )}
             </div>
 
             {/* Filtros de vencimiento */}

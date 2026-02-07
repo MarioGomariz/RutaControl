@@ -3,6 +3,7 @@ import { logout } from "../utils/auth";
 import { LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/stores/authStore";
+import { hasPermission } from "@/utils/permissions";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -10,8 +11,24 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user } = useAuth();
 
-  const isAdmin = user?.role === "admin" || user?.role === "administrador";
-  // We only need to check for admin role since non-admins (including choferes) only see Viajes
+  // Mapeo de roles string a rol_id
+  const roleToId: Record<string, number> = {
+    'administrador': 1,
+    'admin': 1,
+    'chofer': 2,
+    'analista': 3,
+    'logistico': 4,
+  };
+
+  const rolId = user ? roleToId[user.role] || 0 : 0;
+
+  // Verificar permisos
+  const canViewEstadisticas = hasPermission(rolId, 'view_estadisticas');
+  const canViewChoferes = hasPermission(rolId, 'view_choferes');
+  const canViewTractores = hasPermission(rolId, 'view_tractores');
+  const canViewSemirremolques = hasPermission(rolId, 'view_semirremolques');
+  const canViewViajes = hasPermission(rolId, 'view_viajes');
+  const canViewUsuarios = hasPermission(rolId, 'view_usuarios');
   
   // Function to determine if a link is active
   const isActive = (path: string) => {
@@ -60,61 +77,71 @@ export default function Navbar() {
             </Link>
           </li>
           
-          {/* Admin-only navigation links */}
-          {isAdmin && (
-            <>
-              <li>
-                <Link 
-                  to="/tractores" 
-                  className={`hover:text-gray-300 ${isActive('/tractores') ? 'text-primary font-bold' : ''}`}
-                >
-                  Tractores
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/choferes" 
-                  className={`hover:text-gray-300 ${isActive('/choferes') ? 'text-primary font-bold' : ''}`}
-                >
-                  Choferes
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/semirremolques" 
-                  className={`hover:text-gray-300 ${isActive('/semirremolques') ? 'text-primary font-bold' : ''}`}
-                >
-                  Semirremolques
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/usuarios" 
-                  className={`hover:text-gray-300 ${isActive('/usuarios') ? 'text-primary font-bold' : ''}`}
-                >
-                  Usuarios
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/estadisticas" 
-                  className={`hover:text-gray-300 ${isActive('/estadisticas') ? 'text-primary font-bold' : ''}`}
-                >
-                  Estadísticas
-                </Link>
-              </li>
-            </>
+          {canViewEstadisticas && (
+            <li>
+              <Link 
+                to="/estadisticas" 
+                className={`hover:text-gray-300 ${isActive('/estadisticas') ? 'text-primary font-bold' : ''}`}
+              >
+                Estadísticas
+              </Link>
+            </li>
           )}
           
-          {/* Link visible to all users */}
-          <li>
-            <Link 
-              to="/viajes" 
-              className={`hover:text-gray-300 ${isActive('/viajes') ? 'text-primary font-bold' : ''}`}
-            >
-              Viajes
-            </Link>
-          </li>
+          {canViewTractores && (
+            <li>
+              <Link 
+                to="/tractores" 
+                className={`hover:text-gray-300 ${isActive('/tractores') ? 'text-primary font-bold' : ''}`}
+              >
+                Tractores
+              </Link>
+            </li>
+          )}
+          
+          {canViewChoferes && (
+            <li>
+              <Link 
+                to="/choferes" 
+                className={`hover:text-gray-300 ${isActive('/choferes') ? 'text-primary font-bold' : ''}`}
+              >
+                Choferes
+              </Link>
+            </li>
+          )}
+          
+          {canViewSemirremolques && (
+            <li>
+              <Link 
+                to="/semirremolques" 
+                className={`hover:text-gray-300 ${isActive('/semirremolques') ? 'text-primary font-bold' : ''}`}
+              >
+                Semirremolques
+              </Link>
+            </li>
+          )}
+          
+          {canViewViajes && (
+            <li>
+              <Link 
+                to="/viajes" 
+                className={`hover:text-gray-300 ${isActive('/viajes') ? 'text-primary font-bold' : ''}`}
+              >
+                Viajes
+              </Link>
+            </li>
+          )}
+          
+          {canViewUsuarios && (
+            <li>
+              <Link 
+                to="/usuarios" 
+                className={`hover:text-gray-300 ${isActive('/usuarios') ? 'text-primary font-bold' : ''}`}
+              >
+                Usuarios
+              </Link>
+            </li>
+          )}
           <li>
             <button
               onClick={handleLogout}
@@ -140,67 +167,77 @@ export default function Navbar() {
               </Link>
             </li>
             
-            {/* Admin-only mobile navigation links */}
-            {isAdmin && (
-              <>
-                <li>
-                  <Link 
-                    to="/tractores" 
-                    className={`block hover:text-gray-300 ${isActive('/tractores') ? 'text-primary font-bold' : ''}`}
-                    onClick={closeMenu}
-                  >
-                    Tractores
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/choferes" 
-                    className={`block hover:text-gray-300 ${isActive('/choferes') ? 'text-primary font-bold' : ''}`}
-                    onClick={closeMenu}
-                  >
-                    Choferes
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/semirremolques" 
-                    className={`block hover:text-gray-300 ${isActive('/semirremolques') ? 'text-primary font-bold' : ''}`}
-                    onClick={closeMenu}
-                  >
-                    Semirremolques
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/usuarios" 
-                    className={`block hover:text-gray-300 ${isActive('/usuarios') ? 'text-primary font-bold' : ''}`}
-                    onClick={closeMenu}
-                  >
-                    Usuarios
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/estadisticas" 
-                    className={`block hover:text-gray-300 ${isActive('/estadisticas') ? 'text-primary font-bold' : ''}`}
-                    onClick={closeMenu}
-                  >
-                    Estadísticas
-                  </Link>
-                </li>
-              </>
+            {canViewEstadisticas && (
+              <li>
+                <Link 
+                  to="/estadisticas" 
+                  className={`block hover:text-gray-300 ${isActive('/estadisticas') ? 'text-primary font-bold' : ''}`}
+                  onClick={closeMenu}
+                >
+                  Estadísticas
+                </Link>
+              </li>
             )}
             
-            {/* Link visible to all users */}
-            <li>
-              <Link 
-                to="/viajes" 
-                className={`block hover:text-gray-300 ${isActive('/viajes') ? 'text-primary font-bold' : ''}`}
-                onClick={closeMenu}
-              >
-                Viajes
-              </Link>
-            </li>
+            {canViewTractores && (
+              <li>
+                <Link 
+                  to="/tractores" 
+                  className={`block hover:text-gray-300 ${isActive('/tractores') ? 'text-primary font-bold' : ''}`}
+                  onClick={closeMenu}
+                >
+                  Tractores
+                </Link>
+              </li>
+            )}
+            
+            {canViewChoferes && (
+              <li>
+                <Link 
+                  to="/choferes" 
+                  className={`block hover:text-gray-300 ${isActive('/choferes') ? 'text-primary font-bold' : ''}`}
+                  onClick={closeMenu}
+                >
+                  Choferes
+                </Link>
+              </li>
+            )}
+            
+            {canViewSemirremolques && (
+              <li>
+                <Link 
+                  to="/semirremolques" 
+                  className={`block hover:text-gray-300 ${isActive('/semirremolques') ? 'text-primary font-bold' : ''}`}
+                  onClick={closeMenu}
+                >
+                  Semirremolques
+                </Link>
+              </li>
+            )}
+            
+            {canViewViajes && (
+              <li>
+                <Link 
+                  to="/viajes" 
+                  className={`block hover:text-gray-300 ${isActive('/viajes') ? 'text-primary font-bold' : ''}`}
+                  onClick={closeMenu}
+                >
+                  Viajes
+                </Link>
+              </li>
+            )}
+            
+            {canViewUsuarios && (
+              <li>
+                <Link 
+                  to="/usuarios" 
+                  className={`block hover:text-gray-300 ${isActive('/usuarios') ? 'text-primary font-bold' : ''}`}
+                  onClick={closeMenu}
+                >
+                  Usuarios
+                </Link>
+              </li>
+            )}
             <li>
               <button
                 onClick={() => {

@@ -37,12 +37,16 @@ export async function loginUser(emailOrUsername: string, password: string): Prom
     const meRes = await api.get("/auth/me");
     const userData = meRes.data;
 
-    // Determinar el rol basado en rol_id (1 = admin, 2 = chofer)
+    // Determinar el rol basado en rol_id
     let role = "user";
     if (userData.rol_id === 1) {
       role = "administrador";
     } else if (userData.rol_id === 2) {
       role = "chofer";
+    } else if (userData.rol_id === 3) {
+      role = "analista";
+    } else if (userData.rol_id === 4) {
+      role = "logistico";
     }
     
     const user: User = {
@@ -74,12 +78,16 @@ export async function getCurrentUser(): Promise<User> {
   try {
     const res = await api.get("/auth/me");
     const u = res.data;
-    // Determinar el rol basado en rol_id (1 = admin, 2 = chofer)
+    // Determinar el rol basado en rol_id
     let role = "user";
     if (u.rol_id === 1) {
       role = "administrador";
     } else if (u.rol_id === 2) {
       role = "chofer";
+    } else if (u.rol_id === 3) {
+      role = "analista";
+    } else if (u.rol_id === 4) {
+      role = "logistico";
     }
     
     const user: User = {

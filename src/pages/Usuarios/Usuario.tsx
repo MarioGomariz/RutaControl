@@ -21,7 +21,7 @@ const Usuario: React.FC = () => {
   const [formData, setFormData] = useState<FormUser>({
     usuario: '',
     contrasena: '', // Campo temporal para el formulario, no se envía si está vacío en edición
-    rol_id: 2, // 1=admin, 2=chofer
+    rol_id: 1, // 1=admin, 3=analista, 4=logistico
     activo: true,
   });
   
@@ -220,7 +220,8 @@ const Usuario: React.FC = () => {
                     required
                   >
                     <option value={1}>Administrador</option>
-                    <option value={2}>Chofer</option>
+                    <option value={3}>Analista</option>
+                    <option value={4}>Logístico</option>
                   </FormSelect>
                 </FormField>
 

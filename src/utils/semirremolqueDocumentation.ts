@@ -1,8 +1,8 @@
 // Configuración de documentación por tipo de servicio
-// Solo hay 2 servicios: Gas Licuado y Combustible Líquido
+// Solo hay 2 servicios: Gas Licuado y Combustible Liquido (sin tildes, como están en la BD)
 export const SERVICE_DOCUMENTATION_CONFIG: Record<string, string[]> = {
   'gas licuado': ['vencimiento_mangueras', 'vencimiento_prueba_hidraulica', 'vencimiento_valvula_flujo'],
-  'combustible líquido': ['vencimiento_rto', 'vencimiento_visual_externa', 'vencimiento_visual_interna', 'vencimiento_espesores'],
+  'combustible liquido': ['vencimiento_rto', 'vencimiento_visual_externa', 'vencimiento_visual_interna', 'vencimiento_espesores'],
 };
 
 // Etiquetas amigables para los campos de documentación

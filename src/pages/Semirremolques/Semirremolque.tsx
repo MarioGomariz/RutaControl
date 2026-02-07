@@ -14,12 +14,27 @@ import {
   shouldShowDocField as shouldShowField,
   getRequiredDocFields 
 } from '@/utils/semirremolqueDocumentation';
+import { useAuth } from '@/stores/authStore';
+import { hasPermission } from '@/utils/permissions';
 
 export default function Semirremolque() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const parsedId = id && id !== 'new' ? Number(id) : null;
   const isEditing = parsedId !== null;
+  
+  // Mapeo de roles string a rol_id
+  const roleToId: Record<string, number> = {
+    'administrador': 1,
+    'admin': 1,
+    'chofer': 2,
+    'analista': 3,
+    'logistico': 4,
+  };
+  
+  const rolId = user ? roleToId[user.role] || 0 : 0;
+  const canDelete = hasPermission(rolId, 'delete_semirremolques');
   
   const { 
     selectedSemirremolque: semirremolque, 
@@ -193,7 +208,7 @@ export default function Semirremolque() {
             <h1 className="text-2xl font-bold text-gray-800">
               {isEditing ? "Editar semirremolque" : "Agregar semirremolque"}
             </h1>
-            {isEditing && (
+            {isEditing && canDelete && (
               <FormButton
                 type="button"
                 onClick={() => setShowDeleteModal(true)}
@@ -204,7 +219,7 @@ export default function Semirremolque() {
             )}
           </div>
         )}
-
+        
         <form
           onSubmit={(e) => handleSubmit(e)}
           className="space-y-6"

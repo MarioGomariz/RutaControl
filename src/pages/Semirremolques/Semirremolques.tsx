@@ -6,13 +6,28 @@ import { Semirremolque } from "@/types/semirremolque";
 import { getRequiredDocFields, getExpirationStatus, getExpirationBadgeColor, getExpirationBadgeText, DOCUMENTATION_LABELS, getDaysUntilExpiration } from "@/utils/semirremolqueDocumentation";
 import { formatDate } from "@/utils/formatDate";
 import { formatMatricula, formatNombrePropio } from "@/utils/inputNormalizers";
+import { useAuth } from "@/stores/authStore";
+import { hasPermission } from "@/utils/permissions";
 
 type FiltroVencimiento = 'todos' | 'vencidos' | 'proximos';
 
 export default function Semirremolques() {
     const { semirremolques, isLoading, error, fetchSemirremolques } = useSemirremolquesStore();
+    const { user } = useAuth();
     const [searchTerm, setSearchTerm] = useState("");
     const [filtroVencimiento, setFiltroVencimiento] = useState<FiltroVencimiento>('todos');
+    
+    // Mapeo de roles string a rol_id
+    const roleToId: Record<string, number> = {
+        'administrador': 1,
+        'admin': 1,
+        'chofer': 2,
+        'analista': 3,
+        'logistico': 4,
+    };
+    
+    const rolId = user ? roleToId[user.role] || 0 : 0;
+    const canCreate = hasPermission(rolId, 'create_semirremolques');
 
     useEffect(() => {
         fetchSemirremolques();
@@ -74,12 +89,14 @@ export default function Semirremolques() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <Link 
-                    to="/semirremolque/new"
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors w-full sm:w-auto justify-center"
-                >
-                    <FaPlus /> Agregar semirremolque
-                </Link>
+                {canCreate && (
+                    <Link 
+                        to="/semirremolque/new"
+                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors w-full sm:w-auto justify-center"
+                    >
+                        <FaPlus /> Agregar semirremolque
+                    </Link>
+                )}
             </div>
 
             {/* Filtros de vencimiento */}

@@ -6,13 +6,28 @@ import { formatDate } from "@/utils/formatDate";
 import type { Tractor } from "@/types/tractor";
 import { getDaysUntilExpiration } from "@/utils/semirremolqueDocumentation";
 import { formatMatricula, formatNombrePropio } from "@/utils/inputNormalizers";
+import { useAuth } from "@/stores/authStore";
+import { hasPermission } from "@/utils/permissions";
 
 type FiltroVencimiento = 'todos' | 'vencidos' | 'proximos';
 
 export default function Tractores() {
     const { tractores, isLoading, error, fetchTractores } = useTractoresStore();
+    const { user } = useAuth();
     const [searchTerm, setSearchTerm] = useState("");
     const [filtroVencimiento, setFiltroVencimiento] = useState<FiltroVencimiento>('todos');
+    
+    // Mapeo de roles string a rol_id
+    const roleToId: Record<string, number> = {
+        'administrador': 1,
+        'admin': 1,
+        'chofer': 2,
+        'analista': 3,
+        'logistico': 4,
+    };
+    
+    const rolId = user ? roleToId[user.role] || 0 : 0;
+    const canCreate = hasPermission(rolId, 'create_tractores');
 
     useEffect(() => {
         fetchTractores();
@@ -68,10 +83,12 @@ export default function Tractores() {
                         />
                     </div>
                     
-                    <Link to="/tractor/new" className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">
-                        <FaPlus />
-                        <span>Agregar Tractor</span>
-                    </Link>
+                    {canCreate && (
+                        <Link to="/tractor/new" className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">
+                            <FaPlus />
+                            <span>Agregar Tractor</span>
+                        </Link>
+                    )}
                 </div>
             </div>
 

@@ -9,10 +9,13 @@ import ConfirmModal from '@/components/ConfirmModal';
 import { FormSection, FormField, FormInput, FormSelect, FormButton } from '@/components/FormComponents';
 import { FaTruck, FaCalendarAlt, FaGlobeAmericas } from 'react-icons/fa';
 import { toDateInput, toSqlDate } from '@/helpers/dateFormater';
+import { useAuth } from '@/stores/authStore';
+import { hasPermission } from '@/utils/permissions';
 
 export default function Tractor() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { 
     selectedTractor, 
     isLoading, 
@@ -28,6 +31,18 @@ export default function Tractor() {
   
   const isEditing = id !== 'new';
   const parsedId = isEditing && id ? Number(id) : null;
+  
+  // Mapeo de roles string a rol_id
+  const roleToId: Record<string, number> = {
+    'administrador': 1,
+    'admin': 1,
+    'chofer': 2,
+    'analista': 3,
+    'logistico': 4,
+  };
+  
+  const rolId = user ? roleToId[user.role] || 0 : 0;
+  const canDelete = hasPermission(rolId, 'delete_tractores');
 
   useEffect(() => {
     if (isEditing && parsedId !== null && !Number.isNaN(parsedId)) {
@@ -126,7 +141,7 @@ export default function Tractor() {
           <h1 className="text-2xl font-bold text-gray-800">
             {isEditing ? "Editar tractor" : "Agregar tractor"}
           </h1>
-          {isEditing && (
+          {isEditing && canDelete && (
             <FormButton
               type="button"
               onClick={() => setShowDeleteModal(true)}
