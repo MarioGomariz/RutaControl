@@ -79,6 +79,29 @@ export default function ChoferForm() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
+    
+    // Validación especial para teléfono
+    if (name === 'telefono') {
+      // Solo permitir números
+      const numericValue = value.replace(/\D/g, '');
+      
+      // Limitar a 10 dígitos
+      const limitedValue = numericValue.slice(0, 10);
+      
+      // Validar longitud
+      if (limitedValue.length > 0 && limitedValue.length < 10) {
+        setTelefonoError('El teléfono debe tener 10 dígitos');
+      } else {
+        setTelefonoError('');
+      }
+      
+      setFormData((prev) => ({
+        ...prev,
+        [name]: limitedValue,
+      }));
+      return;
+    }
+    
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -86,6 +109,7 @@ export default function ChoferForm() {
   };
 
   const [error, setError] = useState<string>('');
+  const [telefonoError, setTelefonoError] = useState<string>('');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [password, setPassword] = useState('');
@@ -295,10 +319,17 @@ export default function ChoferForm() {
                     name="telefono"
                     value={formData.telefono}
                     onChange={handleChange}
-                    placeholder="Teléfono del chofer"
+                    placeholder="10 dígitos (ej: 2994232821)"
                     required
                     disabled={isLogistico}
+                    maxLength={10}
                   />
+                  {telefonoError && (
+                    <p className="text-sm text-red-600 mt-1">{telefonoError}</p>
+                  )}
+                  {formData.telefono && formData.telefono.length === 10 && (
+                    <p className="text-sm text-green-600 mt-1">✓ Teléfono válido</p>
+                  )}
                 </FormField>
 
                 <FormField label="Email" name="email" required>

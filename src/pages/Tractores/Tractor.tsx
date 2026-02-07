@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTractoresStore } from "@/stores/tractoresStore";
 import type { Tractor as TractorType } from "@/types/tractor";
@@ -11,6 +11,7 @@ import { FaTruck, FaCalendarAlt, FaGlobeAmericas } from 'react-icons/fa';
 import { toDateInput, toSqlDate } from '@/helpers/dateFormater';
 import { useAuth } from '@/stores/authStore';
 import { hasPermission } from '@/utils/permissions';
+import { checkDominioExists } from '@/services/tractoresService';
 
 export default function Tractor() {
   const { id } = useParams();
@@ -47,15 +48,21 @@ export default function Tractor() {
   useEffect(() => {
     if (isEditing && parsedId !== null && !Number.isNaN(parsedId)) {
       fetchTractorById(parsedId);
+    } else {
+      // Si estamos en modo "nuevo", limpiar el tractor seleccionado
+      clearSelectedTractor();
     }
     
     // Cargar la lista de servicios disponibles
     fetchServicios();
     
+    // Limpiar al desmontar el componente
     return () => clearSelectedTractor();
   }, [parsedId, isEditing, fetchTractorById, fetchServicios, clearSelectedTractor]);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [dominioError, setDominioError] = useState<string>("");
+  const [isCheckingDominio, setIsCheckingDominio] = useState(false);
   const [formData, setFormData] = useState<Partial<TractorType>>({
     marca: "",
     modelo: "",
@@ -82,8 +89,49 @@ export default function Tractor() {
     }
   }, [selectedTractor]);
 
+  // Validación de dominio con debounce
+  const checkDominio = useCallback(async (dominio: string) => {
+    if (!dominio || dominio.trim() === "") {
+      setDominioError("");
+      return;
+    }
+    
+    setIsCheckingDominio(true);
+    try {
+      const excludeId = isEditing && parsedId ? String(parsedId) : undefined;
+      const result = await checkDominioExists(dominio, excludeId);
+      
+      if (result.exists) {
+        setDominioError(`Ya existe un tractor con el dominio ${dominio} (${result.info})`);
+      } else {
+        setDominioError("");
+      }
+    } catch (error) {
+      console.error('Error al verificar dominio:', error);
+    } finally {
+      setIsCheckingDominio(false);
+    }
+  }, [isEditing, parsedId]);
+  
+  // Debounce para la validación del dominio
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.dominio) {
+        checkDominio(formData.dominio);
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [formData.dominio, checkDominio]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type, checked } = e.target as HTMLInputElement;
+    
+    // Si se está cambiando el dominio, limpiar el error anterior
+    if (name === "dominio") {
+      setDominioError("");
+    }
+    
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : 
@@ -204,6 +252,12 @@ export default function Tractor() {
                     placeholder="Ej: AB123CD"
                     required
                   />
+                  {isCheckingDominio && (
+                    <p className="text-sm text-blue-600 mt-1">Verificando dominio...</p>
+                  )}
+                  {dominioError && (
+                    <p className="text-sm text-red-600 mt-1">{dominioError}</p>
+                  )}
                 </FormField>
 
                 <FormField label="Año" name="anio" required>
@@ -300,7 +354,7 @@ export default function Tractor() {
               <FormButton
                 type="submit"
                 variant="primary"
-                disabled={isLoading}
+                disabled={!!dominioError || isCheckingDominio}
               >
                 {isEditing ? "Actualizar" : "Guardar"}
               </FormButton>

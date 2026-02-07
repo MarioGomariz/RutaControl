@@ -173,31 +173,15 @@ export const formatDni = (dni: string): string => {
 };
 
 /**
- * Formatea un teléfono para visualización
- * Ejemplo: "01145678900" -> "(011) 4567-8900"
- * @param telefono - Teléfono normalizado
- * @returns Teléfono formateado para visualización
+ * Formatea un teléfono para visualización (sin formato visual, solo normalizado)
+ * Simplemente retorna el número normalizado sin espacios ni caracteres especiales
+ * 
+ * @param telefono - Teléfono con o sin formato
+ * @returns Teléfono normalizado (solo números)
  */
 export const formatTelefono = (telefono: string): string => {
   if (!telefono) return '';
-  const normalized = normalizeTelefono(telefono);
-  
-  // Formato con código de área (011) 4567-8900
-  if (normalized.length === 11 && normalized.startsWith('0')) {
-    return `(${normalized.slice(0, 3)}) ${normalized.slice(3, 7)}-${normalized.slice(7, 11)}`;
-  }
-  
-  // Formato sin 0 inicial (11) 4567-8900
-  if (normalized.length === 10) {
-    return `(${normalized.slice(0, 2)}) ${normalized.slice(2, 6)}-${normalized.slice(6, 10)}`;
-  }
-  
-  // Formato simple 4567-8900
-  if (normalized.length === 8) {
-    return `${normalized.slice(0, 4)}-${normalized.slice(4, 8)}`;
-  }
-  
-  return normalized;
+  return normalizeTelefono(telefono);
 };
 
 /**

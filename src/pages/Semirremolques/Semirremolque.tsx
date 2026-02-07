@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSemirremolquesStore } from "@/stores/semirremolquesStore";
 import type { Semirremolque as SemirremolqueType } from "@/types/semirremolque";
@@ -16,6 +16,7 @@ import {
 } from '@/utils/semirremolqueDocumentation';
 import { useAuth } from '@/stores/authStore';
 import { hasPermission } from '@/utils/permissions';
+import { checkDominioExists } from '@/services/semirremolquesService';
 
 export default function Semirremolque() {
   const { id } = useParams();
@@ -44,7 +45,8 @@ export default function Semirremolque() {
     removeSemirremolque,
     isLoading,
     error,
-    clearError
+    clearError,
+    clearSelectedSemirremolque
   } = useSemirremolquesStore();
   
   const { servicios, fetchServicios } = useServiciosStore();
@@ -52,11 +54,17 @@ export default function Semirremolque() {
   useEffect(() => {
     if (parsedId !== null && !Number.isNaN(parsedId)) {
       fetchSemirremolqueById(parsedId);
+    } else {
+      // Si estamos en modo "nuevo", limpiar el semirremolque seleccionado
+      clearSelectedSemirremolque();
     }
     
     // Cargar la lista de servicios disponibles
     fetchServicios();
-  }, [parsedId, fetchSemirremolqueById, fetchServicios]);
+    
+    // Limpiar al desmontar el componente
+    return () => clearSelectedSemirremolque();
+  }, [parsedId, fetchSemirremolqueById, fetchServicios, clearSelectedSemirremolque]);
 
   // Actualizar el formulario cuando se carga un semirremolque existente
   useEffect(() => {
@@ -95,8 +103,48 @@ export default function Semirremolque() {
     vencimiento_valvula_flujo: "",
   });
 
+  // Validación de dominio con debounce
+  const checkDominio = useCallback(async (dominio: string) => {
+    if (!dominio || dominio.trim() === "") {
+      setDominioError("");
+      return;
+    }
+    
+    setIsCheckingDominio(true);
+    try {
+      const excludeId = isEditing && parsedId ? String(parsedId) : undefined;
+      const result = await checkDominioExists(dominio, excludeId);
+      
+      if (result.exists) {
+        setDominioError(`Ya existe un semirremolque con el dominio ${dominio} (${result.info})`);
+      } else {
+        setDominioError("");
+      }
+    } catch (error) {
+      console.error('Error al verificar dominio:', error);
+    } finally {
+      setIsCheckingDominio(false);
+    }
+  }, [isEditing, parsedId]);
+  
+  // Debounce para la validación del dominio
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.dominio) {
+        checkDominio(formData.dominio);
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [formData.dominio, checkDominio]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
+    
+    // Si se está cambiando el dominio, limpiar el error anterior
+    if (name === "dominio") {
+      setDominioError("");
+    }
     
     setFormData((prev) => {
       const newData = {
@@ -166,6 +214,8 @@ export default function Semirremolque() {
   };
   
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [dominioError, setDominioError] = useState<string>("");
+  const [isCheckingDominio, setIsCheckingDominio] = useState(false);
 
   const handleDelete = async () => {
     if (parsedId === null) return;
@@ -250,6 +300,12 @@ export default function Semirremolque() {
                   placeholder="Ej: AB123CD"
                   required
                 />
+                {isCheckingDominio && (
+                  <p className="text-sm text-blue-600 mt-1">Verificando dominio...</p>
+                )}
+                {dominioError && (
+                  <p className="text-sm text-red-600 mt-1">{dominioError}</p>
+                )}
               </FormField>
 
               <FormField label="Año" name="anio" required>
@@ -427,6 +483,7 @@ export default function Semirremolque() {
             <FormButton
               type="submit"
               variant="primary"
+              disabled={!!dominioError || isCheckingDominio}
             >
               {isEditing ? "Actualizar" : "Guardar"}
             </FormButton>

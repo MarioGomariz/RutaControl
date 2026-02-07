@@ -226,3 +226,26 @@ export const getSemirremolquesVencimientoExpirado = async (
     throw error;
   }
 };
+
+/**
+ * Verificar si un dominio ya existe
+ * @param dominio Dominio a verificar
+ * @param excludeId ID a excluir de la búsqueda (para modo edición)
+ * @returns Promise con objeto indicando si existe y datos adicionales
+ */
+export const checkDominioExists = async (
+  dominio: string, 
+  excludeId?: string
+): Promise<{ exists: boolean; id?: number; info?: string }> => {
+  try {
+    const url = excludeId 
+      ? `/semirremolques/check-dominio/${encodeURIComponent(dominio)}?excludeId=${excludeId}`
+      : `/semirremolques/check-dominio/${encodeURIComponent(dominio)}`;
+    
+    const response = await api.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Error al verificar dominio:', error);
+    throw error;
+  }
+};
