@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { formatDateTime } from './formatDate';
+import { formatDate, formatDateTime } from './formatDate';
 
 interface ViajeCompleto {
   viaje: {
@@ -62,7 +62,7 @@ export const generarPDFViaje = (data: ViajeCompleto) => {
     ['Estado:', viaje.estado.toUpperCase()],
     ['Origen:', viaje.origen],
     ['Alcance:', viaje.alcance],
-    ['Fecha de Salida:', formatDateTime(viaje.fecha_hora_salida)],
+    ['Fecha de Salida:', formatDate(viaje.fecha_hora_salida)],
     ['Cantidad de Destinos:', viaje.cantidad_destinos.toString()],
   ];
 
