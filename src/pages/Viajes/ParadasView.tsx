@@ -4,6 +4,7 @@ import { useParadasStore } from "@/stores/paradasStore";
 import { useViajesStore } from "@/stores/viajesStore";
 import { useAuth } from "@/stores/authStore";
 import { toast } from "react-toastify";
+import { formatDate, formatDateTime } from "@/utils/formatDate";
 import { 
   FaArrowLeft, 
   FaPlus, 
@@ -93,15 +94,6 @@ export default function ParadasView() {
     return labels[tipo];
   };
 
-  const formatearFecha = (fechaStr: string) => {
-    const fecha = new Date(fechaStr);
-    const day = String(fecha.getDate()).padStart(2, '0');
-    const month = String(fecha.getMonth() + 1).padStart(2, '0');
-    const year = fecha.getFullYear();
-    const hours = String(fecha.getHours()).padStart(2, '0');
-    const minutes = String(fecha.getMinutes()).padStart(2, '0');
-    return `${day}/${month}/${year} ${hours}:${minutes}`;
-  };
 
   const handleIniciarViaje = async () => {
     if (!odometro) {
@@ -236,7 +228,7 @@ export default function ParadasView() {
             <h2 className="font-semibold text-lg mb-2">Información del Viaje</h2>
             <p><strong>Ubicación de salida:</strong> {selectedViaje.origen}</p>
             <p><strong>Destinos:</strong> {selectedViaje.cantidad_destinos}</p>
-            <p><strong>Fecha de salida:</strong> {formatearFecha(selectedViaje.fecha_hora_salida)}</p>
+            <p><strong>Fecha de salida:</strong> {formatDate(selectedViaje.fecha_hora_salida)}</p>
             <p className="text-sm text-gray-600 mt-2">La ubicación de inicio se registrará automáticamente como: <span className="font-semibold">{selectedViaje.origen}</span></p>
           </div>
 
@@ -338,7 +330,7 @@ export default function ParadasView() {
                         Parada #{index + 1} - {getTipoLabel(parada.tipo)}
                       </h3>
                       <span className="text-sm text-gray-500">
-                        {formatearFecha(parada.fecha_hora)}
+                        {formatDateTime(parada.fecha_hora)}
                       </span>
                     </div>
                     
