@@ -17,6 +17,7 @@ import {
   FormButton 
 } from "@/components/FormComponents";
 import { getDaysUntilExpiration, getRequiredDocFields } from "@/utils/semirremolqueDocumentation";
+import { toDateInput } from '@/helpers/dateFormater';
 
 export default function Viaje() {
   const { id } = useParams();
@@ -86,7 +87,7 @@ export default function Viaje() {
         alcance: selectedViaje.alcance,
         origen: selectedViaje.origen,
         cantidad_destinos: selectedViaje.cantidad_destinos,
-        fecha_hora_salida: selectedViaje.fecha_hora_salida ? new Date(selectedViaje.fecha_hora_salida).toISOString().slice(0, 10) : "",
+        fecha_hora_salida: toDateInput(selectedViaje.fecha_hora_salida),
         estado: selectedViaje.estado,
       });
       
@@ -233,8 +234,14 @@ export default function Viaje() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Bloquear si el viaje está finalizado
+    if (isEditing && selectedViaje?.estado === 'finalizado') {
+      toast.error('No se puede modificar un viaje finalizado');
+      return;
+    }
     setError('');
 
     try {
@@ -313,8 +320,11 @@ export default function Viaje() {
     ...tractor,
     disponible: tractor.estado === 'disponible'
   }));
-  // Filtrar semirremolques con estado activo
-  const semirremolquesActivos = semirremolques.filter(semirremolque => semirremolque.estado === 'disponible');
+  // Mostrar todos los semirremolques con indicadores de estado
+  const semirremolquesConEstado = semirremolques.map(semirremolque => ({
+    ...semirremolque,
+    disponible: semirremolque.estado === 'disponible'
+  }));
   
   // Obtener estado del tractor seleccionado
   const tractorSeleccionado = tractores.find(t => t.id === formData.tractor_id);
@@ -323,8 +333,7 @@ export default function Viaje() {
   useEffect(() => {
     if (tractorSeleccionado && tractorSeleccionado.estado !== 'disponible') {
       const mensajes: Record<string, string> = {
-        'asignado': 'ℹ️ Este tractor está asignado a otro viaje (puede asignarlo si las fechas no se superponen)',
-        'en uso': '⚠️ Este tractor está actualmente en uso en un viaje',
+        'en viaje': 'ℹ️ Este tractor está en viaje (puede asignarlo si las fechas no se superponen)',
         'en reparacion': '⚠️ Este tractor está en reparación',
         'fuera de servicio': '⚠️ Este tractor está fuera de servicio'
       };
@@ -333,6 +342,9 @@ export default function Viaje() {
       setTractorWarning('');
     }
   }, [tractorSeleccionado]);
+
+  // Detectar si el viaje está finalizado
+  const isViajeFinalizado = isEditing && selectedViaje?.estado === 'finalizado';
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -343,9 +355,9 @@ export default function Viaje() {
             <span>Volver a viajes</span>
           </Link>
           <h1 className="text-2xl font-bold text-gray-800 flex-1">
-            {isEditing ? "Editar viaje" : "Crear nuevo viaje"}
+            {isEditing ? (isViajeFinalizado ? "Ver viaje (Finalizado)" : "Editar viaje") : "Crear nuevo viaje"}
           </h1>
-          {isEditing && (
+          {isEditing && !isViajeFinalizado && (
             <button
               type="button"
               onClick={() => setShowDeleteModal(true)}
@@ -358,6 +370,15 @@ export default function Viaje() {
         </div>
         
         <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+
+        {isViajeFinalizado && (
+          <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 rounded mb-6">
+            <div className="flex items-center">
+              <FaExclamationTriangle className="h-5 w-5 mr-2" />
+              <span className="font-medium">🔒 Este viaje está finalizado y no puede ser modificado ni eliminado.</span>
+            </div>
+          </div>
+        )}
 
         {(error || viajeError) && (
           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6">
@@ -434,6 +455,7 @@ export default function Viaje() {
                     value={formData.chofer_id}
                     onChange={handleChange}
                     required
+                    disabled={isViajeFinalizado}
                   >
                     <option value="">Seleccionar chofer</option>
                     {choferesActivos.map(chofer => (
@@ -451,22 +473,23 @@ export default function Viaje() {
                     value={formData.tractor_id}
                     onChange={handleChange}
                     required
+                    disabled={isViajeFinalizado}
                   >
                     <option value="">Seleccionar tractor</option>
                     {tractoresConEstado.map(tractor => {
                       const estadoLabels: Record<string, string> = {
                         'disponible': '✓ Disponible',
-                        'asignado': 'ℹ️ Asignado',
-                        'en uso': '🚫 En uso',
+                        'en viaje': '� En viaje',
                         'en reparacion': '🔧 En reparación',
                         'fuera de servicio': '❌ Fuera de servicio'
                       };
-                      const estadosNoPermitidos = ['en uso', 'en reparacion', 'fuera de servicio'];
+                      const estadosNoPermitidos = ['en reparacion', 'fuera de servicio'];
+                      const isEstadoNoPermitido = estadosNoPermitidos.includes(tractor.estado);
                       return (
                         <option 
                           key={tractor.id} 
                           value={tractor.id}
-                          disabled={!isEditing && estadosNoPermitidos.includes(tractor.estado)}
+                          disabled={isEstadoNoPermitido}
                         >
                           {tractor.marca} {tractor.modelo} - {tractor.dominio} [{estadoLabels[tractor.estado] || tractor.estado}]
                         </option>
@@ -491,13 +514,28 @@ export default function Viaje() {
                     value={formData.semirremolque_id}
                     onChange={handleChange}
                     required
+                    disabled={isViajeFinalizado}
                   >
                     <option value="">Seleccionar semirremolque</option>
-                    {semirremolquesActivos.map(semirremolque => (
-                      <option key={semirremolque.id} value={semirremolque.id}>
-                        {semirremolque.nombre} - {semirremolque.dominio}
-                      </option>
-                    ))}
+                    {semirremolquesConEstado.map(semirremolque => {
+                      const estadoLabels: Record<string, string> = {
+                        'disponible': '✓ Disponible',
+                        'en viaje': '🚚 En viaje',
+                        'en reparacion': '🔧 En reparación',
+                        'fuera de servicio': '❌ Fuera de servicio'
+                      };
+                      const estadosNoPermitidos = ['en reparacion', 'fuera de servicio'];
+                      const isEstadoNoPermitido = estadosNoPermitidos.includes(semirremolque.estado);
+                      return (
+                        <option 
+                          key={semirremolque.id} 
+                          value={semirremolque.id}
+                          disabled={isEstadoNoPermitido}
+                        >
+                          {semirremolque.nombre} - {semirremolque.dominio} [{estadoLabels[semirremolque.estado] || semirremolque.estado}]
+                        </option>
+                      );
+                    })}
                   </FormSelect>
                 </FormField>
 
@@ -517,6 +555,7 @@ export default function Viaje() {
                     value={formData.servicio_id}
                     onChange={handleChange}
                     required
+                    disabled={isViajeFinalizado}
                   >
                     <option value={0}>Seleccionar servicio</option>
                     {servicios.map(servicio => (
@@ -534,6 +573,7 @@ export default function Viaje() {
                     value={formData.alcance}
                     onChange={handleChange}
                     required
+                    disabled={isViajeFinalizado}
                   >
                     <option value="nacional">Nacional</option>
                     <option value="internacional">Internacional</option>
@@ -603,8 +643,9 @@ export default function Viaje() {
                     name="origen"
                     value={formData.origen}
                     onChange={handleChange}
-                    placeholder="Ciudad o lugar de origen"
+                    placeholder="Ciudad o ubicación de origen"
                     required
+                    disabled={isViajeFinalizado}
                   />
                 </FormField>
 
@@ -616,32 +657,36 @@ export default function Viaje() {
                     value={formData.fecha_hora_salida}
                     onChange={handleChange}
                     required
+                    disabled={isViajeFinalizado}
                   />
                 </FormField>
               </div>
             </FormSection>
 
-            <FormSection
-              title="Estado"
-              icon={<FaClipboardList />}
-              color="purple"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                {/* Estado del viaje */}
-                <FormField label="Estado del viaje" name="estado" required>
-                  <FormSelect
-                    name="estado"
-                    value={formData.estado}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="programado">Programado</option>
-                    <option value="en curso">En curso</option>
-                    <option value="finalizado">Finalizado</option>
-                  </FormSelect>
-                </FormField>
-              </div>
-            </FormSection>
+            {/* Sección de estado - solo visible en modo edición */}
+            {isEditing && (
+              <FormSection
+                title="Estado"
+                icon={<FaClipboardList />}
+                color="purple"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                  <FormField label="Estado del viaje" name="estado" required>
+                    <FormSelect
+                      name="estado"
+                      value={formData.estado}
+                      onChange={handleChange}
+                      required
+                      disabled={isViajeFinalizado}
+                    >
+                      <option value="programado">Programado</option>
+                      <option value="en curso">En curso</option>
+                      <option value="finalizado">Finalizado</option>
+                    </FormSelect>
+                  </FormField>
+                </div>
+              </FormSection>
+            )}
             
             <div className="flex justify-end space-x-4 mt-8 pt-4 border-t border-gray-200">
               <FormButton
@@ -651,7 +696,7 @@ export default function Viaje() {
               >
                 Cancelar
               </FormButton>
-              {isEditing && (
+              {isEditing && !isViajeFinalizado && (
                 <FormButton
                   type="button"
                   onClick={() => setShowDeleteModal(true)}
@@ -661,13 +706,15 @@ export default function Viaje() {
                   Eliminar
                 </FormButton>
               )}
-              <FormButton
-                type="submit"
-                variant="primary"
-                icon={<FaSave />}
-              >
-                {isEditing ? 'Guardar cambios' : 'Crear viaje'}
-              </FormButton>
+              {!isViajeFinalizado && (
+                <FormButton
+                  type="submit"
+                  variant="primary"
+                  icon={<FaSave />}
+                >
+                  {isEditing ? 'Guardar cambios' : 'Crear viaje'}
+                </FormButton>
+              )}
             </div>
           </form>
         )}

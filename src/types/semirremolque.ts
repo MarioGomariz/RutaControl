@@ -1,7 +1,7 @@
 // =========================
 // Tabla: Semirremolque
 // =========================
-export type EstadoUnidad = 'disponible' | 'en uso' | 'en reparacion' | 'fuera de servicio';
+export type EstadoUnidad = 'disponible' | 'en reparacion' | 'en viaje' | 'fuera de servicio';
 
 export interface Semirremolque {
   id: number;

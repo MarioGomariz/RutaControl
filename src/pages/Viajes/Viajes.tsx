@@ -178,8 +178,7 @@ export default function Viajes() {
                                                         {(viaje as any).tractor_estado && (
                                                             <span className={`ml-2 px-2 py-0.5 rounded text-xs font-medium ${
                                                                 (viaje as any).tractor_estado === 'disponible' ? 'bg-green-100 text-green-800' :
-                                                                (viaje as any).tractor_estado === 'asignado' ? 'bg-blue-100 text-blue-800' :
-                                                                (viaje as any).tractor_estado === 'en uso' ? 'bg-yellow-100 text-yellow-800' :
+                                                                (viaje as any).tractor_estado === 'en viaje' ? 'bg-blue-100 text-blue-800' :
                                                                 (viaje as any).tractor_estado === 'en reparacion' ? 'bg-orange-100 text-orange-800' :
                                                                 'bg-red-100 text-red-800'
                                                             }`}>

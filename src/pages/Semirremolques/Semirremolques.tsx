@@ -183,8 +183,11 @@ export default function Semirremolques() {
 
 // Componente de tarjeta de semirremolque mejorado
 function SemirremolqueCard({ semirremolque }: { semirremolque: Semirremolque }) {
-    // Determinar si el semirremolque está activo basado en su estado
-    const isActive = semirremolque.estado === 'disponible';
+    // Determinar el estado del semirremolque
+    const isDisponible = semirremolque.estado === 'disponible';
+    const isEnViaje = semirremolque.estado === 'en viaje';
+    const isEnReparacion = semirremolque.estado === 'en reparacion';
+    const isFueraDeServicio = semirremolque.estado === 'fuera de servicio';
     
     // Obtener los campos de documentación relevantes según el tipo de servicio
     const requiredDocFields = getRequiredDocFields(semirremolque.tipo_servicio);
@@ -200,17 +203,42 @@ function SemirremolqueCard({ semirremolque }: { semirremolque: Semirremolque }) 
         return status === 'expiring-soon';
     });
     
+    // Determinar el color del borde según el estado
+    const getBorderColor = () => {
+        if (isFueraDeServicio) return 'border-gray-400';
+        if (isEnReparacion) return 'border-orange-400';
+        if (isEnViaje) return 'border-blue-400';
+        if (hasExpiredDoc) return 'border-red-500';
+        if (hasExpiringSoonDoc) return 'border-amber-500';
+        return 'border-green-500';
+    };
+    
     return (
         <Link to={`/semirremolque/${semirremolque.id}`} className="block">
-            <div className={`bg-white rounded-lg shadow-md overflow-hidden border-l-4 hover:shadow-lg transition-shadow ${!isActive ? 'border-gray-400' : hasExpiredDoc ? 'border-red-500' : hasExpiringSoonDoc ? 'border-amber-500' : 'border-green-500'}`}>
+            <div className={`bg-white rounded-lg shadow-md overflow-hidden border-l-4 hover:shadow-lg transition-shadow ${getBorderColor()}`}>
                 <div className="p-5">
                     <div className="flex justify-between items-start mb-3">
                         <h3 className="font-bold text-lg text-gray-800 truncate">
                             {semirremolque.nombre ? formatNombrePropio(semirremolque.nombre) : 'Sin nombre'}
                         </h3>
-                        {!isActive && (
-                            <span className="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full font-medium">
-                                Inactivo
+                        {isDisponible && (
+                            <span className="px-2 py-1 text-xs rounded bg-green-100 text-green-700 font-medium">
+                                Disponible
+                            </span>
+                        )}
+                        {isEnViaje && (
+                            <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700 font-medium">
+                                En viaje
+                            </span>
+                        )}
+                        {isEnReparacion && (
+                            <span className="px-2 py-1 text-xs rounded bg-orange-100 text-orange-700 font-medium">
+                                En reparación
+                            </span>
+                        )}
+                        {isFueraDeServicio && (
+                            <span className="px-2 py-1 text-xs rounded bg-gray-200 text-gray-700 font-medium">
+                                Fuera de servicio
                             </span>
                         )}
                     </div>

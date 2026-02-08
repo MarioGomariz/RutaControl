@@ -328,7 +328,6 @@ export default function Semirremolque() {
                   required
                 >
                   <option value="disponible">Disponible</option>
-                  <option value="en uso">En uso</option>
                   <option value="en reparacion">En reparación</option>
                   <option value="fuera de servicio">Fuera de servicio</option>
                 </FormSelect>
@@ -348,6 +347,7 @@ export default function Semirremolque() {
                   value={formData.tipo_servicio}
                   onChange={handleChange}
                   required
+                  disabled={isEditing}
                 >
                   <option value="">Seleccione un servicio</option>
                   {servicios.map((servicio) => (

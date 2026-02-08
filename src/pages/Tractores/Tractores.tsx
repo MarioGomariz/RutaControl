@@ -176,8 +176,7 @@ export default function Tractores() {
 function TractorCard({ tractor }: { tractor: Tractor }) {
     // Determinar el estado del tractor
     const isDisponible = tractor.estado === 'disponible';
-    const isAsignado = tractor.estado === 'asignado';
-    const isEnUso = tractor.estado === 'en uso';
+    const isEnViaje = tractor.estado === 'en viaje';
     const isEnReparacion = tractor.estado === 'en reparacion';
     const isFueraDeServicio = tractor.estado === 'fuera de servicio';
     
@@ -192,8 +191,7 @@ function TractorCard({ tractor }: { tractor: Tractor }) {
     const getBorderColor = () => {
         if (isFueraDeServicio) return 'border-gray-400';
         if (isEnReparacion) return 'border-orange-400';
-        if (isEnUso) return 'border-yellow-400';
-        if (isAsignado) return 'border-blue-400';
+        if (isEnViaje) return 'border-blue-400';
         if (isRtoExpired) return 'border-red-500';
         if (isRtoExpiringSoon) return 'border-amber-500';
         return 'border-green-500';
@@ -212,14 +210,9 @@ function TractorCard({ tractor }: { tractor: Tractor }) {
                                 Disponible
                             </span>
                         )}
-                        {isAsignado && (
+                        {isEnViaje && (
                             <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700 font-medium">
-                                Asignado
-                            </span>
-                        )}
-                        {isEnUso && (
-                            <span className="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-700 font-medium">
-                                En uso
+                                En viaje
                             </span>
                         )}
                         {isEnReparacion && (
