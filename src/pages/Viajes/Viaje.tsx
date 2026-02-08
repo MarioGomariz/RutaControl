@@ -8,7 +8,7 @@ import { useServiciosStore } from "@/stores/serviciosStore";
 import type { Viaje as ViajeType, EstadoViaje } from "@/types/viaje";
 import { toast } from "react-toastify";
 import ConfirmModal from "@/components/ConfirmModal";
-import { FaArrowLeft, FaTruck, FaRoute, FaClipboardList, FaTrash, FaSave, FaMapMarked, FaMapMarkerAlt, FaPlus, FaExclamationTriangle } from "react-icons/fa";
+import { FaArrowLeft, FaTruck, FaRoute, FaTrash, FaSave, FaMapMarked, FaMapMarkerAlt, FaPlus, FaExclamationTriangle } from "react-icons/fa";
 import { 
   FormSection, 
   FormField, 
@@ -663,8 +663,17 @@ export default function Viaje() {
               </div>
             </FormSection>
 
-            {/* Sección de estado - solo visible en modo edición */}
-            {isEditing && (
+            {/* ========================================
+                SECCIÓN DE ESTADO - DESHABILITADA
+                ========================================
+                Esta sección permite editar manualmente el estado del viaje.
+                Se ha deshabilitado porque los estados deben cambiar automáticamente:
+                - "programado" → "en curso" al iniciar el viaje
+                - "en curso" → "finalizado" al finalizar el viaje
+                
+                Si necesitas reactivar la edición manual de estado, descomenta el código siguiente:
+            */}
+            {/* {isEditing && (
               <FormSection
                 title="Estado"
                 icon={<FaClipboardList />}
@@ -686,7 +695,7 @@ export default function Viaje() {
                   </FormField>
                 </div>
               </FormSection>
-            )}
+            )} */}
             
             <div className="flex justify-end space-x-4 mt-8 pt-4 border-t border-gray-200">
               <FormButton
