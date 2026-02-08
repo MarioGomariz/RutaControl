@@ -114,27 +114,114 @@ Contacte al administrador del sistema para restablecer su contraseña.
 
 ## 4. Roles y Permisos
 
+El sistema cuenta con **4 roles** diferentes, cada uno con permisos específicos según sus responsabilidades:
+
 ### 4.1 Administrador
 
-**Permisos Completos**:
-- Gestionar usuarios, choferes, tractores, semirremolques
-- Crear, editar y eliminar viajes
-- Ver todos los viajes del sistema
-- Ver paradas de todos los viajes
-- Acceso completo a estadísticas
-- Descargar reportes PDF
+**Acceso Total al Sistema**
+
+**Puede hacer**:
+- ✅ Gestionar usuarios (crear, editar, eliminar)
+- ✅ Gestionar choferes (crear, editar, eliminar)
+- ✅ Gestionar tractores (crear, editar, eliminar)
+- ✅ Gestionar semirremolques (crear, editar, eliminar)
+- ✅ Crear, editar y eliminar viajes
+- ✅ Ver todos los viajes del sistema
+- ✅ Ver paradas de todos los viajes
+- ✅ Acceso completo a estadísticas
+- ✅ Descargar reportes PDF
+- ✅ Actualizar fechas de vencimiento de documentación
+
+**Descripción**: Tiene control total sobre todas las funcionalidades del sistema. Es el único rol que puede gestionar usuarios y tiene permisos para todas las operaciones CRUD (Crear, Leer, Actualizar, Eliminar).
+
+---
 
 ### 4.2 Chofer
 
-**Permisos Limitados**:
-- Puede: Ver solo sus viajes asignados
-- Puede: Iniciar viajes programados
-- Puede: Registrar paradas durante el viaje
-- Puede: Finalizar viajes
-- No puede: Crear viajes
-- No puede: Ver viajes de otros choferes
-- No puede: Gestionar usuarios ni vehículos
-- No puede: Descargar reportes
+**Acceso Operativo Limitado**
+
+**Puede hacer**:
+- ✅ Ver solo sus viajes asignados
+- ✅ Iniciar viajes programados
+- ✅ Registrar paradas durante el viaje
+- ✅ Finalizar viajes
+
+**No puede hacer**:
+- ❌ Crear viajes
+- ❌ Ver viajes de otros choferes
+- ❌ Gestionar usuarios
+- ❌ Gestionar vehículos (tractores/semirremolques)
+- ❌ Gestionar otros choferes
+- ❌ Acceder a estadísticas
+- ❌ Descargar reportes
+
+**Descripción**: Rol operativo enfocado en la ejecución de viajes. Solo puede ver y gestionar sus propios viajes asignados. Ideal para conductores que necesitan registrar paradas y finalizar viajes.
+
+---
+
+### 4.3 Analista
+
+**Acceso de Solo Lectura a Estadísticas**
+
+**Puede hacer**:
+- ✅ Ver estadísticas completas del sistema
+- ✅ Analizar métricas de rendimiento
+- ✅ Ver gráficos y reportes visuales
+- ✅ Filtrar datos por período, chofer y servicio
+
+**No puede hacer**:
+- ❌ Gestionar choferes, tractores o semirremolques
+- ❌ Crear, editar o eliminar viajes
+- ❌ Ver información detallada de vehículos
+- ❌ Gestionar usuarios
+- ❌ Descargar reportes PDF
+- ❌ Modificar ningún dato del sistema
+
+**Descripción**: Rol especializado en análisis de datos. Tiene acceso de solo lectura a las estadísticas del sistema para generar insights y análisis de rendimiento sin poder modificar información operativa.
+
+---
+
+### 4.4 Logístico
+
+**Acceso de Gestión de Flota**
+
+**Puede hacer**:
+- ✅ Ver listado de choferes
+- ✅ Ver listado de tractores
+- ✅ Ver listado de semirremolques
+- ✅ Actualizar fechas de vencimiento de documentación
+- ✅ Monitorear estado de vencimientos
+
+**No puede hacer**:
+- ❌ Crear, editar o eliminar choferes
+- ❌ Crear, editar o eliminar tractores
+- ❌ Crear, editar o eliminar semirremolques
+- ❌ Gestionar viajes
+- ❌ Ver estadísticas
+- ❌ Gestionar usuarios
+
+**Descripción**: Rol enfocado en el mantenimiento y control de documentación de la flota. Puede visualizar toda la información de choferes y vehículos, y actualizar fechas de vencimiento de documentación (licencias, RTO, inspecciones, etc.) sin poder modificar otros datos.
+
+---
+
+### 4.5 Resumen de Permisos por Módulo
+
+| Módulo | Administrador | Chofer | Analista | Logístico |
+|--------|--------------|--------|----------|----------|
+| **Usuarios** | ✅ CRUD | ❌ | ❌ | ❌ |
+| **Choferes** | ✅ CRUD | ❌ | ❌ | 👁️ Ver |
+| **Tractores** | ✅ CRUD | ❌ | ❌ | 👁️ Ver |
+| **Semirremolques** | ✅ CRUD | ❌ | ❌ | 👁️ Ver |
+| **Viajes** | ✅ CRUD | 👁️ Ver propios | ❌ | ❌ |
+| **Paradas** | 👁️ Ver todas | ✅ Gestionar propias | ❌ | ❌ |
+| **Estadísticas** | ✅ Ver | ❌ | ✅ Ver | ❌ |
+| **Vencimientos** | ✅ Editar | ❌ | ❌ | ✅ Editar |
+| **Reportes PDF** | ✅ Descargar | ❌ | ❌ | ❌ |
+
+**Leyenda**:
+- ✅ = Acceso completo
+- 👁️ = Solo lectura
+- ❌ = Sin acceso
 
 ---
 

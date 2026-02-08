@@ -80,19 +80,19 @@ export default function Viajes() {
                     </button>
                     <button 
                         onClick={() => setFiltroEstado('programado')}
-                        className={`px-6 py-2 rounded-full transition-all duration-200 font-medium ${filtroEstado === 'Programado' ? 'bg-primary text-white shadow-md' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}
+                        className={`px-6 py-2 rounded-full transition-all duration-200 font-medium ${filtroEstado === 'programado' ? 'bg-primary text-white shadow-md' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}
                     >
                         Programados
                     </button>
                     <button 
                         onClick={() => setFiltroEstado('en curso')}
-                        className={`px-6 py-2 rounded-full transition-all duration-200 font-medium ${filtroEstado === 'En curso' ? 'bg-primary text-white shadow-md' : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'}`}
+                        className={`px-6 py-2 rounded-full transition-all duration-200 font-medium ${filtroEstado === 'en curso' ? 'bg-primary text-white shadow-md' : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'}`}
                     >
                         En curso
                     </button>
                     <button 
                         onClick={() => setFiltroEstado('finalizado')}
-                        className={`px-6 py-2 rounded-full transition-all duration-200 font-medium ${filtroEstado === 'Finalizado' ? 'bg-primary text-white shadow-md' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
+                        className={`px-6 py-2 rounded-full transition-all duration-200 font-medium ${filtroEstado === 'finalizado' ? 'bg-primary text-white shadow-md' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
                     >
                         Finalizados
                     </button>
