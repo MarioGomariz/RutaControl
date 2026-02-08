@@ -1,8 +1,8 @@
 # Manual de Usuario - RutaControl
 ## Sistema de Gestión de Transporte de Cargas Líquidas
 
-**Versión**: 1.0  
-**Fecha**: Octubre 2025
+**Versión**: 2.0  
+**Fecha**: Febrero 2026
 
 ---
 
@@ -203,10 +203,12 @@ Contacte al administrador del sistema para restablecer su contraseña.
 - Estado
 
 **Estados**:
-- Disponible
-- En uso
-- En reparación
-- Fuera de servicio
+- **Disponible**: Listo para ser asignado a un viaje
+- **En viaje**: Asignado a un viaje en curso (automático)
+- **En reparación**: En mantenimiento, no disponible
+- **Fuera de servicio**: No operativo
+
+**Importante**: El estado "En viaje" se asigna automáticamente cuando un chofer inicia un viaje. No puede seleccionarse manualmente.
 
 ### 6.2 Agregar Tractor
 
@@ -216,8 +218,15 @@ Contacte al administrador del sistema para restablecer su contraseña.
    - **Marca** (obligatorio)
    - **Modelo** (obligatorio)
    - **Año** (obligatorio, 1990-actual+1)
-   - **Estado**: Disponible (por defecto)
+   - **Tipo de Servicio** (obligatorio): Gas Líquido o Combustible Líquido
+   - **Alcance de Servicio**: Nacional o Internacional
+   - **Estado**: Disponible, En reparación o Fuera de servicio
 3. Click en **"Guardar"**
+
+**Validaciones en tiempo real**:
+- El sistema verifica que la patente no esté duplicada mientras escribe
+- Mensaje de error si la patente ya existe
+- El botón de guardar se deshabilita si hay errores
 
 ### 6.3 Editar/Eliminar
 
@@ -249,30 +258,42 @@ Similar a Choferes.
 1. Click en **"Agregar nuevo semirremolque"**
 2. **Sección 1: Información**
    - Nombre/Tipo
-   - Dominio (Patente)
+   - Dominio (Patente) - único
    - Año
-   - Estado
+   - Estado: Disponible, En reparación o Fuera de servicio
 3. **Sección 2: Servicio**
-   - Tipo de Servicio (Gas Licuado o Combustible Líquido)
+   - Tipo de Servicio (Gas Líquido o Combustible Líquido)
    - Alcance (Nacional/Internacional)
 4. **Sección 3: Documentación**
    - Complete las fechas de vencimiento según el tipo de servicio
    - Todos los campos mostrados son obligatorios
 5. Click en **"Guardar"**
 
-**Importante**: El botón cambia según la acción:
-- **"Guardar"**: Al crear un nuevo semirremolque
-- **"Actualizar"**: Al editar un semirremolque existente
+**Validaciones en tiempo real**:
+- El sistema verifica que el dominio no esté duplicado mientras escribe
+- Mensaje de error si el dominio ya existe
+- El botón de guardar se deshabilita si hay errores
 
-### 7.3 Cambiar Tipo de Servicio
+**Importante**: 
+- El botón cambia según la acción: "Guardar" (crear) o "Actualizar" (editar)
+- El estado "En viaje" se asigna automáticamente, no puede seleccionarse manualmente
 
-1. Edite el semirremolque
-2. Cambie el tipo de servicio
-3. Los campos de documentación se actualizan automáticamente
-4. Complete las nuevas fechas
-5. Click en **"Actualizar"**
+### 7.3 Editar Semirremolque
 
-**Nota**: Los valores anteriores se limpian automáticamente.
+1. Click en el semirremolque para editarlo
+2. Puede modificar:
+   - Nombre/Tipo
+   - Dominio (con validación en tiempo real)
+   - Año
+   - Estado (excepto "En viaje")
+   - Alcance de servicio
+   - Fechas de documentación
+3. Click en **"Actualizar"**
+
+**Restricción importante**: 
+- **El Tipo de Servicio NO puede modificarse** una vez creado el semirremolque
+- Esto previene inconsistencias en la documentación registrada
+- Si necesita cambiar el tipo de servicio, debe crear un nuevo semirremolque
 
 ### 7.4 Eliminar Semirremolque
 
@@ -314,10 +335,10 @@ Similar a Choferes.
 1. Click en **"Agregar nuevo viaje"**
 2. **Sección 1: Vehículo y Conductor**
    - Chofer (solo activos)
-   - Tractor (solo disponibles)
-   - Semirremolque (solo disponibles)
+   - Tractor (muestra todos, pero deshabilita los que están en reparación o fuera de servicio)
+   - Semirremolque (muestra todos, pero deshabilita los que están en reparación o fuera de servicio)
 3. **Sección 2: Servicio y Ruta**
-   - Servicio (Gas Licuado o Combustible Líquido)
+   - Servicio (Gas Líquido o Combustible Líquido)
    - Alcance (Nacional o Internacional)
 4. **Sección 3: Destinos**
    - Agregue destinos con el botón verde
@@ -327,31 +348,56 @@ Similar a Choferes.
 5. **Sección 4: Origen y Fecha**
    - Origen (ubicación de salida)
    - Fecha de salida (solo fecha, sin hora)
-6. **Sección 5: Estado**
-   - Programado (por defecto)
-7. Click en **"Crear viaje"**
+6. Click en **"Crear viaje"**
+
+**Estado inicial**: El viaje se crea automáticamente con estado **"Programado"**. No es necesario seleccionar el estado.
 
 **Validaciones**:
 - Todos los campos obligatorios completos
 - Al menos un destino con ubicación
 - Chofer, tractor y semirremolque seleccionados
+- No se pueden asignar unidades en reparación o fuera de servicio
+
+**Advertencias**:
+- Si selecciona un tractor o semirremolque que está "En viaje", el sistema mostrará una advertencia informativa
+- Puede asignarlo, pero el nuevo viaje no podrá iniciarse hasta que la unidad esté disponible
 
 ### 8.3 Editar Viaje (Solo Admin)
 
-1. Click en **"Ver detalles"** en el viaje
-2. Click en **"Editar"**
-3. Modifique los campos necesarios
-4. Click en **"Guardar cambios"**
+1. Click en el viaje para ver sus detalles
+2. Modifique los campos necesarios:
+   - Chofer, tractor, semirremolque
+   - Servicio y alcance
+   - Destinos
+   - Origen y fecha
+   - **Estado** (solo visible en modo edición)
+3. Click en **"Guardar cambios"**
 
-**Restricción**: Solo se pueden editar viajes en estado "Programado".
+**Cambio de estado manual**:
+- Al editar un viaje, puede cambiar manualmente el estado entre:
+  - Programado
+  - En curso
+  - Finalizado
+- Esto permite correcciones administrativas si es necesario
+
+**Restricciones**:
+- **Viajes finalizados**: No se pueden editar ni eliminar
+- El sistema muestra un mensaje: "🔒 Este viaje está finalizado y no puede ser modificado ni eliminado"
+- Todos los campos están deshabilitados en viajes finalizados
 
 ### 8.4 Eliminar Viaje (Solo Admin)
 
-1. Entre en modo edición
+1. Entre en modo edición del viaje
 2. Click en **"Eliminar"**
 3. Confirme la acción
 
-**Restricción**: No se pueden eliminar viajes finalizados.
+**Restricciones**: 
+- No se pueden eliminar viajes finalizados
+- El botón "Eliminar" no aparece en viajes finalizados
+
+**Efecto en unidades**:
+- Si el viaje no estaba finalizado, las unidades asignadas vuelven a estado "Disponible"
+- Si el viaje estaba finalizado, las unidades mantienen su estado actual
 
 ---
 
@@ -372,7 +418,9 @@ Similar a Choferes.
 **Resultado**:
 - Se registra parada de tipo "Inicio" automáticamente
 - Ubicación: origen del viaje (automático)
-- Estado cambia a "En Curso"
+- **Estado del viaje**: Cambia de "Programado" a "En Curso"
+- **Estado del tractor**: Cambia automáticamente a "En viaje"
+- **Estado del semirremolque**: Cambia automáticamente a "En viaje"
 
 **Importante**: Solo necesita ingresar el odómetro. La ubicación se toma automáticamente del origen del viaje.
 
@@ -429,7 +477,12 @@ Similar a Choferes.
 2. El botón **"Finalizar Viaje"** se habilitará automáticamente
 3. Click en **"Finalizar Viaje"**
 4. Confirme la acción
-5. Estado cambia a "Finalizado"
+
+**Resultado**:
+- **Estado del viaje**: Cambia de "En Curso" a "Finalizado"
+- **Estado del tractor**: Cambia automáticamente a "Disponible"
+- **Estado del semirremolque**: Cambia automáticamente a "Disponible"
+- El viaje queda bloqueado y no puede modificarse
 
 **Nota**: No se puede finalizar sin registrar todas las llegadas programadas.
 
@@ -583,43 +636,104 @@ Similar a Choferes.
 
 **Paso 1: Preparación (Admin)**
 1. Registrar chofer
-2. Registrar tractor
+2. Registrar tractor con tipo de servicio
+   - Seleccionar: Disponible, En reparación o Fuera de servicio
+   - **Nota**: "En viaje" se asigna automáticamente
 3. Registrar semirremolque con documentación
+   - Seleccionar tipo de servicio (NO modificable después)
+   - Completar documentación según tipo de servicio
 4. Crear usuario para chofer (si no existe)
 
 **Paso 2: Programación (Admin)**
 1. Crear viaje
 2. Asignar chofer, tractor, semirremolque
+   - Unidades en reparación/fuera de servicio aparecen deshabilitadas
+   - Unidades "en viaje" muestran advertencia pero pueden asignarse
 3. Definir origen, destinos y fecha
-4. Estado: Programado
+4. **Estado automático**: Programado (no requiere selección)
+5. **Estados de unidades**: Sin cambios (permanecen como están)
 
 **Paso 3: Inicio (Chofer)**
 1. Login como chofer
 2. Viajes → Localizar viaje programado
 3. Click en "Iniciar Viaje"
 4. Ingresar odómetro inicial
-5. Sistema registra parada de inicio
-6. Estado: En Curso
+5. **Cambios automáticos**:
+   - Sistema registra parada de inicio
+   - Estado del viaje: Programado → **En Curso**
+   - Estado del tractor: → **En viaje**
+   - Estado del semirremolque: → **En viaje**
 
 **Paso 4: Durante el Viaje (Chofer)**
 1. Registrar paradas según necesidad:
-   - Descansos: odómetro + ubicación
-   - Cargas: odómetro + ubicación
-   - Llegadas: odómetro + selección de destino
+   - Descansos: odómetro + ubicación manual
+   - Cargas: odómetro + ubicación manual
+   - Llegadas: odómetro + selección de destino (ubicación automática)
 2. Repetir para cada destino
+3. **Estados**: Permanecen sin cambios durante el viaje
 
 **Paso 5: Finalización (Chofer)**
 1. Verificar todas las llegadas registradas
 2. Click en "Finalizar Viaje"
 3. Confirmar
-4. Estado: Finalizado
+4. **Cambios automáticos**:
+   - Estado del viaje: En Curso → **Finalizado**
+   - Estado del tractor: En viaje → **Disponible**
+   - Estado del semirremolque: En viaje → **Disponible**
+   - Viaje bloqueado (no editable ni eliminable)
 
 **Paso 6: Revisión (Admin)**
-1. Ver paradas del viaje
-2. Descargar PDF
+1. Ver paradas del viaje (solo lectura)
+2. Descargar PDF con información completa
 3. Revisar estadísticas
+4. **Nota**: No se puede editar ni eliminar viajes finalizados
 
-### 12.2 Flujo de Renovación de Documentación
+### 12.2 Flujo de Estados Automáticos
+
+**Sistema de Estados Automáticos de Unidades**:
+
+El sistema gestiona automáticamente los estados de tractores y semirremolques según el ciclo de vida del viaje:
+
+```
+CREACIÓN DE VIAJE (Admin)
+└─ Viaje: Programado (automático)
+└─ Tractor: Sin cambios
+└─ Semirremolque: Sin cambios
+
+INICIO DE VIAJE (Chofer)
+└─ Viaje: Programado → En Curso
+└─ Tractor: Cualquier estado → En viaje
+└─ Semirremolque: Cualquier estado → En viaje
+
+FINALIZACIÓN DE VIAJE (Chofer)
+└─ Viaje: En Curso → Finalizado
+└─ Tractor: En viaje → Disponible
+└─ Semirremolque: En viaje → Disponible
+
+ELIMINACIÓN DE VIAJE (Admin)
+└─ Si NO finalizado:
+   └─ Tractor: → Disponible
+   └─ Semirremolque: → Disponible
+└─ Si finalizado:
+   └─ No se puede eliminar
+```
+
+**Estados Manuales vs Automáticos**:
+
+**Estados que el Admin puede asignar manualmente**:
+- Disponible
+- En reparación
+- Fuera de servicio
+
+**Estado automático (NO seleccionable)**:
+- En viaje (solo el sistema lo asigna)
+
+**Edición manual de estado de viaje**:
+- Al editar un viaje existente, el admin puede cambiar manualmente el estado
+- Esto permite correcciones administrativas cuando sea necesario
+- Los cambios manuales de estado también actualizan los estados de las unidades
+
+### 12.3 Flujo de Renovación de Documentación
 
 **Monitoreo**:
 1. Revisar semirremolques semanalmente
@@ -770,8 +884,8 @@ No, las paradas no se pueden eliminar una vez registradas.
 **¿Cuántos destinos puede tener un viaje?**  
 No hay límite, pero debe registrar llegada a todos.
 
-**¿Qué pasa si cambio el tipo de servicio de un semirremolque?**  
-Los campos de documentación se actualizan automáticamente. Los valores anteriores se limpian.
+**¿Puedo cambiar el tipo de servicio de un tractor o semirremolque?**  
+No. El tipo de servicio queda bloqueado una vez creada la unidad para prevenir inconsistencias en la documentación registrada. Si necesita cambiar el tipo de servicio, debe crear una nueva unidad.
 
 **¿Puedo tener múltiples usuarios administradores?**  
 Sí, puede crear múltiples usuarios con rol administrador.
@@ -790,6 +904,21 @@ Sí, el PDF incluye información completa del viaje y todas las paradas.
 
 **¿Qué pasa si no registro todas las llegadas?**  
 El sistema no permitirá finalizar el viaje hasta que se registren todas.
+
+**¿Cómo se asigna el estado "En viaje" a las unidades?**  
+Automáticamente cuando el chofer inicia un viaje. No puede seleccionarse manualmente al crear o editar tractores/semirremolques.
+
+**¿Puedo asignar un tractor que está "En viaje" a otro viaje?**  
+Sí, el sistema lo permite pero mostrará una advertencia. El nuevo viaje no podrá iniciarse hasta que el tractor esté disponible.
+
+**¿Qué pasa con los estados de las unidades cuando finalizo un viaje?**  
+Automáticamente vuelven a "Disponible". El tractor y semirremolque quedan listos para ser asignados a nuevos viajes.
+
+**¿Puedo editar el estado de un viaje manualmente?**  
+Sí, al editar un viaje existente puede cambiar el estado manualmente. Esto permite correcciones administrativas. Los cambios de estado también actualizan automáticamente los estados de las unidades asignadas.
+
+**¿Qué pasa si intento usar una patente duplicada?**  
+El sistema valida en tiempo real mientras escribe. Si la patente ya existe, mostrará un mensaje de error y deshabilitará el botón de guardar.
 
 ---
 
@@ -811,7 +940,19 @@ El sistema no permitirá finalizar el viaje hasta que se registren todas.
 
 **Destino**: Ubicación de entrega programada en un viaje
 
-**Estado**: Situación actual de un viaje (Programado/En Curso/Finalizado)
+**Estado del Viaje**: Situación actual de un viaje (Programado/En Curso/Finalizado)
+
+**Estado de Unidad**: Situación actual de un tractor o semirremolque:
+- Disponible: Listo para asignar
+- En viaje: Asignado a viaje en curso (automático)
+- En reparación: En mantenimiento
+- Fuera de servicio: No operativo
+
+**Estados Automáticos**: Cambios de estado que el sistema realiza sin intervención manual (ej: "En viaje" cuando inicia un viaje)
+
+**Estados Manuales**: Estados que el administrador puede asignar directamente (Disponible, En reparación, Fuera de servicio)
+
+**Validación en Tiempo Real**: Verificación instantánea de datos mientras el usuario escribe (ej: patentes duplicadas)
 
 **Tipo de Servicio**: Clasificación del tipo de carga (Gas Licuado o Combustible Líquido)
 

@@ -7,6 +7,7 @@ import { useServiciosStore } from "@/stores";
 import { useParadasStore } from "@/stores";
 import { generarPDFViaje } from "@/utils/pdfGenerator";
 import { toast } from "react-toastify";
+import { formatDate } from "@/utils/formatDate";
 
 export default function Viajes() {
     const { viajes, isLoading, error, fetchViajes, fetchViajesByChofer } = useViajesStore();
@@ -62,16 +63,6 @@ export default function Viajes() {
         }
     };
 
-    // Función para formatear la fecha
-    const formatearFecha = (fechaStr: string) => {
-        const fecha = new Date(fechaStr);
-        const day = String(fecha.getDate()).padStart(2, '0');
-        const month = String(fecha.getMonth() + 1).padStart(2, '0');
-        const year = fecha.getFullYear();
-        const hours = String(fecha.getHours()).padStart(2, '0');
-        const minutes = String(fecha.getMinutes()).padStart(2, '0');
-        return `${day}/${month}/${year} ${hours}:${minutes}`;
-    };
 
     return (
         <div className="mx-auto p-4 flex flex-col items-center justify-center text-gray-800">
@@ -152,7 +143,7 @@ export default function Viajes() {
                                                 <div className="flex flex-wrap gap-y-1 gap-x-4 text-sm text-gray-600">
                                                     <div className="flex items-center">
                                                         <FaCalendarAlt className="mr-1 text-gray-500" />
-                                                        <span>Salida: {formatearFecha(viaje.fecha_hora_salida)}</span>
+                                                        <span>Salida: {formatDate(viaje.fecha_hora_salida)}</span>
                                                     </div>
                                                 </div>
                                             </div>
