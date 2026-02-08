@@ -15,7 +15,7 @@ import type { FiltrosEstadisticas } from '@/types/estadisticas';
 import { toast } from 'react-toastify';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { formatDate } from '@/utils/formatDate';
+import { formatDate, formatDateTime } from '@/utils/formatDate';
 
 type TabType = 'general' | 'unidades' | 'choferes' | 'rendimiento';
 
@@ -80,7 +80,7 @@ export default function Estadisticas() {
     // Fecha de generación
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Generado: ${new Date().toLocaleString('es-ES')}`, pageWidth / 2, yPosition, { align: 'center' });
+    doc.text(`Generado: ${formatDateTime(new Date().toISOString())}`, pageWidth / 2, yPosition, { align: 'center' });
     yPosition += 15;
 
     // Si hay un chofer seleccionado, generar PDF detallado
