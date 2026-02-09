@@ -111,11 +111,67 @@ export default function Viaje() {
       'servicio_id',
       'cantidad_destinos',
     ]);
+    
+    const numericValue = value === "" ? 0 : Number(value);
+    
+    // Si se selecciona un tractor, auto-setear el servicio según el tractor
+    if (name === 'tractor_id' && numericValue > 0) {
+      const tractor = tractores.find(t => t.id === numericValue);
+      if (tractor?.tipo_servicio) {
+        const servicio = servicios.find(s => s.nombre.toLowerCase() === tractor.tipo_servicio?.toLowerCase());
+        if (servicio) {
+          setFormData((prev) => ({
+            ...prev,
+            tractor_id: numericValue,
+            servicio_id: servicio.id,
+            // Limpiar semirremolque si no coincide con el servicio
+            semirremolque_id: prev.semirremolque_id > 0 ? (() => {
+              const semi = semirremolques.find(s => s.id === prev.semirremolque_id);
+              return semi?.tipo_servicio?.toLowerCase() === tractor.tipo_servicio?.toLowerCase() ? prev.semirremolque_id : 0;
+            })() : 0
+          }));
+          return;
+        }
+      }
+    }
+    
+    // Si se selecciona un semirremolque, auto-setear el servicio según el semirremolque
+    if (name === 'semirremolque_id' && numericValue > 0) {
+      const semi = semirremolques.find(s => s.id === numericValue);
+      if (semi?.tipo_servicio) {
+        const servicio = servicios.find(s => s.nombre.toLowerCase() === semi.tipo_servicio?.toLowerCase());
+        if (servicio) {
+          setFormData((prev) => ({
+            ...prev,
+            semirremolque_id: numericValue,
+            servicio_id: servicio.id,
+            // Limpiar tractor si no coincide con el servicio
+            tractor_id: prev.tractor_id > 0 ? (() => {
+              const trac = tractores.find(t => t.id === prev.tractor_id);
+              return trac?.tipo_servicio?.toLowerCase() === semi.tipo_servicio?.toLowerCase() ? prev.tractor_id : 0;
+            })() : 0
+          }));
+          return;
+        }
+      }
+    }
+    
+    // Si se cambia el servicio, limpiar tractor y semirremolque
+    if (name === 'servicio_id') {
+      setFormData((prev) => ({
+        ...prev,
+        servicio_id: numericValue,
+        tractor_id: 0,
+        semirremolque_id: 0
+      }));
+      return;
+    }
+    
     // Para campos numéricos
     if (type === "number" || numericFields.has(name)) {
       setFormData((prev) => ({
         ...prev,
-        [name]: value === "" ? 0 : Number(value)
+        [name]: numericValue
       }));
     } else {
       setFormData((prev) => ({
@@ -363,8 +419,21 @@ export default function Viaje() {
   // Choferes inactivos
   const choferesInactivos = choferes.filter(chofer => chofer.estado === 'inactivo');
 
-  // Filtrar tractores disponibles (estado + vencimientos)
-  const tractoresConEstado = tractores.map(tractor => {
+  // Filtrar tractores disponibles (estado + vencimientos + servicio)
+  const tractoresConEstado = tractores
+    .filter(tractor => {
+      // Si hay servicio seleccionado, filtrar por tipo_servicio
+      if (formData.servicio_id > 0) {
+        const servicioSeleccionado = servicios.find(s => s.id === formData.servicio_id);
+        if (servicioSeleccionado && tractor.tipo_servicio) {
+          return tractor.tipo_servicio.toLowerCase() === servicioSeleccionado.nombre.toLowerCase();
+        }
+        // Si el tractor no tiene tipo_servicio asignado, no mostrarlo cuando hay servicio seleccionado
+        return !servicioSeleccionado;
+      }
+      return true;
+    })
+    .map(tractor => {
     let disponible = tractor.estado === 'disponible';
     let motivoNoDisponible = '';
     
@@ -395,8 +464,21 @@ export default function Viaje() {
     };
   });
 
-  // Filtrar semirremolques disponibles (estado + vencimientos)
-  const semirremolquesConEstado = semirremolques.map(semirremolque => {
+  // Filtrar semirremolques disponibles (estado + vencimientos + servicio)
+  const semirremolquesConEstado = semirremolques
+    .filter(semirremolque => {
+      // Si hay servicio seleccionado, filtrar por tipo_servicio
+      if (formData.servicio_id > 0) {
+        const servicioSeleccionado = servicios.find(s => s.id === formData.servicio_id);
+        if (servicioSeleccionado && semirremolque.tipo_servicio) {
+          return semirremolque.tipo_servicio.toLowerCase() === servicioSeleccionado.nombre.toLowerCase();
+        }
+        // Si el semirremolque no tiene tipo_servicio asignado, no mostrarlo cuando hay servicio seleccionado
+        return !servicioSeleccionado;
+      }
+      return true;
+    })
+    .map(semirremolque => {
     let disponible = semirremolque.estado === 'disponible';
     let motivoNoDisponible = '';
     
@@ -690,6 +772,39 @@ export default function Viaje() {
                 </FormField>
               </div>
             </FormSection>
+
+            <FormSection
+              title="Origen y fecha"
+              icon={<FaMapMarked />}
+              color="amber"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                {/* Origen */}
+                <FormField label="Origen" name="origen" required>
+                  <FormInput
+                    type="text"
+                    name="origen"
+                    value={formData.origen}
+                    onChange={handleChange}
+                    placeholder="Ciudad o ubicación de origen"
+                    required
+                    disabled={isViajeFinalizado}
+                  />
+                </FormField>
+
+                {/* Fecha de salida */}
+                <FormField label="Fecha de salida" name="fecha_hora_salida" required>
+                  <FormInput
+                    type="date"
+                    name="fecha_hora_salida"
+                    value={formData.fecha_hora_salida}
+                    onChange={handleChange}
+                    required
+                    disabled={isViajeFinalizado}
+                  />
+                </FormField>
+              </div>
+            </FormSection>
             
             <FormSection
               title="Destinos del viaje"
@@ -736,39 +851,6 @@ export default function Viaje() {
                 <p className="text-sm text-gray-600 mt-2">
                   Total de destinos: <strong>{destinos.length}</strong>
                 </p>
-              </div>
-            </FormSection>
-
-            <FormSection
-              title="Origen y fecha"
-              icon={<FaMapMarked />}
-              color="amber"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                {/* Origen */}
-                <FormField label="Origen" name="origen" required>
-                  <FormInput
-                    type="text"
-                    name="origen"
-                    value={formData.origen}
-                    onChange={handleChange}
-                    placeholder="Ciudad o ubicación de origen"
-                    required
-                    disabled={isViajeFinalizado}
-                  />
-                </FormField>
-
-                {/* Fecha de salida */}
-                <FormField label="Fecha de salida" name="fecha_hora_salida" required>
-                  <FormInput
-                    type="date"
-                    name="fecha_hora_salida"
-                    value={formData.fecha_hora_salida}
-                    onChange={handleChange}
-                    required
-                    disabled={isViajeFinalizado}
-                  />
-                </FormField>
               </div>
             </FormSection>
 
