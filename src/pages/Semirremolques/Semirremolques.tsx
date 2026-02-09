@@ -183,12 +183,6 @@ export default function Semirremolques() {
 
 // Componente de tarjeta de semirremolque mejorado
 function SemirremolqueCard({ semirremolque }: { semirremolque: Semirremolque }) {
-    // Determinar el estado del semirremolque
-    const isDisponible = semirremolque.estado === 'disponible';
-    const isEnViaje = semirremolque.estado === 'en viaje';
-    const isEnReparacion = semirremolque.estado === 'en reparacion';
-    const isFueraDeServicio = semirremolque.estado === 'fuera de servicio';
-    
     // Obtener los campos de documentación relevantes según el tipo de servicio
     const requiredDocFields = getRequiredDocFields(semirremolque.tipo_servicio);
     
@@ -202,6 +196,13 @@ function SemirremolqueCard({ semirremolque }: { semirremolque: Semirremolque }) 
         const status = getExpirationStatus(semirremolque[field as keyof Semirremolque] as string);
         return status === 'expiring-soon';
     });
+    
+    // Determinar el estado del semirremolque (considerando vencimientos)
+    const isDisponible = semirremolque.estado === 'disponible' && !hasExpiredDoc;
+    const isEnViaje = semirremolque.estado === 'en viaje';
+    const isEnReparacion = semirremolque.estado === 'en reparacion';
+    const isFueraDeServicio = semirremolque.estado === 'fuera de servicio';
+    const isNoDisponible = semirremolque.estado === 'disponible' && hasExpiredDoc;
     
     // Determinar el color del borde según el estado
     const getBorderColor = () => {
@@ -217,30 +218,39 @@ function SemirremolqueCard({ semirremolque }: { semirremolque: Semirremolque }) 
         <Link to={`/semirremolque/${semirremolque.id}`} className="block">
             <div className={`bg-white rounded-lg shadow-md overflow-hidden border-l-4 hover:shadow-lg transition-shadow ${getBorderColor()}`}>
                 <div className="p-5">
-                    <div className="flex justify-between items-start mb-3">
-                        <h3 className="font-bold text-lg text-gray-800 truncate">
-                            {semirremolque.nombre ? formatNombrePropio(semirremolque.nombre) : 'Sin nombre'}
-                        </h3>
+                    {/* Badge de disponibilidad */}
+                    <div className="mb-3">
                         {isDisponible && (
-                            <span className="px-2 py-1 text-xs rounded bg-green-100 text-green-700 font-medium">
-                                Disponible
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-green-100 text-green-700 font-medium mb-2">
+                                ✓ Disponible
                             </span>
                         )}
                         {isEnViaje && (
-                            <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700 font-medium">
-                                En viaje
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700 font-medium mb-2">
+                                🚚 En viaje
                             </span>
                         )}
                         {isEnReparacion && (
-                            <span className="px-2 py-1 text-xs rounded bg-orange-100 text-orange-700 font-medium">
-                                En reparación
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-orange-100 text-orange-700 font-medium mb-2">
+                                🔧 En reparación
                             </span>
                         )}
                         {isFueraDeServicio && (
-                            <span className="px-2 py-1 text-xs rounded bg-gray-200 text-gray-700 font-medium">
-                                Fuera de servicio
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-gray-200 text-gray-700 font-medium mb-2">
+                                🚫 Fuera de servicio
                             </span>
                         )}
+                        {isNoDisponible && (
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-red-100 text-red-700 font-medium mb-2">
+                                ❌ No disponible
+                            </span>
+                        )}
+                    </div>
+                    
+                    <div className="mb-3">
+                        <h3 className="font-bold text-lg text-gray-800 truncate">
+                            {semirremolque.nombre ? formatNombrePropio(semirremolque.nombre) : 'Sin nombre'}
+                        </h3>
                     </div>
                     
                     <div className="space-y-2 text-sm">

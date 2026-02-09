@@ -174,18 +174,19 @@ export default function Tractores() {
 
 // Componente de tarjeta de tractor mejorado
 function TractorCard({ tractor }: { tractor: Tractor }) {
-    // Determinar el estado del tractor
-    const isDisponible = tractor.estado === 'disponible';
-    const isEnViaje = tractor.estado === 'en viaje';
-    const isEnReparacion = tractor.estado === 'en reparacion';
-    const isFueraDeServicio = tractor.estado === 'fuera de servicio';
-    
-    // Calcular si el RTO está próximo a vencer (30 días) si existe
+    // Calcular si el RTO está próximo a vencer (30 días) o vencido
     const rtoDate = tractor.vencimiento_rto ? new Date(tractor.vencimiento_rto) : null;
     const today = new Date();
     const daysUntilRto = rtoDate ? Math.ceil((rtoDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
     const isRtoExpiringSoon = daysUntilRto !== null && daysUntilRto <= 30 && daysUntilRto > 0;
     const isRtoExpired = daysUntilRto !== null && daysUntilRto <= 0;
+    
+    // Determinar el estado del tractor (considerando vencimientos)
+    const isDisponible = tractor.estado === 'disponible' && !isRtoExpired;
+    const isEnViaje = tractor.estado === 'en viaje';
+    const isEnReparacion = tractor.estado === 'en reparacion';
+    const isFueraDeServicio = tractor.estado === 'fuera de servicio';
+    const isNoDisponible = tractor.estado === 'disponible' && isRtoExpired;
     
     // Determinar el color del borde según el estado
     const getBorderColor = () => {
@@ -201,30 +202,39 @@ function TractorCard({ tractor }: { tractor: Tractor }) {
         <Link to={`/tractor/${tractor.id}`} className="block">
             <div className={`bg-white rounded-lg shadow-md overflow-hidden border-l-4 hover:shadow-lg transition-shadow ${getBorderColor()}`}>
                 <div className="p-5">
-                    <div className="flex justify-between items-start mb-3">
-                        <h3 className="font-bold text-lg text-gray-800 truncate">
-                            {formatNombrePropio(tractor.marca)} {formatNombrePropio(tractor.modelo)}
-                        </h3>
+                    {/* Badge de disponibilidad */}
+                    <div className="mb-3">
                         {isDisponible && (
-                            <span className="px-2 py-1 text-xs rounded bg-green-100 text-green-700 font-medium">
-                                Disponible
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-green-100 text-green-700 font-medium mb-2">
+                                ✓ Disponible
                             </span>
                         )}
                         {isEnViaje && (
-                            <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700 font-medium">
-                                En viaje
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700 font-medium mb-2">
+                                🚚 En viaje
                             </span>
                         )}
                         {isEnReparacion && (
-                            <span className="px-2 py-1 text-xs rounded bg-orange-100 text-orange-700 font-medium">
-                                En reparación
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-orange-100 text-orange-700 font-medium mb-2">
+                                🔧 En reparación
                             </span>
                         )}
                         {isFueraDeServicio && (
-                            <span className="px-2 py-1 text-xs rounded bg-gray-200 text-gray-700 font-medium">
-                                Fuera de servicio
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-gray-200 text-gray-700 font-medium mb-2">
+                                🚫 Fuera de servicio
                             </span>
                         )}
+                        {isNoDisponible && (
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-red-100 text-red-700 font-medium mb-2">
+                                ❌ No disponible
+                            </span>
+                        )}
+                    </div>
+                    
+                    <div className="mb-3">
+                        <h3 className="font-bold text-lg text-gray-800 truncate">
+                            {formatNombrePropio(tractor.marca)} {formatNombrePropio(tractor.modelo)}
+                        </h3>
                     </div>
                     
                     <div className="space-y-2">

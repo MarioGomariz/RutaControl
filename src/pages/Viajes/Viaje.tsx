@@ -313,18 +313,95 @@ export default function Viaje() {
     }
   };
 
-  // Filtrar choferes activos
-  const choferesActivos = choferes.filter(chofer => chofer.activo);
-  // Mostrar todos los tractores con indicadores de estado
-  const tractoresConEstado = tractores.map(tractor => ({
-    ...tractor,
-    disponible: tractor.estado === 'disponible'
-  }));
-  // Mostrar todos los semirremolques con indicadores de estado
-  const semirremolquesConEstado = semirremolques.map(semirremolque => ({
-    ...semirremolque,
-    disponible: semirremolque.estado === 'disponible'
-  }));
+  // Filtrar choferes activos y sin licencia vencida
+  const choferesDisponibles = choferes.filter(chofer => {
+    if (!chofer.activo) return false;
+    if (chofer.fecha_vencimiento_licencia) {
+      const days = getDaysUntilExpiration(chofer.fecha_vencimiento_licencia);
+      if (days !== null && days < 0) return false; // Licencia vencida
+    }
+    return true;
+  });
+
+  // Filtrar tractores disponibles (estado + vencimientos)
+  const tractoresConEstado = tractores.map(tractor => {
+    let disponible = tractor.estado === 'disponible';
+    let motivoNoDisponible = '';
+    
+    // Verificar estado físico
+    if (tractor.estado !== 'disponible') {
+      disponible = false;
+      const mensajes: Record<string, string> = {
+        'en viaje': 'En viaje',
+        'en reparacion': 'En reparación',
+        'fuera de servicio': 'Fuera de servicio'
+      };
+      motivoNoDisponible = mensajes[tractor.estado] || 'No disponible';
+    }
+    
+    // Verificar vencimiento RTO
+    if (disponible && tractor.vencimiento_rto) {
+      const days = getDaysUntilExpiration(tractor.vencimiento_rto);
+      if (days !== null && days < 0) {
+        disponible = false;
+        motivoNoDisponible = 'RTO vencido';
+      }
+    }
+    
+    return {
+      ...tractor,
+      disponible,
+      motivoNoDisponible
+    };
+  });
+
+  // Filtrar semirremolques disponibles (estado + vencimientos)
+  const semirremolquesConEstado = semirremolques.map(semirremolque => {
+    let disponible = semirremolque.estado === 'disponible';
+    let motivoNoDisponible = '';
+    
+    // Verificar estado físico
+    if (semirremolque.estado !== 'disponible') {
+      disponible = false;
+      const mensajes: Record<string, string> = {
+        'en viaje': 'En viaje',
+        'en reparacion': 'En reparación',
+        'fuera de servicio': 'Fuera de servicio'
+      };
+      motivoNoDisponible = mensajes[semirremolque.estado] || 'No disponible';
+    }
+    
+    // Verificar vencimientos según tipo de servicio
+    if (disponible && semirremolque.tipo_servicio) {
+      const requiredFields = getRequiredDocFields(semirremolque.tipo_servicio);
+      for (const field of requiredFields) {
+        const vencimiento = (semirremolque as any)[field];
+        if (vencimiento) {
+          const days = getDaysUntilExpiration(vencimiento);
+          if (days !== null && days < 0) {
+            disponible = false;
+            const fieldLabels: Record<string, string> = {
+              'vencimiento_rto': 'RTO',
+              'vencimiento_visual_externa': 'Visual Externa',
+              'vencimiento_visual_interna': 'Visual Interna',
+              'vencimiento_espesores': 'Espesores',
+              'vencimiento_prueba_hidraulica': 'Prueba Hidráulica',
+              'vencimiento_mangueras': 'Mangueras',
+              'vencimiento_valvula_flujo': 'Válvula de Flujo'
+            };
+            motivoNoDisponible = `${fieldLabels[field] || field} vencido`;
+            break;
+          }
+        }
+      }
+    }
+    
+    return {
+      ...semirremolque,
+      disponible,
+      motivoNoDisponible
+    };
+  });
   
   // Obtener estado del tractor seleccionado
   const tractorSeleccionado = tractores.find(t => t.id === formData.tractor_id);
@@ -458,9 +535,14 @@ export default function Viaje() {
                     disabled={isViajeFinalizado}
                   >
                     <option value="">Seleccionar chofer</option>
-                    {choferesActivos.map(chofer => (
+                    {choferesDisponibles.map(chofer => (
                       <option key={chofer.id} value={chofer.id}>
                         {chofer.nombre} {chofer.apellido}
+                      </option>
+                    ))}
+                    {choferes.filter(c => c.activo && !choferesDisponibles.find(cd => cd.id === c.id)).map(chofer => (
+                      <option key={chofer.id} value={chofer.id} disabled>
+                        {chofer.nombre} {chofer.apellido} - ❌ Licencia vencida
                       </option>
                     ))}
                   </FormSelect>
@@ -476,25 +558,16 @@ export default function Viaje() {
                     disabled={isViajeFinalizado}
                   >
                     <option value="">Seleccionar tractor</option>
-                    {tractoresConEstado.map(tractor => {
-                      const estadoLabels: Record<string, string> = {
-                        'disponible': '✓ Disponible',
-                        'en viaje': '� En viaje',
-                        'en reparacion': '🔧 En reparación',
-                        'fuera de servicio': '❌ Fuera de servicio'
-                      };
-                      const estadosNoPermitidos = ['en reparacion', 'fuera de servicio'];
-                      const isEstadoNoPermitido = estadosNoPermitidos.includes(tractor.estado);
-                      return (
-                        <option 
-                          key={tractor.id} 
-                          value={tractor.id}
-                          disabled={isEstadoNoPermitido}
-                        >
-                          {tractor.marca} {tractor.modelo} - {tractor.dominio} [{estadoLabels[tractor.estado] || tractor.estado}]
-                        </option>
-                      );
-                    })}
+                    {tractoresConEstado.filter(t => t.disponible).map(tractor => (
+                      <option key={tractor.id} value={tractor.id}>
+                        {tractor.marca} {tractor.modelo} - {tractor.dominio} ✓ Disponible
+                      </option>
+                    ))}
+                    {tractoresConEstado.filter(t => !t.disponible).map(tractor => (
+                      <option key={tractor.id} value={tractor.id} disabled>
+                        {tractor.marca} {tractor.modelo} - {tractor.dominio} - ❌ {tractor.motivoNoDisponible}
+                      </option>
+                    ))}
                   </FormSelect>
                   {tractorWarning && (
                     <div className={`mt-2 text-sm rounded p-2 ${
@@ -517,25 +590,16 @@ export default function Viaje() {
                     disabled={isViajeFinalizado}
                   >
                     <option value="">Seleccionar semirremolque</option>
-                    {semirremolquesConEstado.map(semirremolque => {
-                      const estadoLabels: Record<string, string> = {
-                        'disponible': '✓ Disponible',
-                        'en viaje': '🚚 En viaje',
-                        'en reparacion': '🔧 En reparación',
-                        'fuera de servicio': '❌ Fuera de servicio'
-                      };
-                      const estadosNoPermitidos = ['en reparacion', 'fuera de servicio'];
-                      const isEstadoNoPermitido = estadosNoPermitidos.includes(semirremolque.estado);
-                      return (
-                        <option 
-                          key={semirremolque.id} 
-                          value={semirremolque.id}
-                          disabled={isEstadoNoPermitido}
-                        >
-                          {semirremolque.nombre} - {semirremolque.dominio} [{estadoLabels[semirremolque.estado] || semirremolque.estado}]
-                        </option>
-                      );
-                    })}
+                    {semirremolquesConEstado.filter(s => s.disponible).map(semirremolque => (
+                      <option key={semirremolque.id} value={semirremolque.id}>
+                        {semirremolque.nombre} - {semirremolque.dominio} ✓ Disponible
+                      </option>
+                    ))}
+                    {semirremolquesConEstado.filter(s => !s.disponible).map(semirremolque => (
+                      <option key={semirremolque.id} value={semirremolque.id} disabled>
+                        {semirremolque.nombre} - {semirremolque.dominio} - ❌ {semirremolque.motivoNoDisponible}
+                      </option>
+                    ))}
                   </FormSelect>
                 </FormField>
 

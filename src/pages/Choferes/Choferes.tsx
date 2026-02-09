@@ -176,26 +176,44 @@ export default function Choferes() {
 
 // Componente de tarjeta de chofer mejorado
 function ChoferCard({ chofer }: { chofer: Chofer }) {
-    // Calcular si la licencia está próxima a vencer (30 días)
+    // Calcular si la licencia está próxima a vencer (30 días) o vencida
     const licenciaDate = chofer.fecha_vencimiento_licencia ? new Date(chofer.fecha_vencimiento_licencia) : null;
     const today = new Date();
     const daysUntilExpiration = licenciaDate ? Math.ceil((licenciaDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
     const isExpiringSoon = daysUntilExpiration !== null && daysUntilExpiration <= 30 && daysUntilExpiration > 0;
     const isExpired = daysUntilExpiration !== null && daysUntilExpiration <= 0;
     
+    // Determinar disponibilidad (activo Y sin licencia vencida)
+    const isDisponible = chofer.activo && !isExpired;
+    const isNoDisponible = chofer.activo && isExpired;
+    
     return (
         <Link to={`/chofer/${chofer.id}`} className="block">
             <div className={`bg-white rounded-lg shadow-md overflow-hidden border-l-4 hover:shadow-lg transition-shadow ${!chofer.activo ? 'border-gray-400' : isExpired ? 'border-red-500' : isExpiringSoon ? 'border-amber-500' : 'border-green-500'}`}>
                 <div className="p-5">
-                    <div className="flex justify-between items-start mb-3">
+                    {/* Badge de disponibilidad */}
+                    <div className="mb-3">
+                        {!chofer.activo && (
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-gray-200 text-gray-700 font-medium mb-2">
+                                🚫 Inactivo
+                            </span>
+                        )}
+                        {isDisponible && (
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-green-100 text-green-700 font-medium mb-2">
+                                ✓ Disponible
+                            </span>
+                        )}
+                        {isNoDisponible && (
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-red-100 text-red-700 font-medium mb-2">
+                                ❌ No disponible
+                            </span>
+                        )}
+                    </div>
+                    
+                    <div className="mb-3">
                         <h3 className="font-bold text-lg text-gray-800 truncate">
                             {formatNombrePropio(chofer.nombre)} {formatNombrePropio(chofer.apellido)}
                         </h3>
-                        {!chofer.activo && (
-                            <span className="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full font-medium">
-                                Inactivo
-                            </span>
-                        )}
                     </div>
                     
                     <div className="space-y-2 text-sm">
