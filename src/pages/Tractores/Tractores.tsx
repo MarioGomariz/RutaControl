@@ -34,11 +34,15 @@ export default function Tractores() {
     }, [fetchTractores]);
 
     const filteredTractores = tractores.filter(tractor => {
+        // Normalizar término de búsqueda y dominio (eliminar espacios)
+        const searchNormalized = searchTerm.toLowerCase().replace(/\s+/g, '');
+        const dominioNormalized = tractor.dominio?.toLowerCase().replace(/\s+/g, '') || '';
+        
         // Filtro de búsqueda
         const matchesSearch = tractor && (
             tractor.marca?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             tractor.modelo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            tractor.dominio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            dominioNormalized.includes(searchNormalized) ||
             tractor.tipo_servicio?.toLowerCase().includes(searchTerm.toLowerCase())
         );
 

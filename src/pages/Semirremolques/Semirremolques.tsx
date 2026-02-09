@@ -34,9 +34,13 @@ export default function Semirremolques() {
     }, [fetchSemirremolques]);
 
     const filteredSemirremolques = semirremolques.filter(semirremolque => {
+        // Normalizar término de búsqueda y dominio (eliminar espacios)
+        const searchNormalized = searchTerm.toLowerCase().replace(/\s+/g, '');
+        const dominioNormalized = semirremolque.dominio?.toLowerCase().replace(/\s+/g, '') || '';
+        
         // Filtro de búsqueda
         const matchesSearch = semirremolque.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            semirremolque.dominio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            dominioNormalized.includes(searchNormalized) ||
             semirremolque.tipo_servicio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             String(semirremolque.anio || '').includes(searchTerm);
 
