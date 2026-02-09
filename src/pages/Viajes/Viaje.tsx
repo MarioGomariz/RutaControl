@@ -129,21 +129,43 @@ export default function Viaje() {
   const [expiredErrors, setExpiredErrors] = useState<string[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
   
-  // Verificar documentación vencida o próxima a vencer
+  // Verificar documentación vencida o próxima a vencer comparando con la fecha de salida
   useEffect(() => {
     const newErrors: string[] = [];
     const newWarnings: string[] = [];
+    
+    // Si no hay fecha de salida, no validar
+    if (!formData.fecha_hora_salida) {
+      setExpiredErrors([]);
+      setWarnings([]);
+      return;
+    }
+    
+    // Fecha de salida del viaje
+    const fechaSalida = new Date(formData.fecha_hora_salida);
+    fechaSalida.setHours(0, 0, 0, 0); // Normalizar a medianoche
+    
+    // Función helper para calcular días hasta vencimiento desde la fecha de salida
+    const getDaysUntilExpirationFromDate = (expirationDate: string, fromDate: Date): number | null => {
+      const expDate = new Date(expirationDate);
+      expDate.setHours(0, 0, 0, 0);
+      const diffTime = expDate.getTime() - fromDate.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays;
+    };
     
     // Verificar chofer
     if (formData.chofer_id > 0) {
       const chofer = choferes.find(c => c.id === formData.chofer_id);
       if (chofer?.fecha_vencimiento_licencia) {
-        const days = getDaysUntilExpiration(chofer.fecha_vencimiento_licencia);
+        const days = getDaysUntilExpirationFromDate(chofer.fecha_vencimiento_licencia, fechaSalida);
         if (days !== null) {
-          if (days <= 0) {
-            newErrors.push(`❌ CHOFER: La licencia está VENCIDA`);
+          if (days < 0) {
+            newErrors.push(`❌ CHOFER: La licencia estará VENCIDA en la fecha de salida`);
+          } else if (days === 0) {
+            newWarnings.push(`⚠️ CHOFER: La licencia vence el mismo día de salida`);
           } else if (days <= 7) {
-            newWarnings.push(`⚠️ CHOFER: La licencia vence en ${days === 1 ? '1 día' : `${days} días`}`);
+            newWarnings.push(`⚠️ CHOFER: La licencia vence ${days === 1 ? '1 día después' : `${days} días después`} de la salida`);
           }
         }
       }
@@ -153,12 +175,14 @@ export default function Viaje() {
     if (formData.tractor_id > 0) {
       const tractor = tractores.find(t => t.id === formData.tractor_id);
       if (tractor?.vencimiento_rto) {
-        const days = getDaysUntilExpiration(tractor.vencimiento_rto);
+        const days = getDaysUntilExpirationFromDate(tractor.vencimiento_rto, fechaSalida);
         if (days !== null) {
-          if (days <= 0) {
-            newErrors.push(`❌ TRACTOR: El RTO está VENCIDO`);
+          if (days < 0) {
+            newErrors.push(`❌ TRACTOR: El RTO estará VENCIDO en la fecha de salida`);
+          } else if (days === 0) {
+            newWarnings.push(`⚠️ TRACTOR: El RTO vence el mismo día de salida`);
           } else if (days <= 7) {
-            newWarnings.push(`⚠️ TRACTOR: El RTO vence en ${days === 1 ? '1 día' : `${days} días`}`);
+            newWarnings.push(`⚠️ TRACTOR: El RTO vence ${days === 1 ? '1 día después' : `${days} días después`} de la salida`);
           }
         }
       }
@@ -182,13 +206,15 @@ export default function Viaje() {
         requiredFields.forEach(field => {
           const dateValue = (semi as any)[field];
           if (dateValue) {
-            const days = getDaysUntilExpiration(dateValue);
+            const days = getDaysUntilExpirationFromDate(dateValue, fechaSalida);
             if (days !== null) {
               const label = fieldLabels[field] || field;
-              if (days <= 0) {
-                newErrors.push(`❌ SEMIRREMOLQUE: ${label} está VENCIDO`);
+              if (days < 0) {
+                newErrors.push(`❌ SEMIRREMOLQUE: ${label} estará VENCIDO en la fecha de salida`);
+              } else if (days === 0) {
+                newWarnings.push(`⚠️ SEMIRREMOLQUE: ${label} vence el mismo día de salida`);
               } else if (days <= 7) {
-                newWarnings.push(`⚠️ SEMIRREMOLQUE: ${label} vence en ${days === 1 ? '1 día' : `${days} días`}`);
+                newWarnings.push(`⚠️ SEMIRREMOLQUE: ${label} vence ${days === 1 ? '1 día después' : `${days} días después`} de la salida`);
               }
             }
           }
@@ -198,7 +224,7 @@ export default function Viaje() {
     
     setExpiredErrors(newErrors);
     setWarnings(newWarnings);
-  }, [formData.chofer_id, formData.tractor_id, formData.semirremolque_id, choferes, tractores, semirremolques]);
+  }, [formData.chofer_id, formData.tractor_id, formData.semirremolque_id, formData.fecha_hora_salida, choferes, tractores, semirremolques]);
   
   // Funciones para manejar destinos
   const agregarDestino = () => {
