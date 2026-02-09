@@ -299,8 +299,9 @@ export default function Estadisticas() {
   const datosViajesPorChofer = estadisticas.viajes_por_chofer.slice(0, 10).map(item => ({
     name: `${item.chofer_nombre} ${item.chofer_apellido}`,
     total: item.total_viajes,
-    finalizados: item.viajes_finalizados,
-    en_curso: item.viajes_en_curso
+    programados: item.viajes_programados,
+    en_curso: item.viajes_en_curso,
+    finalizados: item.viajes_finalizados
   }));
 
   const datosViajesPorMes = estadisticas.viajes_por_mes.map(item => ({
@@ -870,8 +871,9 @@ export default function Estadisticas() {
                       <Tooltip />
                       <Legend />
                       <Bar dataKey="total" fill="#8B5CF6" name="Total Viajes" />
-                      <Bar dataKey="finalizados" fill="#10B981" name="Finalizados" />
+                      <Bar dataKey="programados" fill="#3B82F6" name="Programados" />
                       <Bar dataKey="en_curso" fill="#F59E0B" name="En Curso" />
+                      <Bar dataKey="finalizados" fill="#10B981" name="Finalizados" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -892,10 +894,13 @@ export default function Estadisticas() {
                             Total Viajes
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Finalizados
+                            Programados
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             En Curso
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Finalizados
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Km Totales
@@ -920,13 +925,18 @@ export default function Estadisticas() {
                               {item.total_viajes}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                                {item.viajes_finalizados}
+                              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                                {item.viajes_programados}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                              <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
                                 {item.viajes_en_curso}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                                {item.viajes_finalizados}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
