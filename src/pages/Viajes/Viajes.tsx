@@ -3,7 +3,6 @@ import { useViajesStore } from "@/stores/viajesStore";
 import { Link } from "react-router-dom";
 import { FaMapMarkerAlt, FaCalendarAlt, FaTruck, FaRoute, FaPlus, FaMapMarked, FaDownload } from "react-icons/fa";
 import { useAuth } from "@/stores/authStore";
-import { useServiciosStore } from "@/stores";
 import { useParadasStore } from "@/stores";
 import { generarPDFViaje } from "@/utils/pdfGenerator";
 import { toast } from "react-toastify";
@@ -11,7 +10,6 @@ import { formatDate } from "@/utils/formatDate";
 
 export default function Viajes() {
     const { viajes, isLoading, error, fetchViajes, fetchViajesByChofer } = useViajesStore();
-    const { servicios, fetchServicios } = useServiciosStore();
     const { exportarParadas } = useParadasStore();
     const [filtroEstado, setFiltroEstado] = useState<string>('todos');
     const { user } = useAuth();
@@ -28,7 +26,6 @@ export default function Viajes() {
     };
 
     useEffect(() => {
-        fetchServicios();
         // Cargar viajes según el rol del usuario
         if (user?.role === 'chofer') {
             // Un chofer solo ve sus propios viajes
@@ -62,7 +59,6 @@ export default function Viajes() {
                 return 'bg-gray-100 text-gray-800';
         }
     };
-
 
     return (
         <div className="mx-auto p-4 flex flex-col items-center justify-center text-gray-800">
@@ -132,51 +128,66 @@ export default function Viajes() {
                             {viajesFiltrados.map((viaje) => (
                                 <div key={viaje.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden border border-gray-100">
                                     <div className="p-5">
+                                        {/* Header con origen y estado */}
                                         <div className="flex justify-between items-start mb-4">
-                                            <div className="flex-1">
-                                                <div className="flex items-center mb-2">
-                                                    <FaMapMarkerAlt className="text-primary mr-2" />
-                                                    <h3 className="text-lg font-semibold text-gray-800">
-                                                        {viaje.origen}
-                                                    </h3>
-                                                </div>
-                                                <div className="flex flex-wrap gap-y-1 gap-x-4 text-sm text-gray-600">
-                                                    <div className="flex items-center">
-                                                        <FaCalendarAlt className="mr-1 text-gray-500" />
-                                                        <span>Salida: {formatDate(viaje.fecha_hora_salida)}</span>
-                                                    </div>
-                                                </div>
+                                            <div className="flex items-center">
+                                                <FaMapMarkerAlt className="text-primary mr-2 text-xl" />
+                                                <h3 className="text-xl font-bold text-gray-800">
+                                                    {viaje.origen}
+                                                </h3>
                                             </div>
                                             <span className={`px-3 py-1 rounded-full text-xs font-medium ${getEstadoClass(viaje.estado)}`}>
                                                 {viaje.estado}
                                             </span>
                                         </div>
                                         
-                                        <div className="flex flex-wrap gap-x-4 gap-y-2 mb-4 text-sm text-gray-600">
-                                            <div className="flex items-center">
-                                                <FaTruck className="mr-1 text-gray-500" />
-                                                <span>Servicio: {servicios.find(s => s.id === viaje.servicio_id)?.nombre}</span>
+                                        {/* Información principal del viaje */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                                            {/* Salida */}
+                                            <div className="flex items-center text-sm">
+                                                <FaCalendarAlt className="mr-2 text-gray-400 flex-shrink-0" />
+                                                <div>
+                                                    <span className="text-gray-500 text-xs">Salida:</span>
+                                                    <span className="ml-1 text-gray-800 font-medium">{formatDate(viaje.fecha_hora_salida)}</span>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center">
-                                                <FaRoute className="mr-1 text-gray-500" />
-                                                <span>Alcance: {viaje.alcance}</span>
-                                            </div>
+                                            
+                                            {/* Chofer */}
+                                            {(viaje as any).chofer_nombre && (
+                                                <div className="flex items-center text-sm">
+                                                    <FaRoute className="mr-2 text-gray-400 flex-shrink-0" />
+                                                    <div>
+                                                        <span className="text-gray-500 text-xs">Chofer:</span>
+                                                        <span className="ml-1 text-gray-800 font-medium">
+                                                            {(viaje as any).chofer_nombre} {(viaje as any).chofer_apellido}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            
+                                            {/* Tractor */}
                                             {(viaje as any).tractor_marca && (
-                                                <div className="flex items-center">
-                                                    <FaTruck className="mr-1 text-gray-500" />
-                                                    <span>
-                                                        Tractor: {(viaje as any).tractor_marca} {(viaje as any).tractor_modelo} - {(viaje as any).tractor_dominio}
-                                                        {(viaje as any).tractor_estado && (
-                                                            <span className={`ml-2 px-2 py-0.5 rounded text-xs font-medium ${
-                                                                (viaje as any).tractor_estado === 'disponible' ? 'bg-green-100 text-green-800' :
-                                                                (viaje as any).tractor_estado === 'en viaje' ? 'bg-blue-100 text-blue-800' :
-                                                                (viaje as any).tractor_estado === 'en reparacion' ? 'bg-orange-100 text-orange-800' :
-                                                                'bg-red-100 text-red-800'
-                                                            }`}>
-                                                                {(viaje as any).tractor_estado}
-                                                            </span>
-                                                        )}
-                                                    </span>
+                                                <div className="flex items-center text-sm">
+                                                    <FaTruck className="mr-2 text-gray-400 flex-shrink-0" />
+                                                    <div>
+                                                        <span className="text-gray-500 text-xs">Tractor:</span>
+                                                        <span className="ml-1 text-gray-800 font-medium">
+                                                            {(viaje as any).tractor_marca} {(viaje as any).tractor_modelo} - {(viaje as any).tractor_dominio}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            
+                                            {/* Semirremolque */}
+                                            {(viaje as any).semirremolque_nombre && (
+                                                <div className="flex items-center text-sm">
+                                                    <FaTruck className="mr-2 text-gray-400 flex-shrink-0" />
+                                                    <div>
+                                                        <span className="text-gray-500 text-xs">Semi:</span>
+                                                        <span className="ml-1 text-gray-800 font-medium">
+                                                            {(viaje as any).semirremolque_nombre} - {(viaje as any).semirremolque_dominio}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
