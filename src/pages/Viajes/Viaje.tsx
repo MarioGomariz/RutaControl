@@ -339,15 +339,29 @@ export default function Viaje() {
     }
   };
 
-  // Filtrar choferes activos y sin licencia vencida
+  // Separar choferes por disponibilidad
   const choferesDisponibles = choferes.filter(chofer => {
-    if (!chofer.activo) return false;
+    // Disponible: activo, no en viaje, sin licencia vencida
+    if (chofer.estado !== 'disponible') return false;
     if (chofer.fecha_vencimiento_licencia) {
       const days = getDaysUntilExpiration(chofer.fecha_vencimiento_licencia);
-      if (days !== null && days < 0) return false; // Licencia vencida
+      if (days !== null && days < 0) return false;
     }
     return true;
   });
+  
+  // Choferes con licencia vencida (activos pero no disponibles)
+  const choferesConLicenciaVencida = choferes.filter(chofer => {
+    if (!chofer.activo || chofer.estado === 'inactivo') return false;
+    if (chofer.fecha_vencimiento_licencia) {
+      const days = getDaysUntilExpiration(chofer.fecha_vencimiento_licencia);
+      return days !== null && days < 0;
+    }
+    return false;
+  });
+  
+  // Choferes inactivos
+  const choferesInactivos = choferes.filter(chofer => chofer.estado === 'inactivo');
 
   // Filtrar tractores disponibles (estado + vencimientos)
   const tractoresConEstado = tractores.map(tractor => {
@@ -566,9 +580,14 @@ export default function Viaje() {
                         {chofer.nombre} {chofer.apellido}
                       </option>
                     ))}
-                    {choferes.filter(c => c.activo && !choferesDisponibles.find(cd => cd.id === c.id)).map(chofer => (
+                    {choferesConLicenciaVencida.map(chofer => (
                       <option key={chofer.id} value={chofer.id} disabled>
                         {chofer.nombre} {chofer.apellido} - ❌ Licencia vencida
+                      </option>
+                    ))}
+                    {choferesInactivos.map(chofer => (
+                      <option key={chofer.id} value={chofer.id} disabled>
+                        {chofer.nombre} {chofer.apellido} - 🚫 Inactivo
                       </option>
                     ))}
                   </FormSelect>

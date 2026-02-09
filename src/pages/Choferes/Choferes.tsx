@@ -183,29 +183,44 @@ function ChoferCard({ chofer }: { chofer: Chofer }) {
     const isExpiringSoon = daysUntilExpiration !== null && daysUntilExpiration <= 30 && daysUntilExpiration > 0;
     const isExpired = daysUntilExpiration !== null && daysUntilExpiration <= 0;
     
-    // Determinar disponibilidad (activo Y sin licencia vencida)
-    const isDisponible = chofer.activo && !isExpired;
-    const isNoDisponible = chofer.activo && isExpired;
-    
     return (
         <Link to={`/chofer/${chofer.id}`} className="block">
             <div className={`bg-white rounded-lg shadow-md overflow-hidden border-l-4 hover:shadow-lg transition-shadow ${!chofer.activo ? 'border-gray-400' : isExpired ? 'border-red-500' : isExpiringSoon ? 'border-amber-500' : 'border-green-500'}`}>
                 <div className="p-5">
-                    {/* Badge de disponibilidad */}
-                    <div className="mb-3">
-                        {!chofer.activo && (
-                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-gray-200 text-gray-700 font-medium mb-2">
+                    {/* Badge de estado */}
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                        {/* Si está inactivo, solo mostrar badge inactivo */}
+                        {chofer.estado === 'inactivo' && (
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full font-medium bg-gray-200 text-gray-700">
                                 🚫 Inactivo
                             </span>
                         )}
-                        {isDisponible && (
-                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-green-100 text-green-700 font-medium mb-2">
-                                ✓ Disponible
+                        
+                        {/* Si está activo y tiene vencido (no en viaje), mostrar badge vencido */}
+                        {chofer.estado !== 'inactivo' && chofer.estado !== 'en viaje' && isExpired && (
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-red-100 text-red-700 font-medium">
+                                ⚠️ Licencia vencida
                             </span>
                         )}
-                        {isNoDisponible && (
-                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-red-100 text-red-700 font-medium mb-2">
-                                ❌ No disponible
+                        
+                        {/* Si está en viaje, mostrar badge en viaje */}
+                        {chofer.estado === 'en viaje' && (
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full font-medium bg-blue-100 text-blue-700">
+                                🚗 En viaje
+                            </span>
+                        )}
+                        
+                        {/* Si está en viaje y tiene vencido, también mostrar badge vencido */}
+                        {chofer.estado === 'en viaje' && isExpired && (
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full bg-red-100 text-red-700 font-medium">
+                                ⚠️ Licencia vencida
+                            </span>
+                        )}
+                        
+                        {/* Si está disponible (activo, no en viaje, sin vencimientos) */}
+                        {chofer.estado === 'disponible' && !isExpired && (
+                            <span className="inline-flex px-3 py-1 text-xs rounded-full font-medium bg-green-100 text-green-700">
+                                ✓ Disponible
                             </span>
                         )}
                     </div>

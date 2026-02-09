@@ -59,7 +59,8 @@ export default function ChoferForm() {
     email: "",
     licencia: "",
     fecha_vencimiento_licencia: "",
-    activo: false,
+    activo: true,
+    estado: 'disponible',
   });
 
   useEffect(() => {
@@ -72,13 +73,15 @@ export default function ChoferForm() {
         email: selectedChofer.email,
         licencia: selectedChofer.licencia,
         fecha_vencimiento_licencia: toDateInput(selectedChofer.fecha_vencimiento_licencia),
-        activo: selectedChofer.activo
+        activo: selectedChofer.activo,
+        estado: selectedChofer.estado
       });
     }
   }, [selectedChofer]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = 'checked' in e.target ? e.target.checked : false;
     
     // Validación especial para teléfono
     if (name === 'telefono') {
@@ -99,6 +102,45 @@ export default function ChoferForm() {
         ...prev,
         [name]: limitedValue,
       }));
+      return;
+    }
+    
+    // Si se cambia el checkbox activo, actualizar estado automáticamente
+    if (name === 'activo') {
+      // Solo permitir cambiar a inactivo si no hay licencia vencida o si está creando nuevo
+      setFormData((prev) => ({
+        ...prev,
+        activo: checked,
+        // Si se activa, el estado será 'disponible' solo si no hay vencimientos
+        // Si se desactiva, el estado será 'inactivo'
+        estado: checked ? 'disponible' : 'inactivo',
+      }));
+      return;
+    }
+    
+    // Si cambia la fecha de vencimiento, recalcular disponibilidad
+    if (name === 'fecha_vencimiento_licencia') {
+      const newDate = value;
+      setFormData((prev) => {
+        // Si está activo y no en viaje, verificar vencimiento
+        if (prev.activo && prev.estado !== 'en viaje' && newDate) {
+          const vencimiento = new Date(newDate);
+          const hoy = new Date();
+          const estaVencido = vencimiento < hoy;
+          
+          return {
+            ...prev,
+            [name]: value,
+            // Si la licencia está vencida, no puede estar disponible
+            estado: estaVencido ? 'inactivo' : 'disponible',
+            activo: estaVencido ? false : prev.activo,
+          };
+        }
+        return {
+          ...prev,
+          [name]: value,
+        };
+      });
       return;
     }
     
@@ -381,14 +423,23 @@ export default function ChoferForm() {
               icon={<FaAddressCard />}
               color="green"
             >
-              <FormField label="Activo" name="activo">
-                <FormCheckbox
-                  name="activo"
-                  checked={formData.activo}
-                  onChange={handleChange}
-                  disabled={isLogistico}
-                />
-              </FormField>
+              <div className="space-y-4">
+                <FormField label="Activo" name="activo">
+                  <FormCheckbox
+                    name="activo"
+                    checked={formData.activo}
+                    onChange={handleChange}
+                    disabled={isLogistico}
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    {formData.activo 
+                      ? 'El chofer está habilitado para trabajar' 
+                      : 'El chofer está deshabilitado y no podrá iniciar sesión'}
+                  </p>
+                </FormField>
+
+
+              </div>
             </FormSection>
 
             {isEditing && !isLogistico && (
