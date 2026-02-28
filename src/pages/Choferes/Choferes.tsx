@@ -211,7 +211,7 @@ function ChoferCard({ chofer }: { chofer: Chofer }) {
     daysUntilExpiration !== null &&
     daysUntilExpiration <= 30 &&
     daysUntilExpiration > 0;
-  const isExpired = daysUntilExpiration !== null && daysUntilExpiration < 0;
+  const isExpired = daysUntilExpiration !== null && daysUntilExpiration <= 0;
 
   return (
     <Link to={`/chofer/${chofer.id}`} className="block">

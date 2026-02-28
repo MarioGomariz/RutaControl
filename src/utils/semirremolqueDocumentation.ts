@@ -79,7 +79,7 @@ export function getDaysUntilExpiration(dateString: string | undefined): number |
 export function getExpirationStatus(dateString: string | undefined): 'expired' | 'expiring-soon' | 'valid' | null {
   const days = getDaysUntilExpiration(dateString);
   if (days === null) return null;
-  if (days < 0) return 'expired'; // Ayer o antes = vencido (rojo)
+  if (days <= 0) return 'expired'; // Ayer, hoy o antes = vencido (rojo)
   if (days <= 30) return 'expiring-soon';
   return 'valid';
 }

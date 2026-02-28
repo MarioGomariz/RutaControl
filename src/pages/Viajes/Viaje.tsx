@@ -286,7 +286,7 @@ export default function Viaje() {
           fechaSalida,
         );
         if (days !== null) {
-          if (days < 0) {
+          if (days <= 0) {
             newErrors.push(
               `❌ CHOFER: La licencia estará VENCIDA en la fecha de salida`,
             );
@@ -312,7 +312,7 @@ export default function Viaje() {
           fechaSalida,
         );
         if (days !== null) {
-          if (days < 0) {
+          if (days <= 0) {
             newErrors.push(
               `❌ TRACTOR: El RTO estará VENCIDO en la fecha de salida`,
             );
@@ -350,7 +350,7 @@ export default function Viaje() {
             const days = getDaysUntilExpirationFromDate(dateValue, fechaSalida);
             if (days !== null) {
               const label = fieldLabels[field] || field;
-              if (days < 0) {
+              if (days <= 0) {
                 newErrors.push(
                   `❌ SEMIRREMOLQUE: ${label} estará VENCIDO en la fecha de salida`,
                 );
@@ -519,7 +519,7 @@ export default function Viaje() {
 
     if (chofer.fecha_vencimiento_licencia) {
       const days = getDaysUntilExpiration(chofer.fecha_vencimiento_licencia);
-      if (days !== null && days < 0) {
+      if (days !== null && days <= 0) {
         disponible = false;
         if (motivoNoDisponible) {
           motivoNoDisponible += " - Licencia vencida";
@@ -573,7 +573,7 @@ export default function Viaje() {
       // Verificar vencimiento RTO
       if (disponible && tractor.vencimiento_rto) {
         const days = getDaysUntilExpiration(tractor.vencimiento_rto);
-        if (days !== null && days < 0) {
+        if (days !== null && days <= 0) {
           disponible = false;
           motivoNoDisponible = "RTO vencido";
         }
@@ -629,7 +629,7 @@ export default function Viaje() {
           const vencimiento = (semirremolque as any)[field];
           if (vencimiento) {
             const days = getDaysUntilExpiration(vencimiento);
-            if (days !== null && days < 0) {
+            if (days !== null && days <= 0) {
               disponible = false;
               const fieldLabels: Record<string, string> = {
                 vencimiento_rto: "RTO",

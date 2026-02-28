@@ -209,7 +209,7 @@ function TractorCard({ tractor }: { tractor: Tractor }) {
   const daysUntilRto = getDaysUntilExpiration(tractor.vencimiento_rto);
   const isRtoExpiringSoon =
     daysUntilRto !== null && daysUntilRto <= 30 && daysUntilRto > 0;
-  const isRtoExpired = daysUntilRto !== null && daysUntilRto < 0;
+  const isRtoExpired = daysUntilRto !== null && daysUntilRto <= 0;
 
   // Determinar el estado del tractor (considerando vencimientos)
   const isDisponible = tractor.estado === "disponible" && !isRtoExpired;
