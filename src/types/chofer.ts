@@ -11,6 +11,6 @@ export interface Chofer {
   licencia?: string;
   fecha_vencimiento_licencia: string; 
   activo: boolean;
-  estado: 'disponible' | 'en viaje' | 'inactivo';
+  estado: 'disponible' | 'en viaje' | 'en_viaje' | 'inactivo';
   usuario_id: number;
 }

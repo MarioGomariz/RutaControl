@@ -28,11 +28,19 @@ export const DOCUMENTATION_LABELS_FULL: Record<string, string> = {
 };
 
 /**
+ * Normaliza un string removiendo acentos y pasando a minúsculas
+ */
+export function normalizeString(str: string): string {
+  return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+/**
  * Obtiene los campos de documentación requeridos para un tipo de servicio
  */
 export function getRequiredDocFields(tipoServicio: string | undefined): string[] {
   if (!tipoServicio) return [];
-  return SERVICE_DOCUMENTATION_CONFIG[tipoServicio.toLowerCase()] || [];
+  const normalized = normalizeString(tipoServicio);
+  return SERVICE_DOCUMENTATION_CONFIG[normalized] || [];
 }
 
 /**
@@ -51,11 +59,12 @@ export function shouldShowDocField(fieldName: string, tipoServicio: string | und
 export function getDaysUntilExpiration(dateString: string | undefined): number | null {
   if (!dateString) return null;
   
-  // Parsear la fecha sin conversión de zona horaria
-  const [year, month, day] = dateString.split('T')[0].split('-');
+  // Parsear la fecha sin conversión de zona horaria (YYYY-MM-DD)
+  const datePart = dateString.split('T')[0];
+  const [year, month, day] = datePart.split('-');
   const expirationDate = new Date(Number(year), Number(month) - 1, Number(day));
   
-  // Obtener la fecha actual sin horas
+  // Obtener la fecha actual local de forma limpia (asumiendo uso en Argentina/GMT-3 u hora del cliente)
   const today = new Date();
   const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   
@@ -70,7 +79,7 @@ export function getDaysUntilExpiration(dateString: string | undefined): number |
 export function getExpirationStatus(dateString: string | undefined): 'expired' | 'expiring-soon' | 'valid' | null {
   const days = getDaysUntilExpiration(dateString);
   if (days === null) return null;
-  if (days <= 0) return 'expired'; // Hoy o antes = vencido (rojo)
+  if (days < 0) return 'expired'; // Ayer o antes = vencido (rojo)
   if (days <= 30) return 'expiring-soon';
   return 'valid';
 }
